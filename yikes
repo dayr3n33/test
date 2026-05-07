@@ -1,27 +1,130 @@
+from __future__ import annotations
 
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-7/test_config_trace_discovery_fa0')
+import os
+from dataclasses import dataclass, field
+from typing import List, Optional
 
-    def test_config_trace_discovery_falls_back_when_no_prefix_match(tmp_path):
-        now = time.time()
-        _touch(tmp_path / "Run_A.trc", now - 20)
-        _touch(tmp_path / "Run_B.trc", now - 2)
 
-        config = DevPalConfig(
-            selected_method_path=str(tmp_path / "Demo.med"),
-            trace_directory=str(tmp_path),
-            auto_discover_traces=True,
-            trace_auto_discover_max_files=1,
-        )
+@dataclass
+class DevPalConfig:
+    selected_method_path: str = ""
+    project_dir: str = ""
 
-        config.resolve_paths()
-        config.discover_trace_files()
+    layout_paths: List[str] = field(default_factory=list)
+    document_paths: List[str] = field(default_factory=list)
+    trace_paths: List[str] = field(default_factory=list)
 
->       assert len(config.trace_paths) == 1
-E       AssertionError: assert 0 == 1
-E        +  where 0 = len([])
-E        +    where [] = DevPalConfig(selected_method_path='C:\\Users\\lynchd27\\AppData\\Local\\Temp\\1\\pytest-of-LYNCHD27\\pytest-7\\test_co...d_class_db_override=None, output_directory='', save_reports=True, report_format='json', verbose=False, fail_fast=False).trace_paths                                                                                                                         
+    auto_discover_traces: bool = True
+    trace_directory: str = r"C:\Program Files (x86)\HAMILTON\LogFiles"
+    trace_auto_discover_max_files: int = 5
 
-tests\test_trace_discovery.py:49: AssertionError
-====================================================================================== short test summary info ======================================================================================= 
-FAILED tests/test_trace_discovery.py::test_config_trace_discovery_falls_back_when_no_prefix_match - AssertionError: assert 0 == 1
-1 failed, 46 passed, 3 skipped in 7.81s       
+    enable_stress_tests: bool = True
+    enable_trace_analysis: bool = True
+    enable_documentation_crosscheck: bool = True
+
+    liquid_class_db_override: Optional[str] = None
+
+    output_directory: str = ""
+    save_reports: bool = True
+    report_format: str = "json"
+
+    verbose: bool = False
+    fail_fast: bool = False
+
+    def resolve_paths(self) -> None:
+        if self.selected_method_path:
+            self.selected_method_path = os.path.abspath(self.selected_method_path)
+
+        if self.project_dir:
+            self.project_dir = os.path.abspath(self.project_dir)
+
+        if self.trace_directory:
+            self.trace_directory = os.path.abspath(self.trace_directory)
+
+        self.layout_paths = [os.path.abspath(p) for p in self.layout_paths if p]
+        self.document_paths = [os.path.abspath(p) for p in self.document_paths if p]
+        self.trace_paths = [os.path.abspath(p) for p in self.trace_paths if p]
+
+        if self.output_directory:
+            self.output_directory = os.path.abspath(self.output_directory)
+
+    def ensure_output_directory(self) -> None:
+        if not self.save_reports:
+            return
+
+        if not self.output_directory:
+            base = os.path.dirname(self.selected_method_path or "") or os.getcwd()
+            self.output_directory = os.path.join(base, "devpal_reports")
+
+        os.makedirs(self.output_directory, exist_ok=True)
+
+    def discover_trace_files(self) -> None:
+        if not self.auto_discover_traces:
+            return
+
+        if self.trace_paths:
+            return
+
+        if not self.trace_directory or not os.path.isdir(self.trace_directory):
+            return
+
+        candidates = []
+
+        for file_name in os.listdir(self.trace_directory):
+            if not file_name.lower().endswith(".trc"):
+                continue
+
+            trace_path = os.path.join(self.trace_directory, file_name)
+
+            if not os.path.isfile(trace_path):
+                continue
+
+            try:
+                modified_time = os.path.getmtime(trace_path)
+            except OSError:
+                continue
+
+            candidates.append((trace_path, modified_time))
+
+        if not candidates:
+            return
+
+        candidates.sort(key=lambda item: (item[1], item[0].lower()), reverse=True)
+
+        method_stem = ""
+        if self.selected_method_path:
+            method_stem = os.path.splitext(
+                os.path.basename(self.selected_method_path)
+            )[0].lower()
+
+        prefix_matches = [
+            item
+            for item in candidates
+            if method_stem
+            and os.path.basename(item[0]).lower().startswith(method_stem)
+        ]
+
+        selected = prefix_matches if prefix_matches else candidates
+
+        if self.trace_auto_discover_max_files > 0:
+            selected = selected[: self.trace_auto_discover_max_files]
+
+        self.trace_paths = [trace_path for trace_path, _mtime in selected]
+
+    def validate(self) -> None:
+        if not self.selected_method_path:
+            raise ValueError("selected_method_path is required.")
+
+        if not os.path.isfile(self.selected_method_path):
+            raise FileNotFoundError(
+                "Selected method file not found: {0}".format(self.selected_method_path)
+            )
+
+        if self.report_format not in {"json", "txt"}:
+            raise ValueError("report_format must be 'json' or 'txt'.")
+
+
+def build_default_config(selected_method_path: str) -> DevPalConfig:
+    config = DevPalConfig(selected_method_path=selected_method_path)
+    config.resolve_paths()
+    return config
