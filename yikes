@@ -1,8 +1,5 @@
-.............................F.sss............                                                                                                                                                  [100%]
-============================================================================================== FAILURES ============================================================================================== 
-____________________________________________________________________ test_config_trace_discovery_falls_back_when_no_prefix_match _____________________________________________________________________ 
 
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-6/test_config_trace_discovery_fa0')
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-7/test_config_trace_discovery_fa0')
 
     def test_config_trace_discovery_falls_back_when_no_prefix_match(tmp_path):
         now = time.time()
@@ -22,9 +19,9 @@ tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD2
 >       assert len(config.trace_paths) == 1
 E       AssertionError: assert 0 == 1
 E        +  where 0 = len([])
-E        +    where [] = DevPalConfig(selected_method_path='C:\\Users\\lynchd27\\AppData\\Local\\Temp\\1\\pytest-of-LYNCHD27\\pytest-6\\test_co...d_class_db_override=None, output_directory='', save_reports=True, report_format='json', verbose=False, fail_fast=False).trace_paths                                                                                                                         
+E        +    where [] = DevPalConfig(selected_method_path='C:\\Users\\lynchd27\\AppData\\Local\\Temp\\1\\pytest-of-LYNCHD27\\pytest-7\\test_co...d_class_db_override=None, output_directory='', save_reports=True, report_format='json', verbose=False, fail_fast=False).trace_paths                                                                                                                         
 
 tests\test_trace_discovery.py:49: AssertionError
 ====================================================================================== short test summary info ======================================================================================= 
 FAILED tests/test_trace_discovery.py::test_config_trace_discovery_falls_back_when_no_prefix_match - AssertionError: assert 0 == 1
-1 failed, 42 passed, 3 skipped in 6.22s
+1 failed, 46 passed, 3 skipped in 7.81s       
