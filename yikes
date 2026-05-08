@@ -1,130 +1,288 @@
-from __future__ import annotations
-
-import os
-from dataclasses import dataclass, field
-from typing import List, Optional
-
-
-@dataclass
-class DevPalConfig:
-    selected_method_path: str = ""
-    project_dir: str = ""
-
-    layout_paths: List[str] = field(default_factory=list)
-    document_paths: List[str] = field(default_factory=list)
-    trace_paths: List[str] = field(default_factory=list)
-
-    auto_discover_traces: bool = True
-    trace_directory: str = r"C:\Program Files (x86)\HAMILTON\LogFiles"
-    trace_auto_discover_max_files: int = 5
-
-    enable_stress_tests: bool = True
-    enable_trace_analysis: bool = True
-    enable_documentation_crosscheck: bool = True
-
-    liquid_class_db_override: Optional[str] = None
-
-    output_directory: str = ""
-    save_reports: bool = True
-    report_format: str = "json"
-
-    verbose: bool = False
-    fail_fast: bool = False
-
-    def resolve_paths(self) -> None:
-        if self.selected_method_path:
-            self.selected_method_path = os.path.abspath(self.selected_method_path)
-
-        if self.project_dir:
-            self.project_dir = os.path.abspath(self.project_dir)
-
-        if self.trace_directory:
-            self.trace_directory = os.path.abspath(self.trace_directory)
-
-        self.layout_paths = [os.path.abspath(p) for p in self.layout_paths if p]
-        self.document_paths = [os.path.abspath(p) for p in self.document_paths if p]
-        self.trace_paths = [os.path.abspath(p) for p in self.trace_paths if p]
-
-        if self.output_directory:
-            self.output_directory = os.path.abspath(self.output_directory)
-
-    def ensure_output_directory(self) -> None:
-        if not self.save_reports:
-            return
-
-        if not self.output_directory:
-            base = os.path.dirname(self.selected_method_path or "") or os.getcwd()
-            self.output_directory = os.path.join(base, "devpal_reports")
-
-        os.makedirs(self.output_directory, exist_ok=True)
-
-    def discover_trace_files(self) -> None:
-        if not self.auto_discover_traces:
-            return
-
-        if self.trace_paths:
-            return
-
-        if not self.trace_directory or not os.path.isdir(self.trace_directory):
-            return
-
-        candidates = []
-
-        for file_name in os.listdir(self.trace_directory):
-            if not file_name.lower().endswith(".trc"):
-                continue
-
-            trace_path = os.path.join(self.trace_directory, file_name)
-
-            if not os.path.isfile(trace_path):
-                continue
-
-            try:
-                modified_time = os.path.getmtime(trace_path)
-            except OSError:
-                continue
-
-            candidates.append((trace_path, modified_time))
-
-        if not candidates:
-            return
-
-        candidates.sort(key=lambda item: (item[1], item[0].lower()), reverse=True)
-
-        method_stem = ""
-        if self.selected_method_path:
-            method_stem = os.path.splitext(
-                os.path.basename(self.selected_method_path)
-            )[0].lower()
-
-        prefix_matches = [
-            item
-            for item in candidates
-            if method_stem
-            and os.path.basename(item[0]).lower().startswith(method_stem)
-        ]
-
-        selected = prefix_matches if prefix_matches else candidates
-
-        if self.trace_auto_discover_max_files > 0:
-            selected = selected[: self.trace_auto_discover_max_files]
-
-        self.trace_paths = [trace_path for trace_path, _mtime in selected]
-
-    def validate(self) -> None:
-        if not self.selected_method_path:
-            raise ValueError("selected_method_path is required.")
-
-        if not os.path.isfile(self.selected_method_path):
-            raise FileNotFoundError(
-                "Selected method file not found: {0}".format(self.selected_method_path)
-            )
-
-        if self.report_format not in {"json", "txt"}:
-            raise ValueError("report_format must be 'json' or 'txt'.")
-
-
-def build_default_config(selected_method_path: str) -> DevPalConfig:
-    config = DevPalConfig(selected_method_path=selected_method_path)
-    config.resolve_paths()
-    return config
+================================================================================================ ERRORS ================================================================================================ 
+_______________________________________________________________________ ERROR collecting tests/test_documentation_crosscheck.py ________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_documentation_crosscheck.py:1: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+___________________________________________________________________________ ERROR collecting tests/test_layout_crossmatch.py ___________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_layout_crossmatch.py:3: in <module>
+    from analyzers.layout_crossmatch_analyzer import analyze_layout_crossmatch
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+_____________________________________________________________________________ ERROR collecting tests/test_liquid_class.py ______________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_liquid_class.py:1: in <module>
+    from analyzers.liquid_class_analyzer import analyze_liquid_classes
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+____________________________________________________________________________ ERROR collecting tests/test_logic_analyzer.py _____________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_logic_analyzer.py:1: in <module>
+    from analyzers.logic_analyzer import analyze_logic
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+_______________________________________________________________________________ ERROR collecting tests/test_pipeline.py ________________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_pipeline.py:3: in <module>
+    from core.config import DevPalConfig
+core\__init__.py:4: in <module>
+    from core.orchestrator import (
+core\orchestrator.py:5: in <module>
+    from analyzers import run_all_analyzers
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+___________________________________________________________________________ ERROR collecting tests/test_sequence_analyzer.py ___________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_sequence_analyzer.py:3: in <module>
+    from analyzers.sequence_analyzer import analyze_sequences
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+_____________________________________________________________________________ ERROR collecting tests/test_stress_tests.py ______________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_stress_tests.py:1: in <module>
+    from analyzers.stress_test_analyzer import analyze_stress_tests
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+___________________________________________________________________________ ERROR collecting tests/test_transfer_analyzer.py ___________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_transfer_analyzer.py:3: in <module>
+    from analyzers.transfer_analyzer import analyze_transfers
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+___________________________________________________________________________ ERROR collecting tests/test_variable_analyzer.py ___________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:680: in _load_unlocked
+    ???
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+tests\test_variable_analyzer.py:1: in <module>
+    from analyzers.variable_analyzer import analyze_variables
+analyzers\__init__.py:5: in <module>
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck
+analyzers\documentation_crosscheck.py:5: in <module>
+    from analyzers.rules import (
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229
+E       ValidationIssue(
+E           ^
+E   SyntaxError: keyword argument repeated: recommendation
+____________________________________________________________________________ ERROR collecting tests/test_volume_analyzer.py ____________________________________________________________________________ 
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\pathlib.py:565: in import_path
+    importlib.import_module(module_name)
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\importlib\__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1030: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1007: in _find_and_load                                                                                                                                                    
+    ???                                                                                                                                                                                                  
+<frozen importlib._bootstrap>:986: in _find_and_load_unlocked                                                                                                                                            
+    ???                                                                                                                                                                                                  
+<frozen importlib._bootstrap>:680: in _load_unlocked                                                                                                                                                     
+    ???                                                                                                                                                                                                  
+..\..\..\..\..\AppData\Local\Programs\Python\Python39\lib\site-packages\_pytest\assertion\rewrite.py:178: in exec_module                                                                                 
+    exec(co, module.__dict__)                                                                                                                                                                            
+tests\test_volume_analyzer.py:1: in <module>                                                                                                                                                             
+    from analyzers.volume_analyzer import analyze_volumes                                                                                                                                                
+analyzers\__init__.py:5: in <module>                                                                                                                                                                     
+    from analyzers.documentation_crosscheck import analyze_documentation_crosscheck                                                                                                                      
+analyzers\documentation_crosscheck.py:5: in <module>                                                                                                                                                     
+    from analyzers.rules import (                                                                                                                                                                        
+E     File "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\analyzers\rules.py", line 229                                                                           
+E       ValidationIssue(                                                                                                                                                                                 
+E           ^                                                                                                                                                                                            
+E   SyntaxError: keyword argument repeated: recommendation                                                                                                                                               
+======================================================================================= short test summary info ======================================================================================== 
+ERROR tests/test_documentation_crosscheck.py
+ERROR tests/test_layout_crossmatch.py
+ERROR tests/test_liquid_class.py
+ERROR tests/test_logic_analyzer.py
+ERROR tests/test_pipeline.py
+ERROR tests/test_sequence_analyzer.py
+ERROR tests/test_stress_tests.py
+ERROR tests/test_transfer_analyzer.py
+ERROR tests/test_variable_analyzer.py
+ERROR tests/test_volume_analyzer.py
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 10 errors during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+10 errors in 1.36s                                                                        
