@@ -1,7 +1,140 @@
-python main.py ^
---method sample_inputs/Demo.med ^
---layout sample_inputs/layout.csv ^
---docs sample_inputs/user_requirements.txt ^
---trace sample_inputs/Demo.trc ^
---format json ^
---verbose
+#include "DDL.res"
+global device ML_STAR ("DDL.lay", "ML_STAR", hslTrue);
+/* {{ 2 "LibraryInsertLine" "" */ // }} ""
+dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;
+variable LC1;
+variable LC;
+/* {{ 2 "VariableInsertLine" "" */ // }} ""
+// {{ 2 "TemplateIncludeBlock" ""
+ namespace _Method { #include "HSLMETEDLib.hs_" } 
+ namespace _Method { #include "HSLMECCLib.hs_" } 
+ namespace _Method { #include "HSLPTLLib.hsl" } 
+ namespace _Method { #include "templates\\HSLPipetteWizard.hsl" } 
+ namespace _Method { #include "HSLSchedCCLib.hs_" } 
+// }} ""
+// {{{ 2 "LocalSubmethodInclude" ""
+ namespace _Method {  #include __filename__ ".sub"  } 
+// }} ""
+/* {{ 2 "ProcessInsertLine" "" */ // }} ""
+// {{{ 5 "main" "Begin"
+namespace _Method { method main(  ) void {
+// }} ""
+// {{ 5 "main" "InitLocals"
+// }} ""
+// {{ 2 "AutoInitBlock" ""
+PTL::SetWashingStateDefault("RinseTime1", 5);
+PTL::SetWashingStateDefault("SoakTime1", 5);
+PTL::SetWashingStateDefault("FlowRate1", 11);
+PTL::SetWashingStateDefault("RinseTime2", 0);
+PTL::SetWashingStateDefault("SoakTime2", 0);
+PTL::SetWashingStateDefault("FlowRate2", 11);
+PTL::SetWashingStateDefault("DrainingTime", 10);
+PTL::SetWashingStateDefault("StartWashLiquid", 0);
+PTL::SetLoadingStateDefault("RecoveryOptionContinue", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionExclude", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionDefault", 0);
+PTL::SetLoadingStateDefault("KitLotCheckEnabled", hslFalse);
+::RegisterAbortHandler( "OnAbort");
+// }} ""
+// {{ 1 1 0 "78f6c4c5_3e62_4d60_9817057acec74926" "ML_STAR:{1C0C0CB0-7C87-11D3-AD83-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._1C0C0CB0_7C87_11D3_AD83_0004ACB1DCB2("78f6c4c5_3e62_4d60_9817057acec74926"); // Initialize
+}
+// }} ""
+// {{ 2 1 0 "ad944a8e_68a6_4da2_951ba018fc3cf1d1" "{B31F3532-5D80-11d4-A5EB-0050DA737D89}"
+{
+LC1 = 0;
+while (
+   (ML_STAR.P.GetCurrentPosition() > 0)
+)
+{
+AlignSequences(hslTrue, ML_STAR.P, 1, ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001, 1);
+LC1 = LC1 + 1;
+// }} ""
+// {{ 3 1 0 "a77cfae7_96ee_4bc2_99a988df28148054" "ML_STAR:{541143FA-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FA_7FA2_11D3_AD85_0004ACB1DCB2("a77cfae7_96ee_4bc2_99a988df28148054"); // TipPickUp
+}
+// }} ""
+// {{ 4 1 0 "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb" "ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2("ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb"); // Aspirate
+}
+// }} ""
+// {{ 5 1 0 "19216da4_e51b_42ca_adfdafcd6fe9d223" "ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2("19216da4_e51b_42ca_adfdafcd6fe9d223"); // Dispense
+}
+// }} ""
+// {{ 6 1 0 "17c3b4de_ab9b_4327_b295061b56f9777b" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("17c3b4de_ab9b_4327_b295061b56f9777b"); // TipEject
+}
+// }} ""
+// {{ 7 1 0 "ad944a8e_68a6_4da2_951ba018fc3cf1d1" "{B31F3532-5D80-11d4-A5EB-0050DA737D89}"
+if (
+   (ML_STAR.P.GetCurrentPosition() > 0 && ML_STAR.P.GetMax() == 0 )
+)
+{ MECC::EndlessSequenceLoopWarning(GetFileName()); }
+
+}
+ML_STAR.P.SetMax(ML_STAR.P.GetTotal());
+ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001.SetMax(ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001.GetTotal());
+ML_STAR.P.SetCurrentPosition(1);
+ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001.SetCurrentPosition(1);
+}
+// }} ""
+// {{ 8 1 0 "63645406_23db_43d2_a1f6af616e065522" "{21E07B31-8D2E-11d4-A3B8-002035848439}"
+dialogHandle7FF021E1A7C644ec99C40075E93E5F83.SetOutput(Translate(""), "\n", Translate("SPIN PLATE"), "\n", Translate(""), "\n");
+dialogHandle7FF021E1A7C644ec99C40075E93E5F83.ShowOutput(Translate("SPIN PLATE"), hslOKOnly | hslExclamation | hslDefButton1, hslInfinite);
+// }} ""
+// {{ 9 1 0 "c4876b6c_d864_4443_b919a1bc46cad369" "{B31F3532-5D80-11d4-A5EB-0050DA737D89}"
+{
+LC = 0;
+while (
+   (ML_STAR.A.GetCurrentPosition() > 0)
+)
+{
+AlignSequences(hslTrue, ML_STAR.A, 1, ML_STAR.P, 1);
+LC = LC + 1;
+// }} ""
+// {{ 10 1 0 "967cc858_fd5d_445c_acb0f970f54381a4" "ML_STAR:{E91EFCB6-A447-4dfc-828E-7EBF29139CD2}"
+{
+	ML_STAR._E91EFCB6_A447_4dfc_828E_7EBF29139CD2("967cc858_fd5d_445c_acb0f970f54381a4"); // EasyAspirate
+}
+// }} ""
+// {{ 11 1 0 "0b79d376_cf9a_495e_94c33ea4ad696ec9" "ML_STAR:{01571348-0D66-4d27-9E97-65F9EE27C956}"
+{
+	ML_STAR._01571348_0D66_4d27_9E97_65F9EE27C956("0b79d376_cf9a_495e_94c33ea4ad696ec9"); // EasyDispense
+}
+// }} ""
+// {{ 12 1 0 "c4876b6c_d864_4443_b919a1bc46cad369" "{B31F3532-5D80-11d4-A5EB-0050DA737D89}"
+if (
+   (ML_STAR.A.GetCurrentPosition() > 0 && ML_STAR.A.GetMax() == 0 )
+)
+{ MECC::EndlessSequenceLoopWarning(GetFileName()); }
+
+}
+ML_STAR.A.SetMax(ML_STAR.A.GetTotal());
+ML_STAR.P.SetMax(ML_STAR.P.GetTotal());
+ML_STAR.A.SetCurrentPosition(1);
+ML_STAR.P.SetCurrentPosition(1);
+}
+// }} ""
+// {{ 13 1 0 "9ca5842c_d627_4a88_ac1cfbb62a81ff16" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("9ca5842c_d627_4a88_ac1cfbb62a81ff16"); // TipEject
+}
+// }} ""
+// {{ 2 "AutoExitBlock" ""
+// }} ""
+// {{{ 5 "main" "End"
+} }
+// }} ""
+// $$author=LYNCHD27$$valid=0$$time=2026-03-25 10:32$$checksum=a3bc7c1a$$length=087$$
