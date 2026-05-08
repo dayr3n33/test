@@ -1,1 +1,23 @@
 
+usage: devpal [-h] [--method METHOD] [--project-dir PROJECT_DIR] [--layout [LAYOUT ...]] [--docs [DOCS ...]] [--trace [TRACE ...]] [--output OUTPUT] [--format {json,txt}] [--no-stress] [--no-trace]
+              [--verbose]
+
+DevPal - Hamilton method analyzer and stress tester
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --method METHOD       Path to selected Hamilton method file (.med/.hsl/.lay/.stp/.res/.sub)
+  --project-dir PROJECT_DIR
+                        Project directory containing method files
+  --layout [LAYOUT ...]
+                        Uploaded plate/layout file(s): .csv, .xls, .xlsx, .docx
+  --docs [DOCS ...]     Requirement / MP / UR documentation file(s)
+  --trace [TRACE ...]   Trace file(s): .trc
+  --output OUTPUT       Output directory for DevPal report
+  --format {json,txt}   Report format
+  --no-stress           Disable stress test analysis
+  --no-trace            Disable trace analysis
+  --verbose             Print summary after analysis
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py sample_inputs/Demo.med --report-format json
+usage: devpal [-h] [--method METHOD] [--project-dir PROJECT_DIR] [--layout [LAYOUT ...]] [--docs [DOCS ...]] [--trace [TRACE ...]] [--output OUTPUT] [--format {json,txt}] [--no-stress] [--no-trace]
+              [--verbose]
