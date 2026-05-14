@@ -1,30 +1,4 @@
-................................sFF..................................................................ssss.....................................                                                    [100%]
-=============================================================================================== FAILURES =============================================================================================== 
-___________________________________________________________________ test_extract_latest_report_path_supports_saved_marker_and_quotes ___________________________________________________________________
-
-    def test_extract_latest_report_path_supports_saved_marker_and_quotes():
-        output = 'noise\nReport saved: "reports/devpal_report.json"\n'
->       assert lpv.extract_latest_report_path(output) == 'reports/devpal_report.json'
-E       AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
-E         - reports/devpal_report.json
-E         ?        ^
-E         + reports\devpal_report.json
-E         ?        ^
-
-tests\test_local_pc_verification_script.py:16: AssertionError
-__________________________________________________________________ test_extract_latest_report_path_supports_written_marker_backcompat __________________________________________________________________ 
-
-    def test_extract_latest_report_path_supports_written_marker_backcompat():
-        output = "noise\nReport written to: reports/devpal_report.json\n"
->       assert lpv.extract_latest_report_path(output) == 'reports/devpal_report.json'
-E       AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
-E         - reports/devpal_report.json
-E         ?        ^
-E         + reports\devpal_report.json
-E         ?        ^
-
-tests\test_local_pc_verification_script.py:21: AssertionError
-======================================================================================= short test summary info ========================================================================================
-FAILED tests/test_local_pc_verification_script.py::test_extract_latest_report_path_supports_saved_marker_and_quotes - AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
-FAILED tests/test_local_pc_verification_script.py::test_extract_latest_report_path_supports_written_marker_backcompat - AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
-2 failed, 135 passed, 5 skipped in 38.13s       
+copy README.md validation_archive\phase1_stable\
+copy CURRENT_STATE.md validation_archive\phase1_stable\
+copy docs\PHASE_1_ACCEPTANCE_AUDIT.md validation_archive\phase1_stable\
+copy docs\CODEX_PASS_LOG.md validation_archive\phase1_stable\
