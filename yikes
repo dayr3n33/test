@@ -1,5 +1,30 @@
-aff801f (HEAD -> main, origin/main, origin/HEAD) Merge pull request #28 from dayr3n33/codex/implement-pass-3-bounded-sweep-engine
-0c8cba6 Implement Pass 3 bounded sweep and runtime simulation analyzer foundation
-ecb4137 (origin/codex/pass-3-bounded-sweep-engine, codex/pass-3-bounded-sweep-engine) Merge pull request #27 from dayr3n33/codex/fix-runtime-detection-hang-in-venus
-8a4b103 Hotfix bounded VENUS run-control detection scan
-618c6f6 (origin/codex/pass-2-hotfix-bounded-venus-detection, codex/pass-2-hotfix-bounded-venus-detection) Merge pull request #26 from dayr3n33/codex/add-runtime-environment-detection-for-pyhamilton
+................................sFF..................................................................ssss.....................................                                                    [100%]
+=============================================================================================== FAILURES =============================================================================================== 
+___________________________________________________________________ test_extract_latest_report_path_supports_saved_marker_and_quotes ___________________________________________________________________
+
+    def test_extract_latest_report_path_supports_saved_marker_and_quotes():
+        output = 'noise\nReport saved: "reports/devpal_report.json"\n'
+>       assert lpv.extract_latest_report_path(output) == 'reports/devpal_report.json'
+E       AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
+E         - reports/devpal_report.json
+E         ?        ^
+E         + reports\devpal_report.json
+E         ?        ^
+
+tests\test_local_pc_verification_script.py:16: AssertionError
+__________________________________________________________________ test_extract_latest_report_path_supports_written_marker_backcompat __________________________________________________________________ 
+
+    def test_extract_latest_report_path_supports_written_marker_backcompat():
+        output = "noise\nReport written to: reports/devpal_report.json\n"
+>       assert lpv.extract_latest_report_path(output) == 'reports/devpal_report.json'
+E       AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
+E         - reports/devpal_report.json
+E         ?        ^
+E         + reports\devpal_report.json
+E         ?        ^
+
+tests\test_local_pc_verification_script.py:21: AssertionError
+======================================================================================= short test summary info ========================================================================================
+FAILED tests/test_local_pc_verification_script.py::test_extract_latest_report_path_supports_saved_marker_and_quotes - AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
+FAILED tests/test_local_pc_verification_script.py::test_extract_latest_report_path_supports_written_marker_backcompat - AssertionError: assert 'reports\\devpal_report.json' == 'reports/devpal_report.json'
+2 failed, 135 passed, 5 skipped in 38.13s       
