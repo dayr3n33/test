@@ -1,6 +1,6 @@
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
-.......................................s...........................................................................................ssss......................................                     [100%]
-168 passed, 5 skipped in 27.10s                                                                                                                                                                          
+...........................................s...........................................................................................ssss.........................................              [100%]
+175 passed, 5 skipped in 44.34s                                                                                                                                                                          
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method sample_inputs/Demo.med --layout sample_inputs/layout.csv --docs sample_inputs/user_requirements_table_example.docx --trace "sample_inputs/Demo_718cef4179e1472c98fea119d1f68aff.trc" --format json --verbose                                                                                     
 
 === DevPal Summary ===
