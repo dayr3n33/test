@@ -1,4 +1,53 @@
-copy README.md validation_archive\phase1_stable\
-copy CURRENT_STATE.md validation_archive\phase1_stable\
-copy docs\PHASE_1_ACCEPTANCE_AUDIT.md validation_archive\phase1_stable\
-copy docs\CODEX_PASS_LOG.md validation_archive\phase1_stable\
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git branch
+  codex/pas-5-hotfix-scenario-evidence-text
+  codex/pass-1-runtime-doctrine-pyhamilton-required
+  codex/pass-2-hotfix-bounded-venus-detection
+  codex/pass-2-pyhamilton-runtime-environment
+  codex/pass-3-bounded-sweep-engine
+  codex/pass-3-hotfix-deepscan-enqueue-bound
+  codex/pass-4-transfer-sequence-volume-runtime-linkage
+  codex/pass-5-hotfix-trace-token-matching
+  codex/pass-5-trace-replay-correlation
+  codex/pass-6-hotfix-report-runtime-modes-and-txt
+  codex/pass-6-reporting-evidence-hardening
+  codex/pass-6b-repo-consistency-sample-inputs
+  codex/pass-7-hotfix-preserve-stress-linkage
+  codex/pass-7-local-windows-pyhamilton-validation
+  codex/pass-8-phase-1-acceptance-audit
+  codex/pass-9-final-local-pc-verification
+  codex/pass-9-hotfix-report-path-marker
+  codex/pass-9-hotfix-windows-path-test
+  codex/pass9-slice2-clean
+  codex/pass9-slice2-sequence-resolver
+  codex/pass9-slice3-clean
+  codex/pass9-slice4-clean
+  codex/pass9-sliceX-clean
+  codex/passB2-source-target-sequence-extraction
+  codex/phase1-passA-layout-crossmatch
+  codex/phase1-passB-diagnostic-first
+  codex/phase1-passB-fix-mapping-resolution
+  codex/phase1-passB-transfer-mapping
+  codex/phase1-readiness-final
+  codex/phase2-pass2-evidence-attestation-session
+  main
+* phase2-runtime-execution-research                                                                                                                                                                      
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git status
+On branch phase2-runtime-execution-research
+Your branch is up to date with 'origin/phase2-runtime-execution-research'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        sample_inputs/devpal_report.txt                                                                                                                                                                  
+
+nothing added to commit but untracked files present (use "git add" to track)
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git pull origin phase2-runtime-execution-research
+From https://github.com/dayr3n33/DevPal
+ * branch            phase2-runtime-execution-research -> FETCH_HEAD
+Already up to date.
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git log --oneline -5
+7470e0d (HEAD -> phase2-runtime-execution-research, tag: phase1-stable, origin/phase2-runtime-execution-research, origin/main, origin/codex/phase2-pass2-evidence-attestation-session, origin/HEAD, main,
+ codex/phase2-pass2-evidence-attestation-session) Add Phase 1 validation archive snapshot
+f80e27c Merge pull request #42 from dayr3n33/codex/fix-local-verification-path-tests-on-windows
+0939b00 Fix local verification path tests for Windows separators
+04b0b1f (origin/codex/pass-9-hotfix-windows-path-test, codex/pass-9-hotfix-windows-path-test) Merge pull request #41 from dayr3n33/codex/fix-report-path-extraction-in-local-verification
+27f7fe3 Fix report-path parsing for local PC verification
