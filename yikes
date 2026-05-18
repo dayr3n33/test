@@ -1,6 +1,4 @@
 PIPELINE
-
-
 diff --git a/core/pipeline.py b/core/pipeline.py
 index 09d4ce7245a123ffb79ef2a0ea575aa0a0351535..971d877979b887feb49755a685aa2cb27bfd170b 100644
 --- a/core/pipeline.py
@@ -62,9 +60,9 @@ index 09d4ce7245a123ffb79ef2a0ea575aa0a0351535..971d877979b887feb49755a685aa2cb2
 
 
 
+
 ************* 
 REPORT BUILD
-
 
 
 diff --git a/core/report_builder.py b/core/report_builder.py
@@ -131,8 +129,10 @@ index 1dc26db1e2083bacd3b97d68dfbb4bb88d277d5f..002b4f99b655217c912908cd7d7c914e
 
 
 
+
 **********
-COREEEE
+COdex
+
 
 diff --git a/docs/CODEX_PASS_LOG.md b/docs/CODEX_PASS_LOG.md
 index 1bb8a728a4ac84714bb3ef33a9ff8261a38dd890..d79b948fb4a51d5f68dc151fa4516625bdb0b2e5 100644
@@ -175,10 +175,15 @@ index 1bb8a728a4ac84714bb3ef33a9ff8261a38dd890..d79b948fb4a51d5f68dc151fa4516625
 
 
 
+
+
+
+
+
+
 *********
 
 METHOD
-
 
 
 diff --git a/models/method_models.py b/models/method_models.py
@@ -242,9 +247,251 @@ index 2ebd7516d60498177b31b68a2fd893746418dc7d..adf6252cd7d6fea6ddf4f7bdc6946973
  
 
 
+
+
+
 *****
 DOCCCC
 
+diff --git a/parsers/documentation_parser.py b/parsers/documentation_parser.py
+index 1c42a1989a6a05eeba1bc84a7be76e3d9379eb38..79cd2a606affbfe7d2304e39c124351712179f2b 100644
+--- a/parsers/documentation_parser.py
++++ b/parsers/documentation_parser.py
+@@ -1,143 +1,237 @@
+ from __future__ import annotations
+ 
+ import os
+ import re
+-from typing import Dict, List, Optional
++from typing import Any, Dict, List, Optional
+ 
+ from models.method_models import (
+     MethodDocumentSet,
+     MethodModel,
+     RequirementRecord,
+     ValidationIssue,
+ )
+ from parsers.utils import (
+     clean_raw_token,
+     extract_file_references,
+     extract_max_sample_requirement,
+     extract_volume_requirements,
+     normalize_hamilton_text,
+     read_text_file,
+     text_contains_any,
+ )
+ 
+ 
+ COMMENT_BLOCK_PATTERN = re.compile(r"/\*(?P<body>.*?)\*/", re.DOTALL)
+ LINE_COMMENT_PATTERN = re.compile(r"^\s*//(?P<body>.*)$", re.MULTILINE)
+ 
+ REQUIREMENT_ID_PATTERN = re.compile(
+-    r"(?i)\b(?:UR|REQ|Requirement|MP|SOP)\s*[-_#:]?\s*([A-Za-z0-9_.\-]+)"
++    r"(?i)\b((?:UR|REQ|RQ|MP|SOP)\s*[-_ ]?\d{1,6}|\d+(?:\.\d+){2,}|Requirement\s*[-_#:]?\s*[A-Za-z0-9_.\-]+)\b"
+ )
+ 
+ STRUCTURED_REQUIREMENT_LINE_PATTERN = re.compile(
+-    r"^\s*(?P<rid>(?:UR|REQ|MP|SOP)\s*[-_]?\s*\d{1,6}|Requirement\s*[-_#:]?\s*[A-Za-z0-9_.\-]+)\s*[:\-]\s*(?P<body>.*)$",
++    r"^\s*(?P<rid>(?:UR|REQ|RQ|MP|SOP)\s*[-_ ]?\d{1,6}|\d+(?:\.\d+){2,}|Requirement\s*[-_#:]?\s*[A-Za-z0-9_.\-]+)\s*[:\-]\s*(?P<body>.*)$",
+     re.IGNORECASE,
+ )
+ 
+ SECTION_PATTERN = re.compile(
+     r"(?i)\b(?:section|heading|title)\s*[:\-]\s*([A-Za-z0-9 _\-.]+)"
+ )
+ 
+ TIP_PATTERN = re.compile(
+     r"(?i)\b(1000ul|300ul|300ul_slim|50ul)\b"
+ )
+ 
+ SEQUENCE_PATTERN = re.compile(
+     r"(?i)\b([A-Za-z0-9_.\-]*(?:seq|sequence|sample|buffer|qc|std|tip)[A-Za-z0-9_.\-]*)\b"
+ )
+ 
+ LABWARE_PATTERN = re.compile(
+     r"(?i)\b([A-Za-z0-9_.\-]*(?:plate|rack|tube|carrier|reservoir|dwp|mte)[A-Za-z0-9_.\-]*)\b"
+ )
+ 
+ 
+ class DocumentationParserError(Exception):
+     pass
+ 
+ 
+ def parse_documentation_file(path: str, model: Optional[MethodModel] = None) -> MethodDocumentSet:
+     if not path:
+         raise DocumentationParserError("No documentation path provided.")
+ 
+     if not os.path.isfile(path):
+         raise DocumentationParserError("Documentation file not found: {0}".format(path))
+ 
+     try:
+         text = _read_document_text(path)
+     except (ImportError, OSError, ValueError) as exc:
+         raise DocumentationParserError(
+             "Documentation file could not be parsed deterministically: {0}: {1}".format(path, exc)
+         )
+     requirements = _build_requirements_by_extension(path, text)
++    doc_rows=[]
++    extraction_summary={}
++    extraction_limitations=[]
++    if os.path.splitext(path)[1].lower()==".docx":
++        extracted=_extract_docx_rows(path)
++        if extracted.get("requirements"):
++            requirements=extracted["requirements"]
++        doc_rows=extracted.get("rows",[])
++        extraction_summary=extracted.get("summary",{})
++        extraction_limitations=extracted.get("limitations",[])
+ 
+     document_set = MethodDocumentSet(
+         documents=[path],
+         requirements=requirements,
++        structured_requirements=list(requirements),
++        documentation_rows=doc_rows,
++        documentation_extraction_summary=extraction_summary,
++        requirement_extraction_limitations=extraction_limitations,
+         parse_warnings=[],
+     )
+ 
+     if model is not None:
+         model.documents.documents.append(path)
+         model.documents.requirements.extend(requirements)
++        model.documents.structured_requirements.extend(requirements)
++        model.documents.documentation_rows.extend(doc_rows)
++        model.documents.documentation_extraction_summary = _merge_summary(model.documents.documentation_extraction_summary, extraction_summary)
++        model.documents.requirement_extraction_limitations.extend(extraction_limitations)
+ 
+         if not requirements:
+             model.validation_issues.append(
+                 ValidationIssue(
+                     severity="minor",
+                     category="documentation",
+                     message="No structured requirements parsed from documentation file.",
+                     related_objects=[path],
+                 )
+             )
+ 
+     return document_set
+ 
+ 
+ def parse_multiple_documents(paths: List[str], model: Optional[MethodModel] = None) -> MethodDocumentSet:
+     combined = MethodDocumentSet()
+ 
+     for path in paths:
+         try:
+             result = parse_documentation_file(path, model=None)
+             combined.documents.extend(result.documents)
+             combined.requirements.extend(result.requirements)
++            combined.structured_requirements.extend(result.structured_requirements)
++            combined.documentation_rows.extend(result.documentation_rows)
++            combined.documentation_extraction_summary = _merge_summary(combined.documentation_extraction_summary, result.documentation_extraction_summary)
++            combined.requirement_extraction_limitations.extend(result.requirement_extraction_limitations)
+         except (DocumentationParserError, FileNotFoundError, ValueError, OSError) as exc:
+             combined.parse_warnings.append(str(exc))
+             if model is not None:
+                 model.parse_warnings.append(str(exc))
+ 
+     if model is not None:
+         model.documents.documents.extend(combined.documents)
+         model.documents.requirements.extend(combined.requirements)
++        model.documents.structured_requirements.extend(combined.structured_requirements)
++        model.documents.documentation_rows.extend(combined.documentation_rows)
++        model.documents.documentation_extraction_summary = _merge_summary(model.documents.documentation_extraction_summary, combined.documentation_extraction_summary)
++        model.documents.requirement_extraction_limitations.extend(combined.requirement_extraction_limitations)
+         if not combined.requirements and combined.documents:
+             model.parse_warnings.append(
+                 "No structured requirements found across uploaded documentation set."
+             )
+ 
+     return combined
+ 
+ 
++
++
++def _merge_summary(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
++    merged = dict(base or {})
++    for key, value in (update or {}).items():
++        existing = merged.get(key)
++        if isinstance(value, bool):
++            merged[key] = bool(existing) or value
++        elif isinstance(value, int):
++            merged[key] = int(existing or 0) + value
++        else:
++            merged[key] = value
++    return merged
++
++
++def _extract_docx_rows(path: str) -> Dict[str, Any]:
++    from docx import Document
++    doc = Document(path)
++    rows=[]
++    reqs=[]
++    limitations=[]
++    for table in doc.tables:
++        for row in table.rows:
++            cells=[clean_raw_token(c.text) for c in row.cells]
++            cells=[c for c in cells if c]
++            if not cells:
++                continue
++            if len(cells)==1:
++                rid, txt = _split_requirement_line(cells[0])
++            else:
++                rid, txt = cells[0], ' '.join(cells[1:])
++            if _looks_like_header_row(rid, txt):
++                continue
++            norm=_normalize_requirement_id(rid)
++            rows.append({'id':norm,'text':txt})
++            if norm and txt and _is_requirement_identifier(rid):
++                reqs.append(_build_requirement_record(norm,[txt],path))
++    para_text='\n'.join(clean_raw_token(p.text) for p in doc.paragraphs if clean_raw_token(p.text))
++    para_reqs=_extract_structured_requirements_from_lines(para_text,path)
++    reqs.extend(para_reqs)
++    dedup=[]; seen=set()
++    for r in reqs:
++        k=(r.requirement_id,r.text.strip().lower())
++        if k in seen: continue
++        seen.add(k); dedup.append(r)
++    if not rows and not para_text:
++        limitations.append('DOCX text not accessible via python-docx (possible shapes/textboxes).')
++    return {'requirements':dedup,'rows':rows,'summary':{'tables_processed':len(doc.tables),'paragraph_lines':len(para_text.splitlines()),'unstructured_doc_text_detected':bool(para_text)},'limitations':limitations}
++
++
++def _split_requirement_line(line: str):
++    m=STRUCTURED_REQUIREMENT_LINE_PATTERN.match(line)
++    if not m:
++        return '', line
++    return m.group('rid'), clean_raw_token(m.group('body'))
++
++
++def _is_requirement_identifier(text: str) -> bool:
++    token = clean_raw_token(text)
++    if not token:
++        return False
++    return REQUIREMENT_ID_PATTERN.fullmatch(token) is not None
++
++
++def _looks_like_header_row(left: str, right: str) -> bool:
++    l=(left or '').strip().lower(); r=(right or '').strip().lower()
++    return l in {'identifier','id','requirement id'} and r in {'definition','description','requirement','details'}
++
+ def _read_document_text(path: str) -> str:
+     extension = os.path.splitext(path)[1].lower()
+ 
+     if extension in [".txt", ".md", ".hsl", ".sub", ".stp", ".res"]:
+         return normalize_hamilton_text(read_text_file(path))
+ 
+     if extension == ".docx":
+         return normalize_hamilton_text(_read_docx_text(path))
+ 
+     if extension == ".pdf":
+         return normalize_hamilton_text(_read_pdf_text(path))
+ 
+     return normalize_hamilton_text(read_text_file(path))
+ 
+ 
+ def _read_docx_text(path: str) -> str:
+     try:
+         from docx import Document
+     except ImportError as exc:
 diff --git a/parsers/documentation_parser.py b/parsers/documentation_parser.py
 index 1c42a1989a6a05eeba1bc84a7be76e3d9379eb38..79cd2a606affbfe7d2304e39c124351712179f2b 100644
 --- a/parsers/documentation_parser.py
@@ -549,14 +796,15 @@ index 1c42a1989a6a05eeba1bc84a7be76e3d9379eb38..79cd2a606affbfe7d2304e39c1243517
 
 
 
+
 ******
 TEST DOC
 
 diff --git a/tests/test_documentation_parser.py b/tests/test_documentation_parser.py
-index bdef581a72a8e133680de886f3d52e37ce0c2206..55a9bf90b4282a3755ecad16a335873b0de0be80 100644
+index bdef581a72a8e133680de886f3d52e37ce0c2206..22ddda954640e94dabb4a3c4512744fe13545bdb 100644
 --- a/tests/test_documentation_parser.py
 +++ b/tests/test_documentation_parser.py
-@@ -1,51 +1,94 @@
+@@ -1,51 +1,127 @@
  from pathlib import Path
  
  from models.method_models import MethodModel
@@ -626,6 +874,39 @@ index bdef581a72a8e133680de886f3d52e37ce0c2206..55a9bf90b4282a3755ecad16a335873b
 +    assert "SOP-12" in ids
 +
 +
++def test_parse_structured_paragraph_mp_and_space_ids(tmp_path):
++    doc_path = tmp_path / "requirements_mp_space.docx"
++    from docx import Document
++
++    doc = Document()
++    doc.add_paragraph("MP_001: Method must verify lookup table.")
++    doc.add_paragraph("SOP 12: Operator must verify setup.")
++    doc.save(str(doc_path))
++
++    document_set = parse_documentation_file(str(doc_path))
++
++    ids = [req.requirement_id for req in document_set.structured_requirements]
++    assert "MP-001" in ids
++    assert "SOP-12" in ids
++
++
++def test_parse_documentation_file_docx_no_name_error_and_fields_present(tmp_path):
++    doc_path = tmp_path / "requirements_constructor_guard.docx"
++    from docx import Document
++
++    doc = Document()
++    table = doc.add_table(rows=1, cols=2)
++    table.rows[0].cells[0].text = "UR_001"
++    table.rows[0].cells[1].text = "System must notify user."
++    doc.save(str(doc_path))
++
++    document_set = parse_documentation_file(str(doc_path))
++
++    assert isinstance(document_set.documentation_rows, list)
++    assert isinstance(document_set.documentation_extraction_summary, dict)
++    assert isinstance(document_set.requirement_extraction_limitations, list)
++
++
 +def test_docx_table_rows_gate_structured_requirements_by_valid_id(tmp_path):
 +    doc_path = tmp_path / "requirements_table_gate.docx"
 +    from docx import Document
@@ -659,45 +940,35 @@ index bdef581a72a8e133680de886f3d52e37ce0c2206..55a9bf90b4282a3755ecad16a335873b
 ******* 
 ** NEWWW FILEEEE ->>> test_pass6_documentation_and_summary.py (tests)
 
+from parsers.documentation_parser import _merge_summary, parse_multiple_documents
+from models.method_models import MethodModel
 
 
+def test_merge_summary_preserves_bool_and_sums_int():
+    out = _merge_summary({"unstructured_doc_text_detected": False, "rows": 1}, {"unstructured_doc_text_detected": True, "rows": 2})
+    assert out["unstructured_doc_text_detected"] is True
+    assert out["rows"] == 3
 
-diff --git a/tests/test_pass6_documentation_and_summary.py b/tests/test_pass6_documentation_and_summary.py
-new file mode 100644
-index 0000000000000000000000000000000000000000..3bf6c0ce896b89cce1ec0860836a01a7cf62965c
---- /dev/null
-+++ b/tests/test_pass6_documentation_and_summary.py
-@@ -0,0 +1,30 @@
-+from parsers.documentation_parser import _merge_summary, parse_multiple_documents
-+from models.method_models import MethodModel
-+
-+
-+def test_merge_summary_preserves_bool_and_sums_int():
-+    out = _merge_summary({"unstructured_doc_text_detected": False, "rows": 1}, {"unstructured_doc_text_detected": True, "rows": 2})
-+    assert out["unstructured_doc_text_detected"] is True
-+    assert out["rows"] == 3
-+
-+
-+def test_parse_multiple_documents_propagates_metadata():
-+    model = MethodModel()
-+    doc_set = parse_multiple_documents(["sample_inputs/user_requirements_table_example.docx"], model=model)
-+    assert isinstance(doc_set.documentation_rows, list)
-+    assert isinstance(doc_set.documentation_extraction_summary, dict)
-+
-+
-+def test_pipeline_safety_booleans_false():
-+    from core.config import DevPalConfig
-+    from core.pipeline import run_pipeline
-+    from core.report_builder import build_full_report
-+
-+    cfg = DevPalConfig(selected_method_path="sample_inputs/Demo.med", layout_paths=["sample_inputs/layout.csv"], document_paths=["sample_inputs/user_requirements.txt"], auto_discover_traces=False)
-+    m = run_pipeline(cfg)
-+    report = build_full_report(m)
-+    r = report["runtime_environment"]
-+    assert r["execution_performed"] is False
-+    assert r["hardware_execution_occurred"] is False
-+    assert r["venus_launched"] is False
-+    assert r["method_execution_occurred"] is False
 
+def test_parse_multiple_documents_propagates_metadata():
+    model = MethodModel()
+    doc_set = parse_multiple_documents(["sample_inputs/user_requirements_table_example.docx"], model=model)
+    assert isinstance(doc_set.documentation_rows, list)
+    assert isinstance(doc_set.documentation_extraction_summary, dict)
+
+
+def test_pipeline_safety_booleans_false():
+    from core.config import DevPalConfig
+    from core.pipeline import run_pipeline
+    from core.report_builder import build_full_report
+
+    cfg = DevPalConfig(selected_method_path="sample_inputs/Demo.med", layout_paths=["sample_inputs/layout.csv"], document_paths=["sample_inputs/user_requirements.txt"], auto_discover_traces=False)
+    m = run_pipeline(cfg)
+    report = build_full_report(m)
+    r = report["runtime_environment"]
+    assert r["execution_performed"] is False
+    assert r["hardware_execution_occurred"] is False
+    assert r["venus_launched"] is False
+    assert r["method_execution_occurred"] is False
 
 
