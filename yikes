@@ -1,26 +1,354 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
-..............F.                                                                                                                                                                                  [100%]
-=============================================================================================== FAILURES =============================================================================================== 
-___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
+diff --git a/parsers/documentation_parser.py b/parsers/documentation_parser.py
+index 1c42a1989a6a05eeba1bc84a7be76e3d9379eb38..3c7f13768ef95d46b3dffc8c05d0d138c8f9b5d9 100644
+--- a/parsers/documentation_parser.py
++++ b/parsers/documentation_parser.py
+@@ -45,91 +45,129 @@ SEQUENCE_PATTERN = re.compile(
+     r"(?i)\b([A-Za-z0-9_.\-]*(?:seq|sequence|sample|buffer|qc|std|tip)[A-Za-z0-9_.\-]*)\b"
+ )
+ 
+ LABWARE_PATTERN = re.compile(
+     r"(?i)\b([A-Za-z0-9_.\-]*(?:plate|rack|tube|carrier|reservoir|dwp|mte)[A-Za-z0-9_.\-]*)\b"
+ )
+ 
+ 
+ class DocumentationParserError(Exception):
+     pass
+ 
+ 
+ def parse_documentation_file(path: str, model: Optional[MethodModel] = None) -> MethodDocumentSet:
+     if not path:
+         raise DocumentationParserError("No documentation path provided.")
+ 
+     if not os.path.isfile(path):
+         raise DocumentationParserError("Documentation file not found: {0}".format(path))
+ 
+     try:
+         text = _read_document_text(path)
+     except (ImportError, OSError, ValueError) as exc:
+         raise DocumentationParserError(
+             "Documentation file could not be parsed deterministically: {0}: {1}".format(path, exc)
+         )
++    extension = os.path.splitext(path)[1].lower()
++    documentation_rows = _extract_documentation_rows(path, text, extension)
+     requirements = _build_requirements_by_extension(path, text)
+ 
+     document_set = MethodDocumentSet(
+         documents=[path],
+         requirements=requirements,
+         parse_warnings=[],
+     )
++    setattr(document_set, "documentation_rows", documentation_rows)
++    setattr(document_set, "structured_requirements", requirements)
++    setattr(document_set, "extraction_limitations", [])
++    setattr(document_set, "extraction_summary", {"source_file": path, "row_count": len(documentation_rows)})
++    setattr(
++        document_set,
++        "documentation_extraction_summary",
++        {"source_file": path, "row_count": len(documentation_rows)},
++    )
+ 
+     if model is not None:
+         model.documents.documents.append(path)
+         model.documents.requirements.extend(requirements)
++        existing_rows = model.runtime_metadata.get("documentation_rows", [])
++        model.runtime_metadata["documentation_rows"] = existing_rows + documentation_rows
+ 
+         if not requirements:
+             model.validation_issues.append(
+                 ValidationIssue(
+                     severity="minor",
+                     category="documentation",
+                     message="No structured requirements parsed from documentation file.",
+                     related_objects=[path],
+                 )
+             )
+ 
+     return document_set
+ 
+ 
+ def parse_multiple_documents(paths: List[str], model: Optional[MethodModel] = None) -> MethodDocumentSet:
+     combined = MethodDocumentSet()
++    setattr(combined, "documentation_rows", [])
++    setattr(combined, "structured_requirements", [])
++    setattr(combined, "extraction_limitations", [])
++    setattr(combined, "extraction_summary", {})
++    setattr(combined, "documentation_extraction_summary", {})
+ 
+     for path in paths:
+         try:
+             result = parse_documentation_file(path, model=None)
+             combined.documents.extend(result.documents)
+             combined.requirements.extend(result.requirements)
++            combined.structured_requirements.extend(getattr(result, "structured_requirements", []))
++            combined.documentation_rows.extend(getattr(result, "documentation_rows", []))
++            combined.extraction_limitations.extend(getattr(result, "extraction_limitations", []))
++            combined.extraction_summary.update(getattr(result, "extraction_summary", {}))
++            combined.documentation_extraction_summary.update(
++                getattr(result, "documentation_extraction_summary", {})
++            )
+         except (DocumentationParserError, FileNotFoundError, ValueError, OSError) as exc:
+             combined.parse_warnings.append(str(exc))
+             if model is not None:
+                 model.parse_warnings.append(str(exc))
+ 
+     if model is not None:
+         model.documents.documents.extend(combined.documents)
+         model.documents.requirements.extend(combined.requirements)
++        if hasattr(model.documents, "structured_requirements"):
++            model.documents.structured_requirements.extend(combined.structured_requirements)
++        if hasattr(model.documents, "documentation_rows"):
++            model.documents.documentation_rows.extend(combined.documentation_rows)
++        if hasattr(model.documents, "extraction_limitations"):
++            model.documents.extraction_limitations.extend(combined.extraction_limitations)
++        if hasattr(model.documents, "extraction_summary"):
++            model.documents.extraction_summary.update(combined.extraction_summary)
++        if hasattr(model.documents, "documentation_extraction_summary"):
++            model.documents.documentation_extraction_summary.update(combined.documentation_extraction_summary)
++        model.runtime_metadata["documentation_extraction_summary"] = dict(combined.documentation_extraction_summary)
++        existing_rows = model.runtime_metadata.get("documentation_rows", [])
++        model.runtime_metadata["documentation_rows"] = existing_rows + combined.documentation_rows
+         if not combined.requirements and combined.documents:
+             model.parse_warnings.append(
+                 "No structured requirements found across uploaded documentation set."
+             )
+ 
+     return combined
+ 
+ 
+ def _read_document_text(path: str) -> str:
+     extension = os.path.splitext(path)[1].lower()
+ 
+     if extension in [".txt", ".md", ".hsl", ".sub", ".stp", ".res"]:
+         return normalize_hamilton_text(read_text_file(path))
+ 
+     if extension == ".docx":
+         return normalize_hamilton_text(_read_docx_text(path))
+ 
+     if extension == ".pdf":
+         return normalize_hamilton_text(_read_pdf_text(path))
+ 
+     return normalize_hamilton_text(read_text_file(path))
+ 
+ 
+ def _read_docx_text(path: str) -> str:
+     try:
+@@ -167,50 +205,105 @@ def _read_pdf_text(path: str) -> str:
+ 
+     reader = PdfReader(path)
+     chunks: List[str] = []
+ 
+     for page in reader.pages:
+         text = page.extract_text() or ""
+         value = clean_raw_token(text)
+         if value:
+             chunks.append(value)
+ 
+     return "\n".join(chunks)
+ 
+ 
+ def _build_requirements_by_extension(path: str, text: str) -> List[RequirementRecord]:
+     extension = os.path.splitext(path)[1].lower()
+ 
+     if extension in [".txt", ".md", ".docx", ".pdf"]:
+         records = _extract_structured_requirements_from_lines(text, path)
+         if records:
+             return records
+ 
+     blocks = _extract_blocks(text)
+     return _build_requirements(blocks, path)
+ 
+ 
++def _extract_documentation_rows(path: str, text: str, extension: str) -> List[List[str]]:
++    if extension == ".docx":
++        return _extract_docx_rows(path)
++    return _extract_text_rows(text)
++
++
++def _extract_text_rows(text: str) -> List[List[str]]:
++    rows: List[List[str]] = []
++    for line in text.splitlines():
++        stripped = clean_raw_token(line)
++        if not stripped:
++            continue
++        rows.append([part.strip() for part in stripped.split("|") if part.strip()])
++    return rows
++
++
++def _extract_docx_rows(path: str) -> List[List[str]]:
++    try:
++        from docx import Document
++    except ImportError as exc:
++        raise DocumentationParserError(
++            "python-docx is required for .docx requirement parsing"
++        ) from exc
++
++    doc = Document(path)
++    rows: List[List[str]] = []
++    for table in doc.tables:
++        for row in table.rows:
++            values = [clean_raw_token(cell.text) for cell in row.cells]
++            filtered = [value for value in values if value]
++            if not filtered:
++                continue
++            if _is_docx_header_row(filtered):
++                continue
++            rows.append(filtered)
++    return rows
++
++
++def _is_docx_header_row(row: List[str]) -> bool:
++    if not row:
++        return False
++    canonical = {clean_raw_token(cell).lower() for cell in row if clean_raw_token(cell)}
++    canonical_headers = [
++        {"requirement id", "requirement", "evidence"},
++        {"identifier", "definition"},
++        {"id", "description"},
++        {"ur id", "requirement"},
++    ]
++    if any(tokens.issubset(canonical) for tokens in canonical_headers):
++        return True
++    if any(_extract_requirement_id(cell) for cell in row):
++        return False
++    return False
++
++
+ def _extract_structured_requirements_from_lines(text: str, source_file: str) -> List[RequirementRecord]:
+     requirements: List[RequirementRecord] = []
+     current_lines: List[str] = []
+     current_id: Optional[str] = None
+ 
+     for line in text.splitlines():
+         stripped = clean_raw_token(line)
+         if not stripped:
+             continue
+ 
+         match = STRUCTURED_REQUIREMENT_LINE_PATTERN.match(stripped)
+         if match:
+             if current_id and current_lines:
+                 requirements.append(_build_requirement_record(current_id, current_lines, source_file))
+ 
+             current_id = _normalize_requirement_id(match.group("rid"))
+             body = clean_raw_token(match.group("body"))
+             current_lines = [body] if body else []
+             continue
+ 
+         if current_id:
+             current_lines.append(stripped)
+ 
+     if current_id and current_lines:
+         requirements.append(_build_requirement_record(current_id, current_lines, source_file))
 
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-61/test_docx_headerless_and_singl0')
 
-    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
-        from docx import Document
-        docx_path = tmp_path / "headless.docx"
-        doc = Document()
-        table = doc.add_table(rows=1, cols=2)
-        table.rows[0].cells[0].text = "UR-007: Validate recovery"
-        table.rows[0].cells[1].text = "Expected behavior applies"
-        doc.save(str(docx_path))
-        model = MethodModel()
-        parse_documentation_file(str(docx_path), model=model)
-        rows = model.runtime_metadata["documentation_rows"]
->       assert len(rows) == 1
-E       assert 0 == 1
-E        +  where 0 = len([])
+diff --git a/tests/test_documentation_parser.py b/tests/test_documentation_parser.py
+index bdef581a72a8e133680de886f3d52e37ce0c2206..b7ca3a19c9e9c281382508597e7f0437d6abcfe3 100644
+--- a/tests/test_documentation_parser.py
++++ b/tests/test_documentation_parser.py
+@@ -1,51 +1,106 @@
+ from pathlib import Path
+ 
++import pytest
++
+ from models.method_models import MethodModel
+ from parsers.documentation_parser import parse_documentation_file, parse_multiple_documents
+ from parsers.documentation_parser import parse_documentation_file
+ 
+ 
+ FIXTURE_DIR = Path(__file__).parent / "sample_inputs"
+ 
+ 
+ def test_parse_txt_requirements_records():
+     document_set = parse_documentation_file(str(FIXTURE_DIR / "user_requirements.txt"))
+ 
+     assert document_set.requirements
+     assert len(document_set.requirements) >= 3
+     assert document_set.requirements[0].requirement_id.startswith("UR-")
+ 
+ 
+ def test_parse_md_requirements_records(tmp_path):
+     md_path = tmp_path / "requirements.md"
+     md_path.write_text(
+         """
+ # UR / MP
+ UR-001: Initialize method before transfer.
+ This must happen first.
+ 
+ MP-010: Use 300uL tips for buffer sequence.
+ SOP-200: Retry 2 times after recovery event.
+ """.strip(),
+         encoding="utf-8",
+     )
+ 
+     document_set = parse_documentation_file(str(md_path))
+ 
+     assert len(document_set.requirements) == 3
+     assert document_set.requirements[0].requirement_id == "UR-001"
+     assert "Initialize method" in document_set.requirements[0].text
+     assert document_set.requirements[2].requires_recovery is True
+     assert document_set.requirements[2].requires_abort_after_attempts == 2
+ 
+ 
+ def test_parse_multiple_documents_adds_warning_when_no_structured_requirements(tmp_path):
+     model = MethodModel()
+     note_path = tmp_path / "note.txt"
+     note_path.write_text("General prose only. No requirement identifiers here.", encoding="utf-8")
+ 
+     doc_set = parse_multiple_documents([str(note_path)], model=model)
+ 
+     assert doc_set.documents
+     assert not doc_set.requirements
+     assert any("No structured requirements" in warning for warning in model.parse_warnings)
++
++
++def test_docx_headerless_and_single_row_not_dropped(tmp_path):
++    Document = pytest.importorskip("docx", reason="python-docx required for docx parsing").Document
++
++    doc_path = tmp_path / "requirements.docx"
++    doc = Document()
++    table = doc.add_table(rows=1, cols=2)
++    table.cell(0, 0).text = "UR-007: Validate recovery"
++    table.cell(0, 1).text = "Expected behavior applies"
++    doc.save(str(doc_path))
++
++    model = MethodModel()
++    parse_documentation_file(str(doc_path), model=model)
++
++    rows = model.runtime_metadata["documentation_rows"]
++    assert len(rows) == 1
++    assert rows[0][0] == "UR-007: Validate recovery"
++    assert rows[0][1] == "Expected behavior applies"
++
++
++def test_parse_multiple_documents_populates_runtime_documentation_rows(tmp_path):
++    model = MethodModel()
++    note_path = tmp_path / "rows.txt"
++    note_path.write_text("UR-123: Requirement text | Evidence text", encoding="utf-8")
++
++    parse_multiple_documents([str(note_path)], model=model)
++
++    rows = model.runtime_metadata["documentation_rows"]
++    assert len(rows) == 1
++    assert rows[0] == ["UR-123: Requirement text", "Evidence text"]
++
++
++def test_docx_canonical_header_row_is_skipped(tmp_path):
++    Document = pytest.importorskip("docx", reason="python-docx required for docx parsing").Document
++
++    doc_path = tmp_path / "header_and_data.docx"
++    doc = Document()
++    table = doc.add_table(rows=2, cols=3)
++    table.cell(0, 0).text = "Requirement ID"
++    table.cell(0, 1).text = "Requirement"
++    table.cell(0, 2).text = "Evidence"
++    table.cell(1, 0).text = "UR-007: Validate recovery"
++    table.cell(1, 1).text = "Expected behavior applies"
++    table.cell(1, 2).text = "Run log"
++    doc.save(str(doc_path))
++
++    model = MethodModel()
++    parse_documentation_file(str(doc_path), model=model)
++
++    rows = model.runtime_metadata["documentation_rows"]
++    assert len(rows) == 1
++    assert rows[0][0] == "UR-007: Validate recovery"
 
-tests\test_documentation_parser.py:229: AssertionError
-======================================================================================= short test summary info ======================================================================================== 
-FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - assert 0 == 1
-1 failed, 15 passed in 3.95s                 
