@@ -1,1 +1,17 @@
+STRUCTURED_REQUIREMENT_LINE_PATTERN = re.compile(
+    r"^\s*(?P<rid>(?:UR|REQ|RQ|MP|SOP)\s*[-_ ]?\s*\d{1,6}|\d+(?:\.\d+){2,}|Requirement\s*[-_#:]?\s*[A-Za-z0-9_.\-]+)\s*[:\-]\s*(?P<body>.*)$",
+    re.IGNORECASE,
+)
+
+
+
+first_column = columns[0] if columns else ""
+remaining_text = " ".join(c for c in columns[1:] if c).strip()
+
+if _is_requirement_identifier(first_column) and remaining_text:
+    if current_id and current_lines:
+        requirements.append(_build_requirement_record(current_id, current_lines, source_file))
+    current_id = _normalize_requirement_id(first_column)
+    current_lines = [remaining_text]
+
 
