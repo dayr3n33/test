@@ -1,48 +1,23 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
-..............F.                                                                                                                                                                                  [100%]
-=============================================================================================== FAILURES ===============================================================================================
-___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________
+def _is_docx_header_row(cells: List[str]) -> bool:
+    normalized = [clean_raw_token(cell).lower() for cell in cells if clean_raw_token(cell)]
+    if not normalized:
+        return False
 
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-57/test_docx_headerless_and_singl0')
+    # A row containing a valid requirement ID is data, not a header.
+    if any(_is_requirement_identifier(cell) for cell in cells):
+        return False
 
-    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
-        from docx import Document
-        docx_path = tmp_path / "headless.docx"
-        doc = Document()
-        table = doc.add_table(rows=1, cols=2)
-        table.rows[0].cells[0].text = "UR-007: Validate recovery"
-        table.rows[0].cells[1].text = "Expected behavior applies"
-        doc.save(str(docx_path))
-        model = MethodModel()
-        parse_documentation_file(str(docx_path), model=model)
->       rows = model.runtime_metadata["documentation_rows"]
-E       KeyError: 'documentation_rows'
+    match_count = sum(1 for value in normalized if value in DOCX_HEADER_TERMS)
+    joined = " ".join(normalized)
 
-tests\test_documentation_parser.py:228: KeyError
-======================================================================================= short test summary info ======================================================================================== 
-FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
-1 failed, 15 passed in 3.90s 
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
-.........................F..........................s...........................................................................................ssss.........................................     [100%]
-=============================================================================================== FAILURES =============================================================================================== 
-___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
-
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-58/test_docx_headerless_and_singl0')
-
-    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
-        from docx import Document
-        docx_path = tmp_path / "headless.docx"
-        doc = Document()
-        table = doc.add_table(rows=1, cols=2)
-        table.rows[0].cells[0].text = "UR-007: Validate recovery"
-        table.rows[0].cells[1].text = "Expected behavior applies"
-        doc.save(str(docx_path))
-        model = MethodModel()
-        parse_documentation_file(str(docx_path), model=model)
->       rows = model.runtime_metadata["documentation_rows"]
-E       KeyError: 'documentation_rows'
-
-tests\test_documentation_parser.py:228: KeyError
-======================================================================================= short test summary info ======================================================================================== 
-FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
-1 failed, 183 passed, 5 skipped in 49.96s       
+    return match_count >= 2 or any(
+        term in joined
+        for term in [
+            "identifier definition",
+            "requirement description",
+            "requirement id requirement",
+            "user requirement",
+            "acceptance criteria",
+            "expected behavior",
+        ]
+    )
