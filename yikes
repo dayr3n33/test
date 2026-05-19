@@ -1,56 +1,24 @@
-def _is_requirement_identifier(text: str) -> bool:
-    value = clean_raw_token(text or "")
-    if not value:
-        return False
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
+..............F.                                                                                                                                                                                  [100%]
+=============================================================================================== FAILURES =============================================================================================== 
+___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
 
-    lowered = value.lower().strip()
-    if lowered in {
-        "requirement id",
-        "requirement",
-        "user requirement",
-        "ur id",
-        "id",
-        "identifier",
-        "definition",
-        "description",
-        "acceptance criteria",
-        "expected behavior",
-        "evidence",
-    }:
-        return False
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-60/test_docx_headerless_and_singl0')
 
-    return bool(
-        NUMERIC_REQ_ID_PATTERN.fullmatch(value)
-        or GENERIC_REQ_ID_PATTERN.fullmatch(value)
-        or STRUCTURED_REQUIREMENT_IDENTIFIER_PATTERN.fullmatch(value)
-    )
+    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "headless.docx"
+        doc = Document()
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text = "UR-007: Validate recovery"
+        table.rows[0].cells[1].text = "Expected behavior applies"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+>       rows = model.runtime_metadata["documentation_rows"]
+E       KeyError: 'documentation_rows'
 
-def _extract_req_pair(cells: List[str]) -> Tuple[Optional[str], str]:
-    if not cells:
-        return None, ""
-
-    cleaned = [clean_raw_token(cell) for cell in cells]
-    non_empty = [cell for cell in cleaned if cell]
-    if not non_empty:
-        return None, ""
-
-    left = non_empty[0]
-    remaining = clean_raw_token(" ".join(non_empty[1:]))
-
-   
-    inline_match = STRUCTURED_REQUIREMENT_LINE_PATTERN.match(left)
-    if inline_match:
-        rid = _normalize_requirement_id(inline_match.group("rid"))
-        body = clean_raw_token(inline_match.group("body"))
-        full_text = " ".join(part for part in [body, remaining] if part).strip()
-        return rid, full_text
-
-    if _is_requirement_identifier(left):
-        return _normalize_requirement_id(left), remaining
-
-    merged = clean_raw_token(" ".join(non_empty))
-    merged_match = STRUCTURED_REQUIREMENT_LINE_PATTERN.match(merged)
-    if merged_match:
-        return _normalize_requirement_id(merged_match.group("rid")), clean_raw_token(merged_match.group("body"))
-
-    return None, merged
+tests\test_documentation_parser.py:228: KeyError
+======================================================================================= short test summary info ======================================================================================== 
+FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
+1 failed, 15 passed in 3.91s   
