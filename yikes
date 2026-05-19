@@ -1,10 +1,38 @@
-@dataclass
-class MethodDocumentSet:
-    documents: List[str] = field(default_factory=list)
-    requirements: List[RequirementRecord] = field(default_factory=list)
-    structured_requirements: List[RequirementRecord] = field(default_factory=list)
-    documentation_rows: List[Dict[str, Any]] = field(default_factory=list)
-    extraction_summary: Dict[str, Any] = field(default_factory=dict)
-    extraction_limitations: List[str] = field(default_factory=list)
-    parse_warnings: List[str] = field(default_factory=list)
-    documentation_extraction_summary: Dict[str, Any] = field(default_factory=dict)
+.......................F.F..........................s...........................................................................................ssss.........................................     [100%]
+=============================================================================================== FAILURES =============================================================================================== 
+_______________________________________________________________________________ test_docx_table_summary_and_rows_present _______________________________________________________________________________ 
+
+    def test_docx_table_summary_and_rows_present():
+        docx_path = Path(__file__).resolve().parents[1] / "sample_inputs" / "user_requirements_table_example.docx"
+        model = MethodModel()
+        doc_set = parse_documentation_file(str(docx_path), model=model)
+        summary = model.runtime_metadata.get("documentation_extraction_summary", {}).get(str(docx_path), {})
+        assert summary.get("docx_tables_parsed", 0) > 0
+>       assert summary.get("documentation_rows_count", 0) > 0
+E       AssertionError: assert 0 > 0
+E        +  where 0 = <built-in method get of dict object at 0x000001C2DA084240>('documentation_rows_count', 0)
+E        +    where <built-in method get of dict object at 0x000001C2DA084240> = {'documentation_rows_count': 0, 'docx_tables_parsed': 2, 'pdf_pages_parsed': 0, 'pdf_text_lines_parsed': 0, ...}.get    
+
+tests\test_documentation_parser.py:195: AssertionError
+___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
+
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-52/test_docx_headerless_and_singl0')
+
+    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "headless.docx"
+        doc = Document()
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text = "UR-007: Validate recovery"
+        table.rows[0].cells[1].text = "Expected behavior applies"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+>       rows = model.runtime_metadata["documentation_rows"]
+E       KeyError: 'documentation_rows'
+
+tests\test_documentation_parser.py:228: KeyError
+======================================================================================= short test summary info ======================================================================================== 
+FAILED tests/test_documentation_parser.py::test_docx_table_summary_and_rows_present - AssertionError: assert 0 > 0
+FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
+2 failed, 182 passed, 5 skipped in 42.16s                                                                                           
