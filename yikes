@@ -1,23 +1,49 @@
-def _is_docx_header_row(cells: List[str]) -> bool:
-    normalized = [clean_raw_token(cell).lower() for cell in cells if clean_raw_token(cell)]
-    if not normalized:
-        return False
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
+.............FF.                                                                                                                                                                                  [100%]
+=============================================================================================== FAILURES =============================================================================================== 
+___________________________________________________________________________ test_docx_header_row_skipped_only_when_detected ____________________________________________________________________________ 
 
-    # A row containing a valid requirement ID is data, not a header.
-    if any(_is_requirement_identifier(cell) for cell in cells):
-        return False
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-59/test_docx_header_row_skipped_o0')
 
-    match_count = sum(1 for value in normalized if value in DOCX_HEADER_TERMS)
-    joined = " ".join(normalized)
+    def test_docx_header_row_skipped_only_when_detected(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "hdr.docx"
+        doc = Document()
+        table = doc.add_table(rows=2, cols=3)
+        table.rows[0].cells[0].text = "Requirement ID"
+        table.rows[0].cells[1].text = "Requirement"
+        table.rows[0].cells[2].text = "Evidence"
+        table.rows[1].cells[0].text = "UR-001"
+        table.rows[1].cells[1].text = "Do thing"
+        table.rows[1].cells[2].text = "trace"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+        rows = model.runtime_metadata["documentation_rows"]
+>       assert len(rows) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([{'column_names': [], 'extraction_confidence': 'row_captured_unstructured', 'raw_row_text': 'Requirement ID | Requirem...extraction_confidence': 'row_captured_unstructured', 'raw_row_text': 'UR-001 | Do thing | trace', 'row_index': 1, ...}])                                                                                                                                       
 
-    return match_count >= 2 or any(
-        term in joined
-        for term in [
-            "identifier definition",
-            "requirement description",
-            "requirement id requirement",
-            "user requirement",
-            "acceptance criteria",
-            "expected behavior",
-        ]
-    )
+tests\test_documentation_parser.py:214: AssertionError
+___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
+
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-59/test_docx_headerless_and_singl0')
+
+    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "headless.docx"
+        doc = Document()
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text = "UR-007: Validate recovery"
+        table.rows[0].cells[1].text = "Expected behavior applies"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+>       rows = model.runtime_metadata["documentation_rows"]
+E       KeyError: 'documentation_rows'
+
+tests\test_documentation_parser.py:228: KeyError
+======================================================================================= short test summary info ========================================================================================
+FAILED tests/test_documentation_parser.py::test_docx_header_row_skipped_only_when_detected - AssertionError: assert 2 == 1
+FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
+2 failed, 14 passed in 4.05s   
