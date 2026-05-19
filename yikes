@@ -1,7 +1,7 @@
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
-...................................s...............................................................................................ssss............................................               [100%]
-174 passed, 5 skipped in 45.55s                                                                                                                                                                          
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
+...................................s.....................................................................................................ssss............................................         [100%]
+180 passed, 5 skipped in 50.26s                                                                                                                                                                          
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                            
 
 === DevPal Summary ===
 Method: Demo
@@ -10,19 +10,27 @@ Sequences: 1549
 Labware: 59
 Uploaded layouts: 0
 Requirements: 0
-Trace runs: 5
+Trace runs: 6
 Transfer pairs: 1
 Transfer mappings: 0
-Issues: 5113
+Issues: 5369
 
 Issue breakdown:
- info: 3126
+ info: 3130
  pass: 0
- minor: 1909
- major: 74
- critical: 4
+ minor: 2135
+ major: 99
+ critical: 5
 
 Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
 
 Parse/runtime warnings:
  - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "operation_counts|runtime_transfer_chains|expected_transfer_runtime_matches|sequence_runtime_evidence|transfer_runtime_findings"
+
+sample_inputs\devpal_reports\devpal_report.json:294363:    "operation_counts": {
+sample_inputs\devpal_reports\devpal_report.json:294714:    "runtime_transfer_chains": [
+sample_inputs\devpal_reports\devpal_report.json:297215:    "expected_transfer_runtime_matches": [],
+sample_inputs\devpal_reports\devpal_report.json:297216:    "sequence_runtime_evidence": [],
+sample_inputs\devpal_reports\devpal_report.json:297217:    "transfer_runtime_findings": [
+
