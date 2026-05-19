@@ -1,24 +1,123 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
-..............F.                                                                                                                                                                                  [100%]
-=============================================================================================== FAILURES =============================================================================================== 
-___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
+def parse_documentation_file(path: str, model: Optional[MethodModel] = None) -> MethodDocumentSet:
+    if not path:
+        raise DocumentationParserError("No documentation path provided.")
 
-tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-60/test_docx_headerless_and_singl0')
+    if not os.path.isfile(path):
+        raise DocumentationParserError("Documentation file not found: {0}".format(path))
 
-    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+    try:
+        text = _read_document_text(path)
+    except (ImportError, OSError, ValueError) as exc:
+        raise DocumentationParserError(
+            "Documentation file could not be parsed deterministically: {0}: {1}".format(path, exc)
+        )
+
+    requirements, rows, summary, limitations = _build_requirements_by_extension(path, text)
+
+    if os.path.splitext(path)[1].lower() == ".docx":
+        extracted = _extract_docx_rows(path)
+        extracted_rows = extracted.get("documentation_rows", [])
+
+        existing = {
+            clean_raw_token(str(row.get("raw_row_text") or ""))
+            for row in rows
+        }
+
+        for extracted_row in extracted_rows:
+            raw = clean_raw_token(str(extracted_row.get("raw_row_text") or ""))
+            if raw and raw not in existing:
+                rows.append(extracted_row)
+                existing.add(raw)
+
+        summary["documentation_rows_count"] = len(rows)
+        summary["docx_tables_parsed"] = max(
+            int(summary.get("docx_tables_parsed", 0) or 0),
+            int(extracted.get("docx_tables_parsed", 0) or 0),
+        )
+
+    per_file_summary = {path: summary} if summary else {}
+
+    document_set = MethodDocumentSet(
+        documents=[path],
+        requirements=requirements,
+        structured_requirements=list(requirements),
+        documentation_rows=rows,
+        extraction_summary=summary,
+        extraction_limitations=limitations,
+        parse_warnings=[],
+        documentation_extraction_summary=per_file_summary,
+    )
+
+    if model is not None:
+        model.documents.documents.append(path)
+        model.documents.requirements.extend(requirements)
+        model.documents.structured_requirements.extend(requirements)
+        model.documents.documentation_rows.extend(rows)
+        model.documents.extraction_limitations.extend(limitations)
+        model.documents.extraction_summary = _merge_summary(model.documents.extraction_summary, summary)
+        model.documents.documentation_extraction_summary.update(per_file_summary)
+
+        if per_file_summary:
+            model.runtime_metadata.setdefault("documentation_extraction_summary", {}).update(per_file_summary)
+
+        model.runtime_metadata.setdefault("documentation_rows", [])
+        if rows:
+            model.runtime_metadata["documentation_rows"].extend(rows)
+
+        if not requirements:
+            model.validation_issues.append(
+                ValidationIssue(
+                    severity="minor",
+                    category="documentation",
+                    message="No structured requirements parsed from documentation file.",
+                    related_objects=[path],
+                )
+            )
+
+    return document_set
+
+
+
+def _extract_docx_rows(path: str) -> Dict[str, Any]:
+    try:
         from docx import Document
-        docx_path = tmp_path / "headless.docx"
-        doc = Document()
-        table = doc.add_table(rows=1, cols=2)
-        table.rows[0].cells[0].text = "UR-007: Validate recovery"
-        table.rows[0].cells[1].text = "Expected behavior applies"
-        doc.save(str(docx_path))
-        model = MethodModel()
-        parse_documentation_file(str(docx_path), model=model)
->       rows = model.runtime_metadata["documentation_rows"]
-E       KeyError: 'documentation_rows'
+    except ImportError as exc:
+        raise DocumentationParserError("python-docx is required for .docx requirement parsing") from exc
 
-tests\test_documentation_parser.py:228: KeyError
-======================================================================================= short test summary info ======================================================================================== 
-FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
-1 failed, 15 passed in 3.91s   
+    doc = Document(path)
+    paragraphs = [clean_raw_token(p.text) for p in doc.paragraphs if clean_raw_token(p.text)]
+    documentation_rows: List[Dict[str, Any]] = []
+
+    for table_index, table in enumerate(doc.tables):
+        table_rows = table.rows or []
+        if not table_rows:
+            continue
+
+        first_cells = [clean_raw_token(c.text) for c in table_rows[0].cells]
+        has_header = _is_docx_header_row(first_cells)
+        column_names = [clean_raw_token(c.text).lower() for c in table_rows[0].cells] if has_header else []
+        data_rows = table_rows[1:] if has_header else table_rows
+
+        for row_index, row in enumerate(data_rows):
+            cells = [clean_raw_token(c.text) for c in row.cells]
+            filtered = [c for c in cells if c]
+            if not filtered:
+                continue
+
+            documentation_rows.append(
+                {
+                    "source_file": path,
+                    "source_type": "docx_table",
+                    "table_index": table_index,
+                    "row_index": row_index,
+                    "column_names": column_names,
+                    "cells": cells,
+                    "raw_row_text": " | ".join(filtered),
+                }
+            )
+
+    return {
+        "paragraphs": paragraphs,
+        "documentation_rows": documentation_rows,
+        "docx_tables_parsed": len(doc.tables),
+    }
