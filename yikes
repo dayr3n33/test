@@ -1,4 +1,28 @@
-  run = r"C:\Program Files (x86)\HAMILTON\Bin\HxRun.exe"
-    method = r"C:\Program Files (x86)\Hamilton\Methods\Demo\Demo.med"
-    cmd = [run, method, "-r", "-t"]
-    proc = subprocess.Popen(cmd)
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
+...................................s...............................................................................................ssss............................................               [100%]
+174 passed, 5 skipped in 45.55s                                                                                                                                                                          
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1549
+Labware: 59
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 5
+Transfer pairs: 1
+Transfer mappings: 0
+Issues: 5113
+
+Issue breakdown:
+ info: 3126
+ pass: 0
+ minor: 1909
+ major: 74
+ critical: 4
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
