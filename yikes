@@ -1,62 +1,48 @@
-def parse_documentation_file(path: str, model: Optional[MethodModel] = None) -> MethodDocumentSet:
-    if not path:
-        raise DocumentationParserError("No documentation path provided.")
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest tests/test_documentation_parser.py
+..............F.                                                                                                                                                                                  [100%]
+=============================================================================================== FAILURES ===============================================================================================
+___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________
 
-    if not os.path.isfile(path):
-        raise DocumentationParserError("Documentation file not found: {0}".format(path))
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-57/test_docx_headerless_and_singl0')
 
-    try:
-        text = _read_document_text(path)
-    except (ImportError, OSError, ValueError) as exc:
-        raise DocumentationParserError(
-            "Documentation file could not be parsed deterministically: {0}: {1}".format(path, exc)
-        )
+    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "headless.docx"
+        doc = Document()
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text = "UR-007: Validate recovery"
+        table.rows[0].cells[1].text = "Expected behavior applies"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+>       rows = model.runtime_metadata["documentation_rows"]
+E       KeyError: 'documentation_rows'
 
-    requirements, rows, summary, limitations = _build_requirements_by_extension(path, text)
+tests\test_documentation_parser.py:228: KeyError
+======================================================================================= short test summary info ======================================================================================== 
+FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
+1 failed, 15 passed in 3.90s 
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
+.........................F..........................s...........................................................................................ssss.........................................     [100%]
+=============================================================================================== FAILURES =============================================================================================== 
+___________________________________________________________________________ test_docx_headerless_and_single_row_not_dropped ____________________________________________________________________________ 
 
-    # Safety fallback: preserve DOCX table row metadata even if the structured
-    # extraction path consumed all rows as requirements.
-    if os.path.splitext(path)[1].lower() == ".docx" and not rows:
-        extracted_rows = _extract_docx_rows(path).get("documentation_rows", [])
-        if extracted_rows:
-            rows = extracted_rows
-            summary["documentation_rows_count"] = len(rows)
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/1/pytest-of-LYNCHD27/pytest-58/test_docx_headerless_and_singl0')
 
-    per_file_summary = {path: summary} if summary else {}
+    def test_docx_headerless_and_single_row_not_dropped(tmp_path):
+        from docx import Document
+        docx_path = tmp_path / "headless.docx"
+        doc = Document()
+        table = doc.add_table(rows=1, cols=2)
+        table.rows[0].cells[0].text = "UR-007: Validate recovery"
+        table.rows[0].cells[1].text = "Expected behavior applies"
+        doc.save(str(docx_path))
+        model = MethodModel()
+        parse_documentation_file(str(docx_path), model=model)
+>       rows = model.runtime_metadata["documentation_rows"]
+E       KeyError: 'documentation_rows'
 
-    document_set = MethodDocumentSet(
-        documents=[path],
-        requirements=requirements,
-        structured_requirements=list(requirements),
-        documentation_rows=rows,
-        extraction_summary=summary,
-        extraction_limitations=limitations,
-        parse_warnings=[],
-        documentation_extraction_summary=per_file_summary,
-    )
-
-    if model is not None:
-        model.documents.documents.append(path)
-        model.documents.requirements.extend(requirements)
-        model.documents.structured_requirements.extend(requirements)
-        model.documents.documentation_rows.extend(rows)
-        model.documents.extraction_limitations.extend(limitations)
-        model.documents.extraction_summary = _merge_summary(model.documents.extraction_summary, summary)
-        model.documents.documentation_extraction_summary.update(per_file_summary)
-
-        if per_file_summary:
-            model.runtime_metadata.setdefault("documentation_extraction_summary", {}).update(per_file_summary)
-        if rows:
-            model.runtime_metadata.setdefault("documentation_rows", []).extend(rows)
-
-        if not requirements:
-            model.validation_issues.append(
-                ValidationIssue(
-                    severity="minor",
-                    category="documentation",
-                    message="No structured requirements parsed from documentation file.",
-                    related_objects=[path],
-                )
-            )
-
-    return document_set
+tests\test_documentation_parser.py:228: KeyError
+======================================================================================= short test summary info ======================================================================================== 
+FAILED tests/test_documentation_parser.py::test_docx_headerless_and_single_row_not_dropped - KeyError: 'documentation_rows'
+1 failed, 183 passed, 5 skipped in 49.96s       
