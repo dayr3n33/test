@@ -1,4 +1,7 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                            
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
+...................................s........................................................................................................ssss............................................      [100%]
+183 passed, 5 skipped in 59.78s                                                                                                                                                                          
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project>  python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                           
 
 === DevPal Summary ===
 Method: Demo
@@ -23,8 +26,18 @@ Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyha
 
 Parse/runtime warnings:
  - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "prompt_input_analysis|runtime_parameter_analysis|reconstructed_method_summary|reconstructed_execution_plan|reconstructed_transfer_blocks|prompt_bypass_plan|reconstructed_limitations"
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> 
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "prompt_input_analysis|runtime_parameter_analysis|reconstructed_method_summary|reconstructed_execution_plan|reconstructed_transfer_blocks|prompt_bypass_plan|reconstruction_limitations"
+
+sample_inputs\devpal_reports\devpal_report.json:325394:  "prompt_input_analysis": [
+sample_inputs\devpal_reports\devpal_report.json:325449:  "runtime_parameter_analysis": [],
+sample_inputs\devpal_reports\devpal_report.json:325450:  "reconstructed_method_summary": {
+sample_inputs\devpal_reports\devpal_report.json:325458:  "reconstructed_execution_plan": [
+sample_inputs\devpal_reports\devpal_report.json:325617:  "reconstructed_transfer_blocks": [
+sample_inputs\devpal_reports\devpal_report.json:325638:  "prompt_bypass_plan": [
+sample_inputs\devpal_reports\devpal_report.json:325664:  "reconstruction_limitations": [
+
+
+
 
 
 {
@@ -38,10 +51,10 @@ PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-
     "layouts": [],
     "documents": [],
     "traces": [
+      "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc",
       "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc",
       "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-      "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc",
-      "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc"
+      "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_c8092b6fef1d46f4862e8f0fc2f4b72e_Trace.trc"
     ]
   },
   "parsed_data_overview": {
@@ -119,27 +132,6 @@ PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-
       "analyzer": null
     },
     {
-      "finding_id": "fd_50c559502bda3973",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
-      "severity": "critical",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_0fd4b4eeb9873ff9"
-      ],
-      "recommendation": "Dispense must be preceded by valid aspirate in runtime trace.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc",
-        "trace_event_00002"
-      ],
-      "analyzer": null
-    },
-    {
       "finding_id": "fd_81d5aa6f5dcdf267",
       "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
       "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
@@ -156,6 +148,27 @@ PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-
       "recommendation": "Dispense must be preceded by valid aspirate in runtime trace.",
       "related_objects": [
         "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
+        "trace_event_00002"
+      ],
+      "analyzer": null
+    },
+    {
+      "finding_id": "fd_832155cd58303041",
+      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_c8092b6fef1d46f4862e8f0fc2f4b72e_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
+      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_c8092b6fef1d46f4862e8f0fc2f4b72e_Trace.trc: dispense event trace_event_00002 occurs before parsed aspirate.",
+      "severity": "critical",
+      "category": "trace-transfer-order",
+      "status": "risk",
+      "confidence": "deterministic",
+      "file_path": null,
+      "line_number": null,
+      "step_id": null,
+      "evidence_ids": [
+        "ev_e81579b3d28318aa"
+      ],
+      "recommendation": "Dispense must be preceded by valid aspirate in runtime trace.",
+      "related_objects": [
+        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_c8092b6fef1d46f4862e8f0fc2f4b72e_Trace.trc",
         "trace_event_00002"
       ],
       "analyzer": null
@@ -271,296 +284,147 @@ PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-
     {
       "finding_id": "fd_e83626c77233b72b",
 {
-      "finding_id": "fd_7700c60eb1935736",
-      "title": "Stress scenarios exist, but no stress test results are recorded.",
-      "message": "Stress scenarios exist, but no stress test results are recorded.",
-      "severity": "major",
-      "category": "stress-results",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [],
-      "recommendation": "Run scenarios through Hamilton simulation/run-control integration and parse generated .trc files.",
-      "related_objects": [],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_1a69222b8019b434",
-      "title": "Step Demo_64_00008_aspirate: Volume could not be resolved.",
-      "message": "Step Demo_64_00008_aspirate: Volume could not be resolved.",
-      "severity": "major",
-      "category": "tip-volume-range",
+      "finding_id": "fd_0f0d729f96ab5fed",
+      "title": "Sequence Seq.6.Item.64.PosId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.6.Item.64.PosId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_1ca5c7757c61bc5d"
+        "ev_9b0b86a531ed0f86"
       ],
-      "recommendation": "Verify tip type, hardware mode, and transfer volume. Apply fluid verification volume limits.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "Demo_64_00008_aspirate"
+        "Seq.6.Item.64.PosId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_360979940abc863f",
-      "title": "Step Demo_70_00009_dispense: Volume could not be resolved.",
-      "message": "Step Demo_70_00009_dispense: Volume could not be resolved.",
-      "severity": "major",
-      "category": "tip-volume-range",
+      "finding_id": "fd_0f41e98a088a02b0",
+      "title": "Sequence Seq.3.Item.7.ObjId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.3.Item.7.ObjId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_354a3b6dd2bd1c79"
+        "ev_54e5363527fe327c"
       ],
-      "recommendation": "Verify tip type, hardware mode, and transfer volume. Apply fluid verification volume limits.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "Demo_70_00009_dispense"
+        "Seq.3.Item.7.ObjId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_063a4f5ae93c1aa2",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc: aspirate event trace_event_00059 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc: aspirate event trace_event_00059 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
+      "finding_id": "fd_0f49341315720db6",
+      "title": "Sequence Seq.2.Item.150.PosId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.2.Item.150.PosId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_0391a9955b85e579"
+        "ev_b701aa5647f4dac2"
       ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc",
-        "trace_event_00059"
+        "Seq.2.Item.150.PosId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_0a67b697da517f2c",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00042 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00042 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
+      "finding_id": "fd_0f60193d0242be2e",
+      "title": "Sequence Labware.11.DefSeqValid does not clearly link to parsed labware.",
+      "message": "Sequence Labware.11.DefSeqValid does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_71e25bc22b6f016f"
+        "ev_c96d1c0fe358520e"
       ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-        "trace_event_00042"
+        "Labware.11.DefSeqValid"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_0cd97e6c7d675d7f",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc: aspirate event trace_event_00026 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc: aspirate event trace_event_00026 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
+      "finding_id": "fd_0f6831b06999949f",
+      "title": "Sequence Seq.2.Item.135.ObjId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.2.Item.135.ObjId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_8183d17dcb9c23d1"
+        "ev_f106170aa4aebaf7"
       ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_67b482f53bcf4c7f848b22af522180c4_Trace.trc",
-        "trace_event_00026"
+        "Seq.2.Item.135.ObjId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_0d1c97298da47bfa",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00009 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00009 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
+      "finding_id": "fd_0f88357947461345",
+      "title": "Sequence Seq.8.Item.7.ObjId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.8.Item.7.ObjId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_dddd4f7d3620b3e8"
+        "ev_d51dca57351d6872"
       ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-        "trace_event_00009"
+        "Seq.8.Item.7.ObjId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_0e2036e8ea10f5a0",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00081 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00081 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
+      "finding_id": "fd_0f8d62a30585c715",
+      "title": "Sequence Seq.2.Item.191.PosId does not clearly link to parsed labware.",
+      "message": "Sequence Seq.2.Item.191.PosId does not clearly link to parsed labware.",
+      "severity": "minor",
+      "category": "sequence-labware",
       "status": "risk",
       "confidence": "deterministic",
       "file_path": null,
       "line_number": null,
       "step_id": null,
       "evidence_ids": [
-        "ev_772c0bc48cd05458"
+        "ev_d0fd2b3e3dabfbca"
       ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
+      "recommendation": "Confirm .lay/.res parsing captured the labware object for this sequence.",
       "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc",
-        "trace_event_00081"
+        "Seq.2.Item.191.PosId"
       ],
       "analyzer": null
     },
     {
-      "finding_id": "fd_11052ecfbce86fab",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00041 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00041 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_5c836875262d7ff3"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-        "trace_event_00041"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_1214554e7b0b2737",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc: aspirate event trace_event_00082 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc: aspirate event trace_event_00082 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_77dd64cebcd233f7"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_cb9415439801469b9b7594a86ab110c7_Trace.trc",
-        "trace_event_00082"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_13bec4088c735857",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00081 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00081 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_b64a12436a5ebc81"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-        "trace_event_00081"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_15e74cbd740ab4b4",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00058 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00058 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_b01aa0205e320d90"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc",
-        "trace_event_00058"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_1628702fb4333f02",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00034 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc: aspirate event trace_event_00034 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_36937b5988382dbb"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_63b2f1a9f40841f7984c042a04dc3151_Trace.trc",
-        "trace_event_00034"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_16a2c80e59800ede",
-      "title": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00051 occurs before previous aspirate was dispensed.",
-      "message": "Trace C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc: aspirate event trace_event_00051 occurs before previous aspirate was dispensed.",
-      "severity": "major",
-      "category": "trace-transfer-order",
-      "status": "risk",
-      "confidence": "deterministic",
-      "file_path": null,
-      "line_number": null,
-      "step_id": null,
-      "evidence_ids": [
-        "ev_8d421c29db86e04f"
-      ],
-      "recommendation": "Confirm multi-aspirate behavior is intentional and validated.",
-      "related_objects": [
-        "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_a4266bbe063543dc8a6e4d3f25a2397e_Trace.trc",
-        "trace_event_00051"
-      ],
-      "analyzer": null
-    },
-    {
-      "finding_id": "fd_1ca157ff0624c071",
-},
-  "remaining_sequence_mapping_blockers": [
+"remaining_sequence_mapping_blockers": [
     "trace_missing_sequence_fields",
     "hsl_step_missing_sequence_reference",
     "stp_sequence_reference_unresolved"
@@ -571,4 +435,3 @@ PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-
   "method_execution_occurred": false,
   "no_live_execution_statement": "Phase 2 pass 2 performs evidence collection and attestation only; no live execution is performed."
 }
-
