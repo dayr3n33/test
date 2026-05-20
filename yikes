@@ -1,41 +1,26 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest
-...................................s............................................................................................................ssss............................................  [100%]
-187 passed, 5 skipped in 32.69s                                                                                                                                                                          
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                            
+\PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "dispense_before_aspirate" -Context 10.20
 
-=== DevPal Summary ===
-Method: Demo
-Steps: 13
-Sequences: 1549
-Labware: 59
-Uploaded layouts: 0
-Requirements: 0
-Trace runs: 6
-Transfer pairs: 1
-Transfer mappings: 0
-Issues: 5714
+  sample_inputs\devpal_reports\devpal_report.json:321415:          "dispense",
+  sample_inputs\devpal_reports\devpal_report.json:321416:          "tip_eject"
+  sample_inputs\devpal_reports\devpal_report.json:321417:        ]
+  sample_inputs\devpal_reports\devpal_report.json:321418:      }
+  sample_inputs\devpal_reports\devpal_report.json:321419:    ],
+  sample_inputs\devpal_reports\devpal_report.json:321420:    "expected_transfer_runtime_matches": [],
+  sample_inputs\devpal_reports\devpal_report.json:321421:    "sequence_runtime_evidence": [],
+  sample_inputs\devpal_reports\devpal_report.json:321422:    "transfer_runtime_findings": [
+  sample_inputs\devpal_reports\devpal_report.json:321423:      {
+  sample_inputs\devpal_reports\devpal_report.json:321424:        "severity": "critical",
+> sample_inputs\devpal_reports\devpal_report.json:321425:        "code": "dispense_before_aspirate",
+  sample_inputs\devpal_reports\devpal_report.json:321426:        "message": "Selected runtime trace shows direct dispense evidence before direct aspirate evidence.",
+  sample_inputs\devpal_reports\devpal_report.json:321427:        "dispense_event_index": 1,
+  sample_inputs\devpal_reports\devpal_report.json:321428:        "aspirate_event_index": 7
+  sample_inputs\devpal_reports\devpal_report.json:321429:      }
+  sample_inputs\devpal_reports\devpal_report.json:321430:    ],
+  sample_inputs\devpal_reports\devpal_report.json:321431:    "limitations": []
+  sample_inputs\devpal_reports\devpal_report.json:321432:  },
+  sample_inputs\devpal_reports\devpal_report.json:321433:  "runtime_limitations": [],
+  sample_inputs\devpal_reports\devpal_report.json:321434:  "simulation_trace_path": "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc",
+  sample_inputs\devpal_reports\devpal_report.json:321435:  "simulation_trace_sequence_mapping_readiness": "ready_with_limitations",
 
-Issue breakdown:
- info: 3130
- pass: 0
- minor: 2462
- major: 117
- critical: 5
 
-Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
-
-Parse/runtime warnings:
- - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "execution_mode|simulation_launch_attempted|venus_simultation_launched|selected_runtime_trace_path|runtime_evidence_status|hardware_execution_occurred|dispense_before_aspirate|missing_aspirate"
-
-sample_inputs\devpal_reports\devpal_report.json:218240:    "hardware_execution_occurred": false,
-sample_inputs\devpal_reports\devpal_report.json:319522:    "hardware_execution_occurred": false,
-sample_inputs\devpal_reports\devpal_report.json:319559:    "hardware_execution_occurred": false,
-sample_inputs\devpal_reports\devpal_report.json:320021:    "hardware_execution_occurred": false,
-sample_inputs\devpal_reports\devpal_report.json:320500:    "selected_runtime_trace_path": "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc",
-sample_inputs\devpal_reports\devpal_report.json:321425:        "code": "dispense_before_aspirate",
-sample_inputs\devpal_reports\devpal_report.json:1168277:  "execution_mode": "venus_simulation",
-sample_inputs\devpal_reports\devpal_report.json:1168278:  "simulation_launch_attempted": true,
-sample_inputs\devpal_reports\devpal_report.json:1168280:  "selected_runtime_trace_path": "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc",
-sample_inputs\devpal_reports\devpal_report.json:1168281:  "runtime_evidence_status": "found",
-sample_inputs\devpal_reports\devpal_report.json:1168285:  "hardware_execution_occurred": false,
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> 
