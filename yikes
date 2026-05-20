@@ -1,26 +1,15 @@
-\PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "dispense_before_aspirate" -Context 10.20
+python - <<'PY'
+import json
+from pathlib import Path
 
-  sample_inputs\devpal_reports\devpal_report.json:321415:          "dispense",
-  sample_inputs\devpal_reports\devpal_report.json:321416:          "tip_eject"
-  sample_inputs\devpal_reports\devpal_report.json:321417:        ]
-  sample_inputs\devpal_reports\devpal_report.json:321418:      }
-  sample_inputs\devpal_reports\devpal_report.json:321419:    ],
-  sample_inputs\devpal_reports\devpal_report.json:321420:    "expected_transfer_runtime_matches": [],
-  sample_inputs\devpal_reports\devpal_report.json:321421:    "sequence_runtime_evidence": [],
-  sample_inputs\devpal_reports\devpal_report.json:321422:    "transfer_runtime_findings": [
-  sample_inputs\devpal_reports\devpal_report.json:321423:      {
-  sample_inputs\devpal_reports\devpal_report.json:321424:        "severity": "critical",
-> sample_inputs\devpal_reports\devpal_report.json:321425:        "code": "dispense_before_aspirate",
-  sample_inputs\devpal_reports\devpal_report.json:321426:        "message": "Selected runtime trace shows direct dispense evidence before direct aspirate evidence.",
-  sample_inputs\devpal_reports\devpal_report.json:321427:        "dispense_event_index": 1,
-  sample_inputs\devpal_reports\devpal_report.json:321428:        "aspirate_event_index": 7
-  sample_inputs\devpal_reports\devpal_report.json:321429:      }
-  sample_inputs\devpal_reports\devpal_report.json:321430:    ],
-  sample_inputs\devpal_reports\devpal_report.json:321431:    "limitations": []
-  sample_inputs\devpal_reports\devpal_report.json:321432:  },
-  sample_inputs\devpal_reports\devpal_report.json:321433:  "runtime_limitations": [],
-  sample_inputs\devpal_reports\devpal_report.json:321434:  "simulation_trace_path": "C:\\Program Files (x86)\\HAMILTON\\LogFiles\\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc",
-  sample_inputs\devpal_reports\devpal_report.json:321435:  "simulation_trace_sequence_mapping_readiness": "ready_with_limitations",
+p = Path("sample_inputs/devpal_reports/devpal_report.json")
+d = json.loads(p.read_text())
 
+rtc = d.get("runtime_trace_correlation", {})
+print("selected trace:", d.get("selected_runtime_trace_path") or d.get("simulation_trace_path"))
 
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> 
+for key in ["observed_operation_order", "runtime_transfer_chains", "transfer_runtime_findings"]:
+    print("\n==", key, "==")
+    v = rtc.get(key)
+    print(v[:20] if isinstance(v, list) else v)
+PY
