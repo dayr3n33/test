@@ -1,6 +1,6 @@
-...................................s.........................................................................................................................................ssss.............. [ 86%]
-..............................                                                                                                                                                                  [100%]
-216 passed, 5 skipped in 30.41s                                                                                                                                                                        
+...................................s............................................................................................................................................ssss........... [ 85%]
+.................................                                                                                                                                                               [100%]
+219 passed, 5 skipped in 55.10s                                                                                                                                                                        
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                        
 
 === DevPal Summary ===
