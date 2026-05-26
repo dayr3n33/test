@@ -1,15 +1,16 @@
-python - <<'PY'
+python -c "
 import json
 from pathlib import Path
 
-p = Path("sample_inputs/devpal_reports/devpal_report.json")
+p = Path(r'sample_inputs/devpal_reports/devpal_report.json')
 d = json.loads(p.read_text())
 
-rtc = d.get("runtime_trace_correlation", {})
-print("selected trace:", d.get("selected_runtime_trace_path") or d.get("simulation_trace_path"))
+rtc = d.get('runtime_trace_correlation', {})
 
-for key in ["observed_operation_order", "runtime_transfer_chains", "transfer_runtime_findings"]:
-    print("\n==", key, "==")
+print('selected trace:', d.get('selected_runtime_trace_path') or d.get('simulation_trace_path'))
+
+for key in ['observed_operation_order', 'runtime_transfer_chains', 'transfer_runtime_findings']:
+    print('\n==', key, '==')
     v = rtc.get(key)
     print(v[:20] if isinstance(v, list) else v)
-PY
+"
