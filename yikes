@@ -1,16 +1,16 @@
-python -c "
-import json
-from pathlib import Path
+selected trace: C:\Program Files (x86)\HAMILTON\LogFiles\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc
 
-p = Path(r'sample_inputs/devpal_reports/devpal_report.json')
-d = json.loads(p.read_text())
+== observed_operation_order ==
+['unknown', 'dispense', 'dispense', 'initialize', 'initialize', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject']
 
-rtc = d.get('runtime_trace_correlation', {})
+== runtime_transfer_chains ==
+[{'start_index': 1, 'operations': ['dispense', 'dispense']}, {'start_index': 2, 'operations': ['dispense']}, {'start_index': 5, 'operations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_index':
+ 6, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 7, 'operations': ['aspirate', 'aspirate', 'dispense', 'dispense']}, {'start_index': 8, 'operations': ['aspirate
+', 'dispense', 'dispense', 'tip_eject']}, {'start_index': 9, 'operations': ['dispense', 'dispense', 'tip_eject']}, {'start_index': 10, 'operations': ['dispense', 'tip_eject']}, {'start_index': 13, 'o
+perations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_index': 14, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 15, 'operations': ['aspirate', 'aspirate'
+, 'dispense', 'dispense']}, {'start_index': 16, 'operations': ['aspirate', 'dispense', 'dispense', 'tip_eject']}, {'start_index': 17, 'operations': ['dispense', 'dispense', 'tip_eject']}, {'start_ind
+ex': 18, 'operations': ['dispense', 'tip_eject']}, {'start_index': 21, 'operations': ['aspirate', 'aspirate']}, {'start_index': 22, 'operations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_ind
+ex': 23, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'aspirate']}, {'start_index': 24, 'operations': ['aspirate', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 25, 'operations': ['aspirate', 'aspirate', 'dispense', 'dispense']}, {'start_index': 26, 'operations': ['aspirate', 'dispense', 'dispense', 'dispense']}]
 
-print('selected trace:', d.get('selected_runtime_trace_path') or d.get('simulation_trace_path'))
-
-for key in ['observed_operation_order', 'runtime_transfer_chains', 'transfer_runtime_findings']:
-    print('\n==', key, '==')
-    v = rtc.get(key)
-    print(v[:20] if isinstance(v, list) else v)
-"
+== transfer_runtime_findings ==
+[{'severity': 'critical', 'code': 'dispense_before_aspirate', 'message': 'Selected runtime trace shows direct dispense evidence before direct aspirate evidence.', 'dispense_event_index': 1, 'aspirate_event_index': 7}]
