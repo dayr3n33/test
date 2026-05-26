@@ -1,6 +1,6 @@
-...................................s............................................................................................................................................ssss........... [ 85%]
-.................................                                                                                                                                                               [100%]
-219 passed, 5 skipped in 55.10s                                                                                                                                                                        
+...................................s..................................................................................................................................................ssss..... [ 83%]
+.......................................                                                                                                                                                         [100%]
+225 passed, 5 skipped in 49.79s                                                                                                                                                                        
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                        
 
 === DevPal Summary ===
@@ -26,3 +26,15 @@ Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyha
 
 Parse/runtime warnings:
  - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "expected_transfer_model|expected_transfer_runtime_matches|transfer_mappping_summary|reconstructed_transfer_runtime_links|missing_runtime_chain|sequence_unverifiable"
+
+sample_inputs\devpal_reports\devpal_report.json:322251:    "expected_transfer_model": [],
+sample_inputs\devpal_reports\devpal_report.json:322252:    "expected_transfer_runtime_matches": [],
+sample_inputs\devpal_reports\devpal_report.json:322258:      "sequence_unverifiable_count": 0,
+sample_inputs\devpal_reports\devpal_report.json:322259:      "missing_runtime_chain_count": 0
+sample_inputs\devpal_reports\devpal_report.json:322261:    "reconstructed_transfer_runtime_links": [],
+sample_inputs\devpal_reports\devpal_report.json:322492:  "expected_transfer_model": [],
+sample_inputs\devpal_reports\devpal_report.json:322493:  "expected_transfer_runtime_matches": [],
+sample_inputs\devpal_reports\devpal_report.json:322499:    "sequence_unverifiable_count": 0,
+sample_inputs\devpal_reports\devpal_report.json:322500:    "missing_runtime_chain_count": 0
+sample_inputs\devpal_reports\devpal_report.json:322502:  "reconstructed_transfer_runtime_links": [],
