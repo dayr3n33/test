@@ -1,40 +1,8 @@
-...................................s......................................................................................................................................................ssss. [ 81%]
-...........................................                                                                                                                                                     [100%]
-229 passed, 5 skipped in 37.79s                                                                                                                                                                        
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                 
-
-=== DevPal Summary ===
-Method: Demo
-Steps: 13
-Sequences: 1549
-Labware: 59
-Uploaded layouts: 0
-Requirements: 0
-Trace runs: 6
-Transfer pairs: 1
-Transfer mappings: 0
-Issues: 5714
-
-Issue breakdown:
- info: 3130
- pass: 0
- minor: 2462
- major: 117
- critical: 5
-
-Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
-
-Parse/runtime warnings:
- - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "expected_transfer_model|expected_transfer_runtime_matches|transfer_mappping_summary|reconstructed_transfer_runtime_links|sequence_unverifiable|missing_runtime_chain"
-
-sample_inputs\devpal_reports\devpal_report.json:322251:    "expected_transfer_model": [],
-sample_inputs\devpal_reports\devpal_report.json:322252:    "expected_transfer_runtime_matches": [],
-sample_inputs\devpal_reports\devpal_report.json:322259:      "sequence_unverifiable_count": 0,
-sample_inputs\devpal_reports\devpal_report.json:322260:      "missing_runtime_chain_count": 0
-sample_inputs\devpal_reports\devpal_report.json:322262:    "reconstructed_transfer_runtime_links": [],
-sample_inputs\devpal_reports\devpal_report.json:322493:  "expected_transfer_model": [],
-sample_inputs\devpal_reports\devpal_report.json:322494:  "expected_transfer_runtime_matches": [],
-sample_inputs\devpal_reports\devpal_report.json:322501:    "sequence_unverifiable_count": 0,
-sample_inputs\devpal_reports\devpal_report.json:322502:    "missing_runtime_chain_count": 0
-sample_inputs\devpal_reports\devpal_report.json:322504:  "reconstructed_transfer_runtime_links": [],
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project>  git branch --show-current 
+main
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git log --oneline -5
+498536a (HEAD -> main, origin/main, origin/HEAD) Merge pull request #71 from dayr3n33/codex/fix-expected-transfer-model-wiring
+84ad322 Fix Pass 14 expected transfer model wiring
+109e17c (origin/codex/pass14b-expected-trasnfer-model-hotfix, codex/pass14b-expected-trasnfer-model-hotfix) Merge pull request #70 from dayr3n33/codex/implement-phase-2-pass-14-features
+87ef95e Fix PR #70 P1 status and role-mismatch branch ordering
+070d85b Pass 14: wire expected transfer model into runtime trace correlation
