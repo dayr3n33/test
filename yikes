@@ -1,1 +1,324 @@
-python -c "import json; d=json.load(open(r'sample_inputs/devpal_reports/devpal_report.json')); print(json.dumps(d.get('sequence_alias_index_summary'), indent=2)[:3000]); print(json.dumps(d.get('unresolved_sequence_reference_diagnostics'), indent=2)[:6000]); print(json.dumps(d.get('transfer_sequence_resolution'), indent=2)[:6000])"
+...................................s.......................................................................................... [ 49%]
+.............................................................................ssss............................................. [ 99%]
+.                                                                                                                              [100%] 
+248 passed, 5 skipped in 43.66s                                                                                                       
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1549
+Labware: 59
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 0
+Issues: 5715
+
+Issue breakdown:
+ info: 3131
+ pass: 0
+ minor: 2462
+ major: 117
+ critical: 5
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; d=json.load(open(r'sample_inputs/devpal_reports/devpal_report.json')); print(json.dumps(d.get('sequence_alias_index_summary'), indent=2)[:3000]); print(json.dumps(d.get('unresolved_sequence_reference_diagnostics'), indent=2)[:6000]); print(json.dumps(d.get('transfer_sequence_resolution'), indent=2)[:6000])"
+{
+  "indexed_alias_count": 1603,
+  "sequence_count": 1549,
+  "alias_fields_indexed": [
+    "labware_sequence_id",
+    "pos_id",
+    "sequence_alias",
+    "sequence_name"
+  ],
+  "examples_by_alias_field": {
+    "labware_sequence_id": [
+      "labware.10.template",
+      "labware.11.template",
+      "labware.21.template"
+    ],
+    "pos_id": [
+      "p1",
+      "a1",
+      "b2",
+      "c2",
+      "d2"
+    ],
+    "sequence_alias": [
+      "hasdefault"
+    ],
+    "sequence_name": [
+      "waste",
+      "labware.1.defseqvalid",
+      "wasteblock.tml",
+      "wasteblock",
+      "labware.10.defseqvalid"
+    ]
+  },
+  "duplicate_alias_count": 0,
+  "ambiguous_alias_count": 0,
+  "unresolved_reference_count": 2
+}
+[
+  {
+    "reference": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+    "normalized_reference_variants": [
+      "_541143f5_7fa2_11d3_ad85_0004acb1dcb2",
+      "541143f57fa211d3ad850004acb1dcb2"
+    ],
+    "alias_index_hit": false,
+    "alias_index_match": null,
+    "alias_index_match_field": null,
+    "alias_index_confidence": "unresolved",
+    "raw_occurrences": [
+      {
+        "source_type": "model_step",
+        "object_type": "MethodStep",
+        "object_id": "Demo_64_00008_aspirate",
+        "field_name": "raw_text",
+        "snippet": "arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(\"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\"); // Aspirate",
+        "line_number": 64,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      },
+      {
+        "source_type": "model_step",
+        "object_type": "StepParameter",
+        "object_id": "Demo_64_00008_aspirate",
+        "field_name": "parameters.arrretvalues.raw_value",
+        "snippet": "ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+        "line_number": 64,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      },
+      {
+        "source_type": "hsl",
+        "object_type": "raw_file_line",
+        "object_id": "Demo.hsl",
+        "field_name": "line",
+        "snippet": "arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(\"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\"); // Aspirate",
+        "line_number": 64,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      }
+    ],
+    "near_alias_matches": [],
+    "parser_presence": {
+      "in_method_steps": true,
+      "in_sequences": false,
+      "in_labware": false,
+      "in_transfer_pairs": true,
+      "in_runtime_metadata": true
+    },
+    "resolution_failure_reason": "reference_found_in_stp_only_not_lay"
+  },
+  {
+    "reference": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+    "normalized_reference_variants": [
+      "_541143f8_7fa2_11d3_ad85_0004acb1dcb2",
+      "541143f87fa211d3ad850004acb1dcb2"
+    ],
+    "alias_index_hit": false,
+    "alias_index_match": null,
+    "alias_index_match_field": null,
+    "alias_index_confidence": "unresolved",
+    "raw_occurrences": [
+      {
+        "source_type": "model_step",
+        "object_type": "MethodStep",
+        "object_id": "Demo_70_00009_dispense",
+        "field_name": "raw_text",
+        "snippet": "arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(\"19216da4_e51b_42ca_adfdafcd6fe9d223\"); // Dispense",
+        "line_number": 70,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      },
+      {
+        "source_type": "model_step",
+        "object_type": "StepParameter",
+        "object_id": "Demo_70_00009_dispense",
+        "field_name": "parameters.arrretvalues.raw_value",
+        "snippet": "ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(19216da4_e51b_42ca_adfdafcd6fe9d223",
+        "line_number": 70,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      },
+      {
+        "source_type": "hsl",
+        "object_type": "raw_file_line",
+        "object_id": "Demo.hsl",
+        "field_name": "line",
+        "snippet": "arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(\"19216da4_e51b_42ca_adfdafcd6fe9d223\"); // Dispense",
+        "line_number": 70,
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+      }
+    ],
+    "near_alias_matches": [],
+    "parser_presence": {
+      "in_method_steps": true,
+      "in_sequences": false,
+      "in_labware": false,
+      "in_transfer_pairs": true,
+      "in_runtime_metadata": true
+    },
+    "resolution_failure_reason": "reference_found_in_stp_only_not_lay"
+  }
+]
+[
+  {
+    "pair_id": "pair_00001",
+    "source_sequence": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+    "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+    "mapping_created": false,
+    "mapping_id": null,
+    "mapping_confidence": "unverifiable",
+    "mapping_provenance": {
+      "reason": "target_sequence_alias_missing",
+      "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+      "searched_alias_fields": [
+        "sequence_name",
+        "sequence_alias",
+        "sequence_id",
+        "object_id",
+        "pos_id",
+        "defseq",
+        "labware_sequence_id"
+      ],
+      "target_reference": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+      "mapping_marker": null
+    },
+    "source_resolved": false,
+    "target_resolved": false,
+    "source_resolution_method": "unresolved",
+    "target_resolution_method": "unresolved",
+    "source_matched_alias": null,
+    "target_matched_alias": null,
+    "source_match_field": null,
+    "target_match_field": null,
+    "sequence_reference_resolution": {
+      "source": {
+        "searched_alias_fields": [
+          "sequence_name",
+          "sequence_alias",
+          "sequence_id",
+          "object_id",
+          "pos_id",
+          "defseq",
+          "labware_sequence_id"
+        ]
+      },
+      "target": {
+        "searched_alias_fields": [
+          "sequence_name",
+          "sequence_alias",
+          "sequence_id",
+          "object_id",
+          "pos_id",
+          "defseq",
+          "labware_sequence_id"
+        ]
+      }
+    },
+    "source_reference_diagnostic": {
+      "reference": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+      "normalized_reference_variants": [
+        "_541143f5_7fa2_11d3_ad85_0004acb1dcb2",
+        "541143f57fa211d3ad850004acb1dcb2"
+      ],
+      "alias_index_hit": false,
+      "alias_index_match": null,
+      "alias_index_match_field": null,
+      "alias_index_confidence": "unresolved",
+      "raw_occurrences": [
+        {
+          "source_type": "model_step",
+          "object_type": "MethodStep",
+          "object_id": "Demo_64_00008_aspirate",
+          "field_name": "raw_text",
+          "snippet": "arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(\"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\"); // Aspirate",
+          "line_number": 64,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        },
+        {
+          "source_type": "model_step",
+          "object_type": "StepParameter",
+          "object_id": "Demo_64_00008_aspirate",
+          "field_name": "parameters.arrretvalues.raw_value",
+          "snippet": "ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+          "line_number": 64,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        },
+        {
+          "source_type": "hsl",
+          "object_type": "raw_file_line",
+          "object_id": "Demo.hsl",
+          "field_name": "line",
+          "snippet": "arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(\"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\"); // Aspirate",
+          "line_number": 64,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        }
+      ],
+      "near_alias_matches": [],
+      "parser_presence": {
+        "in_method_steps": true,
+        "in_sequences": false,
+        "in_labware": false,
+        "in_transfer_pairs": true,
+        "in_runtime_metadata": true
+      },
+      "resolution_failure_reason": "reference_found_in_stp_only_not_lay"
+    },
+    "target_reference_diagnostic": {
+      "reference": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+      "normalized_reference_variants": [
+        "_541143f8_7fa2_11d3_ad85_0004acb1dcb2",
+        "541143f87fa211d3ad850004acb1dcb2"
+      ],
+      "alias_index_hit": false,
+      "alias_index_match": null,
+      "alias_index_match_field": null,
+      "alias_index_confidence": "unresolved",
+      "raw_occurrences": [
+        {
+          "source_type": "model_step",
+          "object_type": "MethodStep",
+          "object_id": "Demo_70_00009_dispense",
+          "field_name": "raw_text",
+          "snippet": "arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(\"19216da4_e51b_42ca_adfdafcd6fe9d223\"); // Dispense",
+          "line_number": 70,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        },
+        {
+          "source_type": "model_step",
+          "object_type": "StepParameter",
+          "object_id": "Demo_70_00009_dispense",
+          "field_name": "parameters.arrretvalues.raw_value",
+          "snippet": "ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(19216da4_e51b_42ca_adfdafcd6fe9d223",
+          "line_number": 70,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        },
+        {
+          "source_type": "hsl",
+          "object_type": "raw_file_line",
+          "object_id": "Demo.hsl",
+          "field_name": "line",
+          "snippet": "arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(\"19216da4_e51b_42ca_adfdafcd6fe9d223\"); // Dispense",
+          "line_number": 70,
+          "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl"
+        }
+      ],
+      "near_alias_matches": [],
+      "parser_presence": {
+        "in_method_steps": true,
+        "in_sequences": false,
+        "in_labware": false,
+        "in_transfer_pairs": true,
+        "in_runtime_metadata": true
+      },
+      "resolution_failure_reason": "reference_found_in_stp_only_not_lay"
+    },
+    "unresolved_blockers": [
+      {
+        "pair_id": "pair_00001",
+        "reason":
