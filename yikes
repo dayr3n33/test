@@ -1,37 +1,29 @@
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest                             
-...................................s.............................................................................................................................ssss.......................... [ 91%]
-..................                                                                                                                                                                              [100%]
-204 passed, 5 skipped in 34.96s                                                                                                                                                                        
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                        
+python -c "
+import json
+from pathlib import Path
 
-=== DevPal Summary ===
-Method: Demo
-Steps: 13
-Sequences: 1549
-Labware: 59
-Uploaded layouts: 0
-Requirements: 0
-Trace runs: 6
-Transfer pairs: 1
-Transfer mappings: 0
-Issues: 5714
+d = json.loads(Path(r'sample_inputs/devpal_reports/devpal_report.json').read_text())
+rtc = d.get('runtime_trace_correlation', {})
 
-Issue breakdown:
- info: 3130
- pass: 0
- minor: 2462
- major: 117
- critical: 5
+print('selected:', d.get('selected_runtime_trace_path') or d.get('simulation_trace_path'))
 
-Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+print('\nFINDINGS:')
+for f in rtc.get('transfer_runtime_findings', []):
+    print(f)
 
-Parse/runtime warnings:
- - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
-PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "observed_operation_order_raw|observed_operation_order_deduplicated|suppressed_duplicate_operations|runtime_transfer_chains|transfer_runtime_findings|dispense_before_aspirate"
+print('\nRAW ORDER FIRST 30:')
+print(rtc.get('observed_operation_order_raw', [])[:30])
 
-sample_inputs\devpal_reports\devpal_report.json:320622:    "observed_operation_order_raw": [
-sample_inputs\devpal_reports\devpal_report.json:320713:    "observed_operation_order_deduplicated": [
-sample_inputs\devpal_reports\devpal_report.json:321781:    "suppressed_duplicate_operations": [],
-sample_inputs\devpal_reports\devpal_report.json:321782:    "runtime_transfer_chains": [
-sample_inputs\devpal_reports\devpal_report.json:322221:    "transfer_runtime_findings": [
-sample_inputs\devpal_reports\devpal_report.json:322224:        "code": "dispense_before_aspirate",
+print('\nDEDUP ORDER FIRST 30:')
+print(rtc.get('observed_operation_order_deduplicated', [])[:30])
+
+print('\nOPERATION EVIDENCE FIRST 20:')
+for e in rtc.get('observed_operation_evidence', [])[:20]:
+    print('\\n---')
+    print('index:', e.get('event_index'))
+    print('operation:', e.get('operation'))
+    print('real:', e.get('is_real_operation'))
+    print('confidence:', e.get('classification_confidence'))
+    print('reason:', e.get('classification_reason'))
+    print('raw:', e.get('raw_text_snippet'))
+"
