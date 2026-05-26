@@ -1,1 +1,114 @@
-python -c "import json; d=json.load(open(r'sample_inputs/devpal_reports/devpal_report.json')); print(json.dumps(d.get('sequence_resolution_summary'), indent=2)); print(json.dumps(d.get('transfer_sequence_resolution'), indent=2)[:4000]); print(json.dumps(d.get('sequence_alias_resolution_summary'), indent=2)); print(json.dumps(d.get('unresolved_sequence_mapping_blockers'), indent=2)[:4000])"
+...................................s.......................................................................................... [ 51%]
+......................................................................ssss..............................................       [100%]
+241 passed, 5 skipped in 38.27s                                                                                                       
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1549
+Labware: 59
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 0
+Issues: 5715
+
+Issue breakdown:
+ info: 3131
+ pass: 0
+ minor: 2462
+ major: 117
+ critical: 5
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; d=json.load(open(r'sample_inputs/devpal_reports/devpal_report.json')); print(json.dumps(d.get('sequence_resolution_summary'), indent=2)); print(json.dumps(d.get('transfer_sequence_resolution'), indent=2)[:4000]); print(json.dumps(d.get('sequence_alias_resolution_summary'), indent=2)); print(json.dumps(d.get('unresolved_sequence_mapping_blockers'), indent=2)[:4000])"
+{
+  "transfer_pair_count": 1,
+  "resolved_mapping_count": 0,
+  "created_mapping_count": 0,
+  "partially_resolved_mapping_count": 0,
+  "unresolved_mapping_count": 1,
+  "failed_mapping_count": 1
+}
+[
+  {
+    "pair_id": "pair_00001",
+    "source_sequence": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+    "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+    "mapping_created": false,
+    "mapping_id": null,
+    "mapping_confidence": "unverifiable",
+    "mapping_provenance": {
+      "reason": "target_sequence_alias_missing",
+      "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+      "searched_alias_fields": [
+        "sequence_name",
+        "sequence_alias",
+        "sequence_id",
+        "object_id",
+        "pos_id",
+        "defseq",
+        "labware_sequence_id"
+      ],
+      "target_reference": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+      "mapping_marker": null
+    },
+    "source_resolved": false,
+    "target_resolved": false,
+    "source_resolution_method": "unresolved",
+    "target_resolution_method": "unresolved",
+    "source_matched_alias": null,
+    "target_matched_alias": null,
+    "source_match_field": null,
+    "target_match_field": null,
+    "sequence_reference_resolution": {
+      "source": {
+        "searched_alias_fields": [
+          "sequence_name",
+          "sequence_alias",
+          "sequence_id",
+          "object_id",
+          "pos_id",
+          "defseq",
+          "labware_sequence_id"
+        ]
+      },
+      "target": {
+        "searched_alias_fields": [
+          "sequence_name",
+          "sequence_alias",
+          "sequence_id",
+          "object_id",
+          "pos_id",
+          "defseq",
+          "labware_sequence_id"
+        ]
+      }
+    },
+    "unresolved_blockers": [
+      {
+        "pair_id": "pair_00001",
+        "reason": "target_sequence_alias_missing",
+        "source_sequence": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+        "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2"
+      }
+    ]
+  }
+]
+{
+  "indexed_alias_count": 1603,
+  "sequence_count": 1549
+}
+[
+  {
+    "pair_id": "pair_00001",
+    "reason": "target_sequence_alias_missing",
+    "source_sequence": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+    "target_sequence": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2"
+  }
+]
