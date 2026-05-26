@@ -1,8 +1,3 @@
-...................................s.......................................................................................... [ 53%]
-.............................................................ssss............................................                  [100%]
-230 passed, 5 skipped in 39.41s                                                                                                       
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
-
 === DevPal Summary ===
 Method: Demo
 Steps: 13
@@ -13,10 +8,10 @@ Requirements: 0
 Trace runs: 6
 Transfer pairs: 1
 Transfer mappings: 0
-Issues: 5714
+Issues: 5715
 
 Issue breakdown:
- info: 3130
+ info: 3131
  pass: 0
  minor: 2462
  major: 117
@@ -26,11 +21,10 @@ Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyha
 
 Parse/runtime warnings:
  - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "expected_transfer_model|expected_transfer_runtime_matches|transfer_mappping_summary|reconstructed_transfer_runtime_links"
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "transfer_mappping_summary|sequence_resolution_summary|transfer_sequence_resolution|unresolved_sequence_mapping_blockers|expected_transfer_runtime_matches"
 
-sample_inputs\devpal_reports\devpal_report.json:322251:    "expected_transfer_model": [
-sample_inputs\devpal_reports\devpal_report.json:322280:    "expected_transfer_runtime_matches": [
-sample_inputs\devpal_reports\devpal_report.json:322321:    "reconstructed_transfer_runtime_links": [
-sample_inputs\devpal_reports\devpal_report.json:322639:  "expected_transfer_model": [
-sample_inputs\devpal_reports\devpal_report.json:322668:  "expected_transfer_runtime_matches": [
-sample_inputs\devpal_reports\devpal_report.json:322709:  "reconstructed_transfer_runtime_links": [
+sample_inputs\devpal_reports\devpal_report.json:322319:    "expected_transfer_runtime_matches": [
+sample_inputs\devpal_reports\devpal_report.json:322707:  "expected_transfer_runtime_matches": [
+sample_inputs\devpal_reports\devpal_report.json:322748:  "sequence_resolution_summary": {
+sample_inputs\devpal_reports\devpal_report.json:322754:  "transfer_sequence_resolution": [
+sample_inputs\devpal_reports\devpal_report.json:322765:  "unresolved_sequence_mapping_blockers": [],
