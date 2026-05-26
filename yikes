@@ -1,6 +1,6 @@
-...................................s.............................................................................................................................ssss.......................... [ 91%]
-..................                                                                                                                                                                              [100%]
-204 passed, 5 skipped in 31.93s                                                                                                                                                                        
+...................................s.................................................................................................................................ssss...................... [ 89%]
+......................                                                                                                                                                                          [100%]
+208 passed, 5 skipped in 30.10s                                                                                                                                                                        
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                        
 
 === DevPal Summary ===
@@ -28,102 +28,101 @@ Parse/runtime warnings:
  - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
 PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "dispense_before_aspirate|observed_operation_order_deduplicated|transfer_runtime_findings|Firmware version of nano dispenser"
 
-sample_inputs\devpal_reports\devpal_report.json:273013:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit:   
+sample_inputs\devpal_reports\devpal_report.json:272287:      "raw_text": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit:   
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:273014:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
+sample_inputs\devpal_reports\devpal_report.json:272288:      "raw_text_preview": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser 
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:273016:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser pressure 
+sample_inputs\devpal_reports\devpal_report.json:272290:      "normalized_text": "2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano dispenser pressure  
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:275059:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit:   
+sample_inputs\devpal_reports\devpal_report.json:272925:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:275060:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser 
+sample_inputs\devpal_reports\devpal_report.json:272926:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:275062:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser pressure  
+sample_inputs\devpal_reports\devpal_report.json:272928:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser pressure 
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:278733:      "raw_text": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
+sample_inputs\devpal_reports\devpal_report.json:275037:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:278734:      "raw_text_preview": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser 
+sample_inputs\devpal_reports\devpal_report.json:275038:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:278736:      "normalized_text": "2026-05-20 10:33:03.134 microlab star : start method command - progress; firmware version of nano dispenser pressure  
+sample_inputs\devpal_reports\devpal_report.json:275040:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser pressure  
 unit: not installed",
 sample_inputs\devpal_reports\devpal_report.json:280669:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed",
 sample_inputs\devpal_reports\devpal_report.json:280670:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
 installed",
-sample_inputs\devpal_reports\devpal_report.json:280672:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser: not 
+sample_inputs\devpal_reports\devpal_report.json:280672:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser: not      
 installed",
-sample_inputs\devpal_reports\devpal_report.json:282319:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
-sample_inputs\devpal_reports\devpal_report.json:282320:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
+sample_inputs\devpal_reports\devpal_report.json:282363:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
+sample_inputs\devpal_reports\devpal_report.json:282364:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
 installed",
-sample_inputs\devpal_reports\devpal_report.json:282322:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser: not      
+sample_inputs\devpal_reports\devpal_report.json:282366:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser: not 
 installed",
-sample_inputs\devpal_reports\devpal_report.json:285927:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed",
-sample_inputs\devpal_reports\devpal_report.json:285928:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
+sample_inputs\devpal_reports\devpal_report.json:285949:      "raw_text": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
+sample_inputs\devpal_reports\devpal_report.json:285950:      "raw_text_preview": "2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
 installed",
-sample_inputs\devpal_reports\devpal_report.json:285930:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser: not      
+sample_inputs\devpal_reports\devpal_report.json:285952:      "normalized_text": "2026-05-26 10:14:42.797 microlab star : start method command - progress; firmware version of nano dispenser: not      
 installed",
 sample_inputs\devpal_reports\devpal_report.json:287159:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed",
 sample_inputs\devpal_reports\devpal_report.json:287160:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
 installed",
-sample_inputs\devpal_reports\devpal_report.json:287162:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser: not      
+sample_inputs\devpal_reports\devpal_report.json:287162:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser: not 
 installed",
-sample_inputs\devpal_reports\devpal_report.json:288501:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
-sample_inputs\devpal_reports\devpal_report.json:288502:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
+sample_inputs\devpal_reports\devpal_report.json:288589:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
+sample_inputs\devpal_reports\devpal_report.json:288590:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
 installed",
-sample_inputs\devpal_reports\devpal_report.json:288504:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser: not      
+sample_inputs\devpal_reports\devpal_report.json:288592:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser: not      
 installed",
-sample_inputs\devpal_reports\devpal_report.json:291273:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
+sample_inputs\devpal_reports\devpal_report.json:289799:      "raw_text": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
+sample_inputs\devpal_reports\devpal_report.json:289800:      "raw_text_preview": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
+installed",
+sample_inputs\devpal_reports\devpal_report.json:289802:      "normalized_text": "2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano dispenser: not      
+installed",
+sample_inputs\devpal_reports\devpal_report.json:291383:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:291274:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
+sample_inputs\devpal_reports\devpal_report.json:291384:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser 
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:291276:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser pressure  
+sample_inputs\devpal_reports\devpal_report.json:291386:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser pressure  
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:291339:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
-sample_inputs\devpal_reports\devpal_report.json:291340:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
+sample_inputs\devpal_reports\devpal_report.json:291449:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed",
+sample_inputs\devpal_reports\devpal_report.json:291450:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
 installed",
-sample_inputs\devpal_reports\devpal_report.json:291342:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser: not      
+sample_inputs\devpal_reports\devpal_report.json:291452:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser: not      
 installed",
-sample_inputs\devpal_reports\devpal_report.json:297059:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
+sample_inputs\devpal_reports\devpal_report.json:296949:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:297060:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
+sample_inputs\devpal_reports\devpal_report.json:296950:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:297062:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser pressure  
+sample_inputs\devpal_reports\devpal_report.json:296952:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser pressure 
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:304913:      "raw_text": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
+sample_inputs\devpal_reports\devpal_report.json:303813:      "raw_text": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
+sample_inputs\devpal_reports\devpal_report.json:303814:      "raw_text_preview": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not 
+installed",
+sample_inputs\devpal_reports\devpal_report.json:303816:      "normalized_text": "2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano dispenser: not      
+installed",
+sample_inputs\devpal_reports\devpal_report.json:312195:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:304914:      "raw_text_preview": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
+sample_inputs\devpal_reports\devpal_report.json:312196:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:304916:      "normalized_text": "2026-05-20 10:33:03.134 microlab star : start method command - progress; firmware version of nano dispenser pressure 
+sample_inputs\devpal_reports\devpal_report.json:312198:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser pressure 
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:310501:      "raw_text": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed",
-sample_inputs\devpal_reports\devpal_report.json:310502:      "raw_text_preview": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
-installed",
-sample_inputs\devpal_reports\devpal_report.json:310504:      "normalized_text": "2026-05-20 10:33:03.134 microlab star : start method command - progress; firmware version of nano dispenser: not      
-installed",
-sample_inputs\devpal_reports\devpal_report.json:312349:      "raw_text": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
+sample_inputs\devpal_reports\devpal_report.json:313405:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:312350:      "raw_text_preview": "2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano dispenser 
+sample_inputs\devpal_reports\devpal_report.json:313406:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:312352:      "normalized_text": "2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano dispenser pressure  
+sample_inputs\devpal_reports\devpal_report.json:313408:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser pressure 
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:313603:      "raw_text": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit:   
+sample_inputs\devpal_reports\devpal_report.json:317651:      "raw_text": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: 
 not installed",
-sample_inputs\devpal_reports\devpal_report.json:313604:      "raw_text_preview": "2026-05-20 10:50:50.443 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
+sample_inputs\devpal_reports\devpal_report.json:317652:      "raw_text_preview": "2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano dispenser
 pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:313606:      "normalized_text": "2026-05-20 10:50:50.443 microlab star : start method command - progress; firmware version of nano dispenser pressure 
+sample_inputs\devpal_reports\devpal_report.json:317654:      "normalized_text": "2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano dispenser pressure  
 unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:315165:      "raw_text": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed", 
-sample_inputs\devpal_reports\devpal_report.json:315166:      "raw_text_preview": "2026-05-20 10:33:03.134 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not     
-installed",
-sample_inputs\devpal_reports\devpal_report.json:315168:      "normalized_text": "2026-05-20 10:33:03.134 microlab star : start method command - progress; firmware version of nano dispenser: not 
-installed",
-sample_inputs\devpal_reports\devpal_report.json:320717:    "observed_operation_order_deduplicated": [
-sample_inputs\devpal_reports\devpal_report.json:320907:        "raw_text_snippet": "progress | 2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano 
+sample_inputs\devpal_reports\devpal_report.json:320713:    "observed_operation_order_deduplicated": [
+sample_inputs\devpal_reports\devpal_report.json:320899:        "raw_text_snippet": "progress | 2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano       
 dispenser: not installed",
-sample_inputs\devpal_reports\devpal_report.json:320910:        "normalized_text": "progress | 2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano        
+sample_inputs\devpal_reports\devpal_report.json:320902:        "normalized_text": "progress | 2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano 
 dispenser: not installed",
-sample_inputs\devpal_reports\devpal_report.json:320917:        "raw_text_snippet": "progress | 2026-05-26 10:38:20.280 Microlab STAR : Start method command - progress; Firmware version of nano 
+sample_inputs\devpal_reports\devpal_report.json:320909:        "raw_text_snippet": "progress | 2026-05-26 10:43:39.599 Microlab STAR : Start method command - progress; Firmware version of nano       
 dispenser pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:320920:        "normalized_text": "progress | 2026-05-26 10:38:20.280 microlab star : start method command - progress; firmware version of nano 
+sample_inputs\devpal_reports\devpal_report.json:320912:        "normalized_text": "progress | 2026-05-26 10:43:39.599 microlab star : start method command - progress; firmware version of nano 
 dispenser pressure unit: not installed",
-sample_inputs\devpal_reports\devpal_report.json:322225:    "transfer_runtime_findings": [
-sample_inputs\devpal_reports\devpal_report.json:322228:        "code": "dispense_before_aspirate",
+sample_inputs\devpal_reports\devpal_report.json:322214:    "transfer_runtime_findings": [],
