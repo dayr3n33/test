@@ -1,29 +1,152 @@
-python -c "
-import json
-from pathlib import Path
+selected: C:\Program Files (x86)\HAMILTON\LogFiles\Demo_f7e4d743739048759065b45d61f50a37_Trace.trc
 
-d = json.loads(Path(r'sample_inputs/devpal_reports/devpal_report.json').read_text())
-rtc = d.get('runtime_trace_correlation', {})
+FINDINGS:
+{'severity': 'critical', 'code': 'dispense_before_aspirate', 'message': 'Selected runtime trace shows direct dispense evidence before direct aspirate evidence.', 'dispense_event_index': 1, 'aspirate_event_index': 7}
 
-print('selected:', d.get('selected_runtime_trace_path') or d.get('simulation_trace_path'))
+RAW ORDER FIRST 30:
+['unknown', 'dispense', 'dispense', 'initialize', 'initialize', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'aspirate', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'aspirate', 'dispense', 'dispense', 'dispense']
 
-print('\nFINDINGS:')
-for f in rtc.get('transfer_runtime_findings', []):
-    print(f)
+DEDUP ORDER FIRST 30:
+['dispense', 'dispense', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'aspirate', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'aspirate', 'dispense', 'dispense', 'dispense', 'dispense', 'aspirate', 'aspirate']
 
-print('\nRAW ORDER FIRST 30:')
-print(rtc.get('observed_operation_order_raw', [])[:30])
-
-print('\nDEDUP ORDER FIRST 30:')
-print(rtc.get('observed_operation_order_deduplicated', [])[:30])
-
-print('\nOPERATION EVIDENCE FIRST 20:')
-for e in rtc.get('observed_operation_evidence', [])[:20]:
-    print('\\n---')
-    print('index:', e.get('event_index'))
-    print('operation:', e.get('operation'))
-    print('real:', e.get('is_real_operation'))
-    print('confidence:', e.get('classification_confidence'))
-    print('reason:', e.get('classification_reason'))
-    print('raw:', e.get('raw_text_snippet'))
-"
+OPERATION EVIDENCE FIRST 20:
+\n---
+index: 0
+operation: unknown
+real: None
+confidence: unknown
+reason: no_match
+raw: progress | 2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of 1000µl channels: 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-0
+\n---
+index: 1
+operation: dispense
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: progress | 2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed
+\n---
+index: 2
+operation: dispense
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: progress | 2026-05-26 10:14:42.797 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: not installed
+\n---
+index: 3
+operation: initialize
+real: None
+confidence: likely_command
+reason: non_liquid_operation_detected
+raw: ) - start | 2026-05-26 10:14:44.277 Microlab STAR : Initialize (Single Step) - start;
+\n---
+index: 4
+operation: initialize
+real: None
+confidence: likely_command
+reason: non_liquid_operation_detected
+raw: ) - complete | 2026-05-26 10:14:44.735 Microlab STAR : Initialize (Single Step) - complete; > channel 1: Waste, > channel 2: Waste, > channel 3: Waste, > channel 4: Waste, > channel 5: Waste, > channel 6: Waste, > channe
+\n---
+index: 5
+operation: tip_pick_up
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:44.743 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start; 2026-05-26 10:14:44.743 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;   
+\n---
+index: 6
+operation: tip_pick_up
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:45.286 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete; > channel 1: HTF_L_0001, 1 > channel 2: HTF_L_0001, 2 > channel 3: HTF_L_0001, 3 > channel 4: HTF_L_0001, 4 > ch
+\n---
+index: 7
+operation: aspirate
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:45.300 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start; 2026-05-26 10:14:45.300 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start;
+\n---
+index: 8
+operation: aspirate
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:45.757 Microlab STAR : 1000ul Channel Aspirate (Single Step) - complete; > channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, B1 1000µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, D1 1000
+\n---
+index: 9
+operation: dispense
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:45.757 Microlab STAR : 1000ul Channel Dispense (Single Step) - start; 2026-05-26 10:14:45.757 Microlab STAR : 1000ul Channel Dispense (Single Step) - start;
+\n---
+index: 10
+operation: dispense
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:45.915 Microlab STAR : 1000ul Channel Dispense (Single Step) - complete; > channel 1: P1, A1 1000µL > channel 2: P1, B1 1000µL > channel 3: P1, C1 1000µL > channel 4: P1, D1 1000µL > chann
+\n---
+index: 11
+operation: tip_eject
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:45.915 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start; 2026-05-26 10:14:45.915 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start;       
+\n---
+index: 12
+operation: tip_eject
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:46.135 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - complete; > channel 1: Waste, > channel 2: Waste, > channel 3: Waste, > channel 4: Waste, > channel 5: Waste, > channel 6: W
+\n---
+index: 13
+operation: tip_pick_up
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:46.151 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start; 2026-05-26 10:14:46.151 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;   
+\n---
+index: 14
+operation: tip_pick_up
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:46.412 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete; > channel 1: HTF_L_0001, 13 > channel 2: HTF_L_0001, 14 > channel 3: HTF_L_0001, 15 > channel 4: HTF_L_0001, 16
+\n---
+index: 15
+operation: aspirate
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:46.426 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start; 2026-05-26 10:14:46.426 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start;
+\n---
+index: 16
+operation: aspirate
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:46.607 Microlab STAR : 1000ul Channel Aspirate (Single Step) - complete; > channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, A2 1000µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, C2 1000
+\n---
+index: 17
+operation: dispense
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:46.626 Microlab STAR : 1000ul Channel Dispense (Single Step) - start; 2026-05-26 10:14:46.626 Microlab STAR : 1000ul Channel Dispense (Single Step) - start;
+\n---
+index: 18
+operation: dispense
+real: None
+confidence: direct_command_complete
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - complete | 2026-05-26 10:14:46.686 Microlab STAR : 1000ul Channel Dispense (Single Step) - complete; > channel 1: P1, A4 1000µL > channel 2: P1, B4 1000µL > channel 3: P1, C4 1000µL > channel 4: P1, D4 1000µL > chann
+\n---
+index: 19
+operation: tip_eject
+real: None
+confidence: direct_command_started
+reason: liquid_or_tip_with_execution_tokens
+raw: ) - start | 2026-05-26 10:14:46.686 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start; 2026-05-26 10:14:46.686 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start;    
