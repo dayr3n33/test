@@ -1,16 +1,37 @@
-selected trace: C:\Program Files (x86)\HAMILTON\LogFiles\Demo_8b625d84953c44bfb6e7f359a325b4f2_Trace.trc
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -m pytest                             
+...................................s.............................................................................................................................ssss.......................... [ 91%]
+..................                                                                                                                                                                              [100%]
+204 passed, 5 skipped in 34.96s                                                                                                                                                                        
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                        
 
-== observed_operation_order ==
-['unknown', 'dispense', 'dispense', 'initialize', 'initialize', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject', 'tip_eject', 'tip_pick_up', 'tip_pick_up', 'aspirate', 'aspirate', 'dispense', 'dispense', 'tip_eject']
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1549
+Labware: 59
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 0
+Issues: 5714
 
-== runtime_transfer_chains ==
-[{'start_index': 1, 'operations': ['dispense', 'dispense']}, {'start_index': 2, 'operations': ['dispense']}, {'start_index': 5, 'operations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_index':
- 6, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 7, 'operations': ['aspirate', 'aspirate', 'dispense', 'dispense']}, {'start_index': 8, 'operations': ['aspirate
-', 'dispense', 'dispense', 'tip_eject']}, {'start_index': 9, 'operations': ['dispense', 'dispense', 'tip_eject']}, {'start_index': 10, 'operations': ['dispense', 'tip_eject']}, {'start_index': 13, 'o
-perations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_index': 14, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 15, 'operations': ['aspirate', 'aspirate'
-, 'dispense', 'dispense']}, {'start_index': 16, 'operations': ['aspirate', 'dispense', 'dispense', 'tip_eject']}, {'start_index': 17, 'operations': ['dispense', 'dispense', 'tip_eject']}, {'start_ind
-ex': 18, 'operations': ['dispense', 'tip_eject']}, {'start_index': 21, 'operations': ['aspirate', 'aspirate']}, {'start_index': 22, 'operations': ['tip_pick_up', 'aspirate', 'aspirate']}, {'start_ind
-ex': 23, 'operations': ['tip_pick_up', 'aspirate', 'aspirate', 'aspirate']}, {'start_index': 24, 'operations': ['aspirate', 'aspirate', 'aspirate', 'dispense']}, {'start_index': 25, 'operations': ['aspirate', 'aspirate', 'dispense', 'dispense']}, {'start_index': 26, 'operations': ['aspirate', 'dispense', 'dispense', 'dispense']}]
+Issue breakdown:
+ info: 3130
+ pass: 0
+ minor: 2462
+ major: 117
+ critical: 5
 
-== transfer_runtime_findings ==
-[{'severity': 'critical', 'code': 'dispense_before_aspirate', 'message': 'Selected runtime trace shows direct dispense evidence before direct aspirate evidence.', 'dispense_event_index': 1, 'aspirate_event_index': 7}]
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "observed_operation_order_raw|observed_operation_order_deduplicated|suppressed_duplicate_operations|runtime_transfer_chains|transfer_runtime_findings|dispense_before_aspirate"
+
+sample_inputs\devpal_reports\devpal_report.json:320622:    "observed_operation_order_raw": [
+sample_inputs\devpal_reports\devpal_report.json:320713:    "observed_operation_order_deduplicated": [
+sample_inputs\devpal_reports\devpal_report.json:321781:    "suppressed_duplicate_operations": [],
+sample_inputs\devpal_reports\devpal_report.json:321782:    "runtime_transfer_chains": [
+sample_inputs\devpal_reports\devpal_report.json:322221:    "transfer_runtime_findings": [
+sample_inputs\devpal_reports\devpal_report.json:322224:        "code": "dispense_before_aspirate",
