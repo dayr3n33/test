@@ -1,4 +1,36 @@
-git checkout main
-git pull origin main
-git checkout -b codex/pass14c-pipeline-report-transfer-model-fix
-git push -u origin codex/pass14c-pipeline-report-transfer-model-fix
+...................................s.......................................................................................... [ 53%]
+.............................................................ssss............................................                  [100%]
+230 passed, 5 skipped in 39.41s                                                                                                       
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1549
+Labware: 59
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 0
+Issues: 5714
+
+Issue breakdown:
+ info: 3130
+ pass: 0
+ minor: 2462
+ major: 117
+ critical: 5
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> Select-String -Path "sample_inputs\devpal_reports\devpal_report.json" -Pattern "expected_transfer_model|expected_transfer_runtime_matches|transfer_mappping_summary|reconstructed_transfer_runtime_links"
+
+sample_inputs\devpal_reports\devpal_report.json:322251:    "expected_transfer_model": [
+sample_inputs\devpal_reports\devpal_report.json:322280:    "expected_transfer_runtime_matches": [
+sample_inputs\devpal_reports\devpal_report.json:322321:    "reconstructed_transfer_runtime_links": [
+sample_inputs\devpal_reports\devpal_report.json:322639:  "expected_transfer_model": [
+sample_inputs\devpal_reports\devpal_report.json:322668:  "expected_transfer_runtime_matches": [
+sample_inputs\devpal_reports\devpal_report.json:322709:  "reconstructed_transfer_runtime_links": [
