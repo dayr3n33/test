@@ -1,8 +1,4 @@
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project>  git branch --show-current 
-main
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> git log --oneline -5
-498536a (HEAD -> main, origin/main, origin/HEAD) Merge pull request #71 from dayr3n33/codex/fix-expected-transfer-model-wiring
-84ad322 Fix Pass 14 expected transfer model wiring
-109e17c (origin/codex/pass14b-expected-trasnfer-model-hotfix, codex/pass14b-expected-trasnfer-model-hotfix) Merge pull request #70 from dayr3n33/codex/implement-phase-2-pass-14-features
-87ef95e Fix PR #70 P1 status and role-mismatch branch ordering
-070d85b Pass 14: wire expected transfer model into runtime trace correlation
+git checkout main
+git pull origin main
+git checkout -b codex/pass14c-pipeline-report-transfer-model-fix
+git push -u origin codex/pass14c-pipeline-report-transfer-model-fix
