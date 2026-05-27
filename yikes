@@ -1,3 +1,1 @@
-git restore tests/sample_inputs/devpal_reports/devpal_report.json
-Remove-Item sample_inputs\devpal_report.txt
-git status
+python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['mlstar_command_argument_resolution','transfer_sequence_resolution','expected_transfer_model','reconstructed_prompt_parameters','stress_test_parameter_matrix','stress_test_scenario_count','stress_test_limitations']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:16000])"
