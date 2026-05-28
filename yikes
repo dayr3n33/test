@@ -1,1 +1,474 @@
-python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['transfer_sequence_resolution','expected_transfer_model','lay_raw_sequence_recovery','hsl_sequence_bridge_evidence','sequence_object_alias_resolution']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+....................................s............................................................................................................................................................ [ 64%]
+..................................ssss...................................................................                                                                                         [100%]
+293 passed, 5 skipped in 46.40s                                                                                                                                                                          
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                     
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1555
+Labware: 72
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 5717
+
+Issue breakdown:
+ info: 3139
+ pass: 0
+ minor: 2455
+ major: 118
+ critical: 5
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['transfer_sequence_resolution','expected_transfer_model','lay_raw_sequence_recovery','hsl_sequence_bridge_evidence','sequence_object_alias_resolution']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+{
+  "transfer_sequence_resolution": [
+    {
+      "pair_id": "pair_00001",
+      "source_sequence": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+      "target_sequence": "ML_STAR.P",
+      "mapping_created": true,
+      "mapping_id": "auto_map_pair_00001_seq_only",
+      "mapping_confidence": "deterministic_sequence_alias_resolved",
+      "mapping_provenance": {
+        "source_sequence_evidence": {
+          "source": "mlstar_argument_resolution",
+          "raw_sequence": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+          "resolution": "deck_sequence_alias_resolution",
+          "confidence": "deterministic_sequence_alias_resolved",
+          "sequence_alias_resolution": {
+            "input_reference": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+            "reference": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+            "resolved": true,
+            "resolved_sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "resolved_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "matched_alias": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "matched_alias_variant": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "matched_field": "sequence_name",
+            "match_field": "sequence_name",
+            "confidence": "deck_sequence_prefix_stripped",
+            "ambiguity_count": 0,
+            "ambiguity_candidates": [],
+            "evidence_source": "mlstar_argument_resolution",
+            "searched_alias_variants": [
+              {
+                "kind": "exact",
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "exact:ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001"
+              },
+              {
+                "kind": "casefold",
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "casefold:ml_star.thermo_48_tube_honeycomb_rack_0001"
+              },
+              {
+                "kind": "prefix_stripped",
+                "value": "Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "prefix_stripped:thermo_48_tube_honeycomb_rack_0001"
+              },
+              {
+                "kind": "prefix_added",
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "prefix_added:ml_star.thermo_48_tube_honeycomb_rack_0001"
+              },
+              {
+                "kind": "dot_preserving",
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "dot_preserving:ml_star.thermo_48_tube_honeycomb_rack_0001"
+              },
+              {
+                "kind": "secondary_normalized",
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "key": "secondary_normalized:thermo48tubehoneycombrack0001"
+              }
+            ],
+            "failure_reason": null,
+            "blocker_reason": null,
+            "evidence": {
+              "searched_alias_fields": [
+                "sequence_name",
+                "original_name",
+                "raw_text",
+                "sequence_alias",
+                "object_id",
+                "pos_id",
+                "defseq",
+                "labware_id",
+                "labware_name",
+                "raw_lay_seq_name",
+                "raw_lay_seq_item_objid",
+                "raw_lay_layer_seqname",
+                "raw_lay_layer_labware_name",
+                "raw_lay_labware_defseq",
+                "hsl_align_sequences_bridge",
+                "hsl_sequence_method"
+              ],
+              "alias_record": {
+                "canonical": "Thermo_48_Tube_Honeycomb_Rack_0001",
+                "alias": "Thermo_48_Tube_Honeycomb_Rack_0001",
+                "field": "sequence_name",
+                "confidence": "deck_sequence_prefix_stripped",
+                "matched_alias_variant": "Thermo_48_Tube_Honeycomb_Rack_0001",
+                "variant_kind": "prefix_stripped"
+              }
+            }
+          },
+          "resolved_sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "matched_alias": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "matched_alias_variant": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "match_field": "sequence_name",
+          "mlstar_argument_resolution": {
+            "argument_id": "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+            "function_id": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+            "resolved": true,
+            "resolved_source_type": "raw_stp_hxpars",
+            "candidate_sequence_references": [
+              {
+                "value": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                "field_name": "SequenceObject",
+                "confidence": "direct_raw_hxpars_field_match",
+                "evidence_source": "raw_stp_hxpars",
+                "traversal_path": [
+                  "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+                  "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                  292
+                ]
+              }
+            ],
+            "candidate_labware_fields": [],
+            "traversal_paths": [],
+            "nested_reference_resolution": [
+              {
+                "parent_object_id": null,
+                "child_reference": "raw_file_match",
+                "resolved": false,
+                "reason": "unresolved_nested_reference"
+              }
+            ],
+            "traversal_depth_reached": 0,
+            "raw_occurrences": [
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                "line_number": 292,
+                "raw_text": "(Variables\u000b(-534118399\u000b(ML_STAR.TP\u0002(0\u000210\u000eSequenceObject\u0001)\u0001)\u0001)\u0001)\u0001)*HxPars,ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\u0003\u0000k\u0005\u0000\u0000\u00141CommandStepFileGuid#5d6c3b03_dd59_48c3_be11f58fd596d4fc\u000f1SequenceObject*ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001\f3NbrOfErr"
+              },
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+                "line_number": 61,
+                "raw_text": "// {{ 4 1 0 \"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\" \"ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}\""
+              },
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+                "line_number": 64,
+                "raw_text": "arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2(\"ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\"); // Aspirate"
+              }
+            ],
+            "matched_fields": [],
+            "parameter_fields": [
+              "CommandStepFileGuid",
+              "SequenceObject"
+            ],
+            "mlstar_argument_object_graph": {
+              "argument_id": "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+              "nodes": [],
+              "traversal_paths": [],
+              "decoded_hxpars_nodes": [
+                {
+                  "argument_id": "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+                  "command_step_file_guid": "5d6c3b03_dd59_48c3_be11f58fd596d4fc",
+                  "decoded_fields": {
+                    "CommandStepFileGuid": "5d6c3b03_dd59_48c3_be11f58fd596d4fc",
+                    "SequenceObject": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001"
+                  },
+                  "sequence_object": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+                  "channel_pattern": null,
+                  "tip_type": null,
+                  "same_liquid": null,
+                  "liquid_class": null,
+                  "volume": null,
+                  "labware_candidates": [],
+                  "position_candidates": [],
+                  "raw_fragment": "(Variables\u000b(-534118399\u000b(ML_STAR.TP\u0002(0\u000210\u000eSequenceObject\u0001)\u0001)\u0001)\u0001)\u0001)*HxPars,ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb\u0003\u0000k\u0005\u0000\u0000\u00141CommandStepFileGuid#5d6c3b03_dd59_48c3_be11f58fd596d4fc\u000f1SequenceObject*ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001\f3NbrOfErr",
+                  "parse_confidence": "high",
+                  "parse_warnings": [],
+                  "evidence": {
+                    "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                    "line_number": 292
+                  }
+                }
+              ]
+            },
+            "mlstar_argument_field_inventory": [
+              "CommandStepFileGuid",
+              "SequenceObject"
+            ],
+            "decoded_hxpars_fields": [
+              {
+                "CommandStepFileGuid": "5d6c3b03_dd59_48c3_be11f58fd596d4fc",
+                "SequenceObject": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001"
+              }
+            ],
+            "hxpars_parse_confidence": [
+              "high"
+            ],
+            "hxpars_parse_warnings": [],
+            "decoded_sequence_object": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001"
+          }
+        },
+        "target_sequence_evidence": {
+          "source": "mlstar_argument_resolution",
+          "raw_sequence": "ML_STAR.P",
+          "resolution": "deck_sequence_alias_resolution",
+          "confidence": "deterministic_sequence_alias_resolved",
+          "sequence_alias_resolution": {
+            "input_reference": "ML_STAR.P",
+            "reference": "ML_STAR.P",
+            "resolved": true,
+            "resolved_sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "resolved_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "matched_alias": "ML_STAR.P",
+            "matched_alias_variant": "ML_STAR.P",
+            "matched_field": "hsl_align_sequences_bridge",
+            "match_field": "hsl_align_sequences_bridge",
+            "confidence": "hsl_bridge_to_deck_sequence",
+            "ambiguity_count": 0,
+            "ambiguity_candidates": [],
+            "evidence_source": "mlstar_argument_resolution",
+            "searched_alias_variants": [
+              {
+                "kind": "exact",
+                "value": "ML_STAR.P",
+                "key": "exact:ML_STAR.P"
+              },
+              {
+                "kind": "casefold",
+                "value": "ML_STAR.P",
+                "key": "casefold:ml_star.p"
+              },
+              {
+                "kind": "prefix_stripped",
+                "value": "P",
+                "key": "prefix_stripped:p"
+              },
+              {
+                "kind": "prefix_added",
+                "value": "ML_STAR.P",
+                "key": "prefix_added:ml_star.p"
+              },
+              {
+                "kind": "dot_preserving",
+                "value": "ML_STAR.P",
+                "key": "dot_preserving:ml_star.p"
+              },
+              {
+                "kind": "secondary_normalized",
+                "value": "ML_STAR.P",
+                "key": "secondary_normalized:p"
+              }
+            ],
+            "failure_reason": null,
+            "blocker_reason": null,
+            "evidence": {
+              "searched_alias_fields": [
+                "sequence_name",
+                "original_name",
+                "raw_text",
+                "sequence_alias",
+                "object_id",
+                "pos_id",
+                "defseq",
+                "labware_id",
+                "labware_name",
+                "raw_lay_seq_name",
+                "raw_lay_seq_item_objid",
+                "raw_lay_layer_seqname",
+                "raw_lay_layer_labware_name",
+                "raw_lay_labware_defseq",
+                "hsl_align_sequences_bridge",
+                "hsl_sequence_method"
+              ],
+              "alias_record": {
+                "canonical": "Thermo_48_Tube_Honeycomb_Rack_0001",
+                "alias": "ML_STAR.P",
+                "field": "hsl_align_sequences_bridge",
+                "confidence": "hsl_bridge_to_deck_sequence",
+                "matched_alias_variant": "ML_STAR.P",
+                "variant_kind": "exact"
+              }
+            }
+          },
+          "resolved_sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "matched_alias": "ML_STAR.P",
+          "matched_alias_variant": "ML_STAR.P",
+          "match_field": "hsl_align_sequences_bridge",
+          "mlstar_argument_resolution": {
+            "argument_id": "19216da4_e51b_42ca_adfdafcd6fe9d223",
+            "function_id": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+            "resolved": true,
+            "resolved_source_type": "raw_stp_hxpars",
+            "candidate_sequence_references": [
+              {
+                "value": "ML_STAR.P",
+                "field_name": "SequenceObject",
+                "confidence": "direct_raw_hxpars_field_match",
+                "evidence_source": "raw_stp_hxpars",
+                "traversal_path": [
+                  "19216da4_e51b_42ca_adfdafcd6fe9d223",
+                  "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                  73
+                ]
+              }
+            ],
+            "candidate_labware_fields": [],
+            "traversal_paths": [
+              [
+                "stp_step_00004"
+              ]
+            ],
+            "nested_reference_resolution": [
+              {
+                "parent_object_id": null,
+                "child_reference": "raw_file_match",
+                "resolved": false,
+                "reason": "unresolved_nested_reference"
+              }
+            ],
+            "traversal_depth_reached": 0,
+            "raw_occurrences": [
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                "line_number": 73,
+                "raw_text": "1Timestamp\u00132025-12-09 11:43:39\u0001)*HxPars,19216da4_e51b_42ca_adfdafcd6fe9d223\u0003\u0000q\u0005\u0000\u0000\u00141CommandStepFileGuid#bfd79c7b_ab31_4c68_b18a9ee28bd34022\u000f1SequenceObject\tML_STAR.P\f3NbrOfErrors\u000213\u000f1ChannelPattern\f111111111111\b3TipType\u00010\u000b3SameLiquid\u00011\u000e3Side"
+              },
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+                "line_number": 67,
+                "raw_text": "// {{ 5 1 0 \"19216da4_e51b_42ca_adfdafcd6fe9d223\" \"ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}\""
+              },
+              {
+                "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+                "line_number": 70,
+                "raw_text": "arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2(\"19216da4_e51b_42ca_adfdafcd6fe9d223\"); // Dispense"
+              }
+            ],
+            "matched_fields": [
+              {
+                "object_id": "stp_step_00004",
+                "field_names": [
+                  "1timestamp_2025_12_09_11",
+                  "step_id",
+                  "step_name"
+                ]
+              }
+            ],
+            "parameter_fields": [
+              "1timestamp_2025_12_09_11",
+              "step_id",
+              "step_name",
+              "CommandStepFileGuid",
+              "SequenceObject",
+              "ChannelPattern",
+              "TipType",
+              "SameLiquid",
+              "NbrOfErrors"
+            ],
+            "mlstar_argument_object_graph": {
+              "argument_id": "19216da4_e51b_42ca_adfdafcd6fe9d223",
+              "nodes": [
+                {
+                  "object_id": "stp_step_00004",
+                  "source_type": "stp",
+                  "fields": {
+                    "1timestamp_2025_12_09_11": "43:39 )*HxPars,19216da4_e51b_42ca_adfdafcd6fe9d223 q 1",
+                    "step_id": "stp_step_00004",
+                    "step_name": ""
+                  }
+                }
+              ],
+              "traversal_paths": [
+                [
+                  "stp_step_00004"
+                ]
+              ],
+              "decoded_hxpars_nodes": [
+                {
+                  "argument_id": "19216da4_e51b_42ca_adfdafcd6fe9d223",
+                  "command_step_file_guid": "bfd79c7b_ab31_4c68_b18a9ee28bd34022",
+                  "decoded_fields": {
+                    "CommandStepFileGuid": "bfd79c7b_ab31_4c68_b18a9ee28bd34022",
+                    "SequenceObject": "ML_STAR.P",
+                    "ChannelPattern": "111111111111",
+                    "TipType": "0",
+                    "SameLiquid": "1",
+                    "NbrOfErrors": "13"
+                  },
+                  "sequence_object": "ML_STAR.P",
+                  "channel_pattern": "111111111111",
+                  "tip_type": "0",
+                  "same_liquid": "1",
+                  "liquid_class": null,
+                  "volume": null,
+                  "labware_candidates": [],
+                  "position_candidates": [],
+                  "raw_fragment": "1Timestamp\u00132025-12-09 11:43:39\u0001)*HxPars,19216da4_e51b_42ca_adfdafcd6fe9d223\u0003\u0000q\u0005\u0000\u0000\u00141CommandStepFileGuid#bfd79c7b_ab31_4c68_b18a9ee28bd34022\u000f1SequenceObject\tML_STAR.P\f3NbrOfErrors\u000213\u000f1ChannelPattern\f111111111111\b3TipType\u00010\u000b3SameLiquid\u00011\u000e3Side",
+                  "parse_confidence": "high",
+                  "parse_warnings": [],
+                  "evidence": {
+                    "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.stp",
+                    "line_number": 73
+                  }
+                }
+              ]
+            },
+            "mlstar_argument_field_inventory": [
+              "1timestamp_2025_12_09_11",
+              "step_id",
+              "step_name",
+              "CommandStepFileGuid",
+              "SequenceObject",
+              "ChannelPattern",
+              "TipType",
+              "SameLiquid",
+              "NbrOfErrors"
+            ],
+            "decoded_hxpars_fields": [
+              {
+                "CommandStepFileGuid": "bfd79c7b_ab31_4c68_b18a9ee28bd34022",
+                "SequenceObject": "ML_STAR.P",
+                "ChannelPattern": "111111111111",
+                "TipType": "0",
+                "SameLiquid": "1",
+                "NbrOfErrors": "13"
+              }
+            ],
+            "hxpars_parse_confidence": [
+              "high"
+            ],
+            "hxpars_parse_warnings": [],
+            "decoded_sequence_object": "ML_STAR.P",
+            "decoded_channel_pattern": "111111111111",
+            "decoded_tip_type": "0",
+            "decoded_same_liquid": "1"
+          }
+        },
+        "source_command_function_id": "_541143F5_7FA2_11D3_AD85_0004ACB1DCB2",
+        "source_command_argument_id": "ffc9d2d3_1c05_4d6a_87d8aee7e6261dbb",
+        "target_command_function_id": "_541143F8_7FA2_11D3_AD85_0004ACB1DCB2",
+        "target_command_argument_id": "19216da4_e51b_42ca_adfdafcd6fe9d223",
+        "reason": "no_well_overlap",
+        "source_resolution_method": "deck_sequence_alias_resolution",
+        "source_match_field": "sequence_name",
+        "source_matched_alias": "Thermo_48_Tube_Honeycomb_Rack_0001",
+        "target_resolution_method": "deck_sequence_alias_resolution",
+        "target_match_field": "hsl_align_sequences_bridge",
+        "target_matched_alias": "ML_STAR.P",
+        "sequence_object_alias_resolution": {
+          "source": {
+            "input_reference": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+            "refere
