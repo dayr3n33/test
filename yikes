@@ -1,1 +1,541 @@
-python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['dialog_declarations','prompt_classification_summary','reconstructed_method_model','stress_test_parameter_matrix','bounded_stress_test_results','pyhamilton_oem_adapter_plan']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+....................................s............................................................................................................................................................ [ 60%]
+..............................................ssss............................................................................                                                                    [100%]
+314 passed, 5 skipped in 169.25s (0:02:49)
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --offline-stress-run --stress-scenario-cap 25 --format json --verbose                                                                                                       
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1555
+Labware: 72
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 5
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 5461
+
+Issue breakdown:
+ info: 3135
+ pass: 0
+ minor: 2229
+ major: 93
+ critical: 4
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['dialog_declarations','prompt_classification_summary','reconstructed_method_model','stress_test_parameter_matrix','bounded_stress_test_results','pyhamilton_oem_adapter_plan']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+{
+  "dialog_declarations": [
+    {
+      "prompt_id": "prompt_1",
+      "prompt_type": "dialog_declaration",
+      "message_text": "dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;",
+      "expected_response_type": "none",
+      "response_strategy": "register_dialog_handle",
+      "default_response": null,
+      "generated_responses": [],
+      "executable_in_offline_simulation": true,
+      "requires_manual_profile": false,
+      "requires_user_intervention_in_live_venus": false,
+      "is_input_parameter": false,
+      "stress_test_candidate": false,
+      "offline_auto_acknowledge": false,
+      "replay_action": "register_dialog_handle",
+      "live_venus_bypass": false,
+      "return_variable": null,
+      "evidence": "dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;",
+      "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+      "line_number": 3,
+      "safety_notes": "offline_prompt_bypass_only_no_live_venus_suppression"
+    }
+  ],
+  "prompt_classification_summary": {
+    "total_prompt_like_evidence": 3,
+    "dialog_declaration_count": 1,
+    "operator_message_count": 1,
+    "operator_confirmation_count": 1,
+    "user_input_prompt_count": 0,
+    "method_parameter_count": 0,
+    "output_variable_assignment_count": 0,
+    "unknown_prompt_like_evidence_count": 0
+  },
+  "reconstructed_method_model": {
+    "method_name": "Demo",
+    "reconstructed_steps_count": 13,
+    "replayable_steps_count": 13,
+    "unresolved_steps_count": 0,
+    "prompts_detected": 3,
+    "prompts_auto_answerable_offline": 3,
+    "transfer_pairs": 1,
+    "transfer_mappings": 1,
+    "sequence_dependencies": [],
+    "labware_dependencies": [
+      "96CORESlideWaste",
+      "AP1",
+      "CORE96NEWWaste.tml",
+      "CORE96NEWWaste_0001",
+      "COREGripTool_OnWaste_1000ul.rck",
+      "COREGripTool_OnWaste_1000ul_0001",
+      "FBSMedia",
+      "FrontVerification",
+      "HTF_L.rck",
+      "HTF_L_0001",
+      "InitialThawMedia",
+      "Labware.1.Template",
+      "Labware.10.Template",
+      "Labware.11.Template",
+      "Labware.12.Template",
+      "Labware.13.Template",
+      "Labware.14.Template",
+      "Labware.15.Template",
+      "Labware.16.Template",
+      "Labware.17.Template",
+      "Labware.18.Template",
+      "Labware.19.Template",
+      "Labware.2.Template",
+      "Labware.20.Template",
+      "Labware.21.Template",
+      "Labware.3.Template",
+      "Labware.4.Template",
+      "Labware.5.Template",
+      "Labware.6.Template",
+      "Labware.7.Template",
+      "Labware.8.Template",
+      "Labware.9.Template",
+      "MlStar1000ulHighVolumeTipWithFilter",
+      "MlStarCore96TipRack",
+      "MlStarIsCore96WasteRack",
+      "MlStarIsWasteRack",
+      "MlStarSlimCoReTip300ulFilter",
+      "MlStarTipRack",
+      "P1",
+      "PCar1",
+      "PCar2",
+      "PLT_CAR_L5TAB_DWP_A00.tml",
+      "PLT_CAR_L5TAB_MTP_A00.tml",
+      "Plates",
+      "RearVerification",
+      "Resource_1",
+      "Resource_2",
+      "SCar1",
+      "SCar2",
+      "SLIM1",
+      "SMP_CAR_L5_DWP_A00",
+      "SMP_CAR_L5_MTP_A00",
+      "SampTipCar1",
+      "SlimTip300ulFilter.rck",
+      "TIP_CAR_480BC_A00.tml",
+      "TIP_CAR_480_A00",
+      "TeachingNeedle5ml",
+      "Thermo_48_Tube_Honeycomb_Rack.rck",
+      "Thermo_48_Tube_Honeycomb_Rack_0001",
+      "Waste",
+      "Waste04",
+      "Waste08",
+      "Waste12",
+      "Waste16",
+      "WasteBlock",
+      "WasteBlock.tml",
+      "core96slidewaste.rck",
+      "core96slidewaste_0001",
+      "deep",
+      "plate.rck",
+      "teachingNeedleBlock",
+      "waste2.rck"
+    ],
+    "stress_parameters": [],
+    "replay_readiness": {
+      "ready_for_offline_replay": true,
+      "blocked": false,
+      "partial": false
+    },
+    "blockers": [],
+    "limitations": []
+  },
+  "stress_test_parameter_matrix": [],
+  "bounded_stress_test_results": [
+    {
+      "scenario_id": "base_default",
+      "scenario_inputs": {},
+      "replay_completed": true,
+      "replay_blockers": [],
+      "transfer_events_count": 1,
+      "prompt_responses_applied": 3,
+      "sequence_state_end": {
+        "Waste": {
+          "sequence_name": "Waste",
+          "current_position": 1,
+          "max_position": 16,
+          "total_positions": 16,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": 16,
+            "parsed_items": 16
+          }
+        },
+        "Labware.1.DefSeqValid": {
+          "sequence_name": "Labware.1.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "WasteBlock.tml": {
+          "sequence_name": "WasteBlock.tml",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "WasteBlock": {
+          "sequence_name": "WasteBlock",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.10.DefSeqValid": {
+          "sequence_name": "Labware.10.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.11.DefSeqValid": {
+          "sequence_name": "Labware.11.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "CORE96NEWWaste.tml": {
+          "sequence_name": "CORE96NEWWaste.tml",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "CORE96NEWWaste_0001": {
+          "sequence_name": "CORE96NEWWaste_0001",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "96CORESlideWaste": {
+          "sequence_name": "96CORESlideWaste",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.12.DefSeqValid": {
+          "sequence_name": "Labware.12.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "core96slidewaste.rck": {
+          "sequence_name": "core96slidewaste.rck",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "core96slidewaste_0001": {
+          "sequence_name": "core96slidewaste_0001",
+          "current_position": 1,
+          "max_position": 96,
+          "total_positions": 96,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": 96,
+            "parsed_items": 96
+          }
+        },
+        "Labware.13.DefSeqValid": {
+          "sequence_name": "Labware.13.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "TIP_CAR_480BC_A00.tml": {
+          "sequence_name": "TIP_CAR_480BC_A00.tml",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "SampTipCar1": {
+          "sequence_name": "SampTipCar1",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "TIP_CAR_480_A00": {
+          "sequence_name": "TIP_CAR_480_A00",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.14.DefSeqValid": {
+          "sequence_name": "Labware.14.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.15.DefSeqValid": {
+          "sequence_name": "Labware.15.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "SlimTip300ulFilter.rck": {
+          "sequence_name": "SlimTip300ulFilter.rck",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "MlStarCore96TipRack": {
+          "sequence_name": "MlStarCore96TipRack",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "MlStarIsCore96WasteRack": {
+          "sequence_name": "MlStarIsCore96WasteRack",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "MlStarIsWasteRack": {
+          "sequence_name": "MlStarIsWasteRack",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "MlStarTipRack": {
+          "sequence_name": "MlStarTipRack",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "hasDefaultSequence": {
+          "sequence_name": "hasDefaultSequence",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "managedSequenceName": {
+          "sequence_name": "managedSequenceName",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "MlStarSlimCoReTip300ulFilter": {
+          "sequence_name": "MlStarSlimCoReTip300ulFilter",
+          "current_position": null,
+          "max_position": 0,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": 0,
+            "parsed_items": 0
+          }
+        },
+        "Labware.16.DefSeqValid": {
+          "sequence_name": "Labware.16.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.17.DefSeqValid": {
+          "sequence_name": "Labware.17.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.18.DefSeqValid": {
+          "sequence_name": "Labware.18.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.19.DefSeqValid": {
+          "sequence_name": "Labware.19.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.2.DefSeqValid": {
+          "sequence_name": "Labware.2.DefSeqValid",
+          "current_position": null,
+          "max_position": null,
+          "total_positions": 0,
+          "last_operation": "initialized_from_lay_sequence_order",
+          "evidence": {
+            "layout_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay",
+            "declared_count": null,
+            "parsed_items": 0
+          }
+        },
+        "Labware.20.DefSeqValid": {
+          "sequence_name": "Labware.20.DefSeqValid"
