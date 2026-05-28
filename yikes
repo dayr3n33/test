@@ -1,3 +1,2 @@
-git checkout main
-git pull origin main
-git checkout -b codex/hotfix-pass25-report-skipped-sequence-calls
+
+python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['offline_replay_summary','sequence_position_trace','bounded_stress_test_results','replay_limitations']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
