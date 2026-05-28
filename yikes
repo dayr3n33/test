@@ -1,1 +1,332 @@
-python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['transfer_path_reconstruction','transfer_position_resolution','channel_pattern_resolution','expected_transfer_model']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+....................................s............................................................................................................................................................ [ 63%]
+...................................ssss........................................................................                                                                                   [100%]
+299 passed, 5 skipped in 55.58s                                                                                                                                                                          
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --venus-sim-run --format json --verbose                                                                                                                                     
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1555
+Labware: 72
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 6
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 5717
+
+Issue breakdown:
+ info: 3139
+ pass: 0
+ minor: 2455
+ major: 118
+ critical: 5
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['transfer_path_reconstruction','transfer_position_resolution','channel_pattern_resolution','expected_transfer_model']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+{
+  "transfer_path_reconstruction": [
+    {
+      "pair_id": "pair_00001",
+      "source_sequence": "Thermo_48_Tube_Honeycomb_Rack_0001",
+      "target_sequence": "P",
+      "raw_source_sequence": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+      "raw_target_sequence": "ML_STAR.P",
+      "command_roles": {
+        "aspirate": "source",
+        "dispense": "target"
+      },
+      "source_sequence_items_count": 48,
+      "target_sequence_items_count": 24,
+      "source_positions_sample": [
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 1,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "B1",
+          "well": "B1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 1,
+          "row": "B",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "B1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.1.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.1.PosId\u0002B1\u0014"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.1.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.1.PosId\\x02B1\\x14'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'B1', 'well': 'B1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 2,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "D1",
+          "well": "D1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 3,
+          "row": "D",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "D1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.2.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.2.PosId\u0002D1\u0014"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.2.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.2.PosId\\x02D1\\x14'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'D1', 'well': 'D1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 3,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "F1",
+          "well": "F1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 5,
+          "row": "F",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "F1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.3.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.3.PosId\u0002F1\u0014"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.3.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.3.PosId\\x02F1\\x14'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'F1', 'well': 'F1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 4,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "H1",
+          "well": "H1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 7,
+          "row": "H",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "H1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.4.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.4.PosId\u0002H1\u0014"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.4.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.4.PosId\\x02H1\\x14'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'H1', 'well': 'H1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 5,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "A1",
+          "well": "A1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 0,
+          "row": "A",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "A1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.5.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.5.PosId\u0002A1\u0013"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.5.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.5.PosId\\x02A1\\x13'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'A1', 'well': 'A1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 6,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "C1",
+          "well": "C1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 2,
+          "row": "C",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "C1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.6.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.6.PosId\u0002C1\u0013"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.6.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.6.PosId\\x02C1\\x13'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'C1', 'well': 'C1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 7,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "E1",
+          "well": "E1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 4,
+          "row": "E",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "E1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.7.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.7.PosId\u0002E1\u0013"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.7.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.7.PosId\\x02E1\\x13'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'E1', 'well': 'E1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 8,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "G1",
+          "well": "G1",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 6,
+          "row": "G",
+          "column": 1,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "G1",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.8.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.8.PosId\u0002G1\u0013"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.8.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.8.PosId\\x02G1\\x13'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'G1', 'well': 'G1'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 9,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "B2",
+          "well": "B2",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 9,
+          "row": "B",
+          "column": 2,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "B2",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.9.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0013",  
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.9.PosId\u0002B2"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.9.ObjId\
+"Thermo_48_Tube_Honeycomb_Rack_0001\\x13', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.9.PosId\\x02B2'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'B2', 'well': 'B2'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 10,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "pos_id": "D2",
+          "well": "D2",
+          "labware_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "numeric_position": 11,
+          "row": "D",
+          "column": 2,
+          "source_evidence": {
+            "raw_lay_seq_item_objid": "Thermo_48_Tube_Honeycomb_Rack_0001",
+            "raw_lay_seq_item_posid": "D2",
+            "parsed_lay_sequence_item": true,
+            "raw_evidence": [
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.10.ObjId\"Thermo_48_Tube_Honeycomb_Rack_0001\u0014", 
+              "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay:29: Seq.11.Item.10.PosId\u0002D2\u0014"
+            ],
+            "source_file": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.lay"
+          },
+          "confidence": "parsed_lay_sequence_item",
+          "raw_text": "{'raw_evidence': ['C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.10.ObjId
+\"Thermo_48_Tube_Honeycomb_Rack_0001\\x14', 'C:\\\\Users\\\\lynchd27\\\\OneDrive - Pfizer\\\\Documents\\\\PycharmProjects\\\\pyhamilton\\\\new-project\\\\sample_inputs\\\\Demo.lay:29: Seq.11.Item.10.PosId\\x02D2\\x14'], 'object_id': 'Thermo_48_Tube_Honeycomb_Rack_0001', 'pos_id': 'D2', 'well': 'D2'}"
+        },
+        {
+          "sequence_name": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "canonical_sequence_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "sequence_index": 11,
+          "item_index": 11,
+          "obj_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "object_id": "Thermo_48_Tube_Honeycomb_Rack_0001",
+          "labware_id":
