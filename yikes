@@ -1,1 +1,238 @@
-python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['reconstructed_method_model','offline_replay_summary','bounded_stress_test_results','pyhamilton_oem_adapter_plan','pyhamilton_oem_launch_status']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+....................................s............................................................................................................................................................ [ 61%]
+..........................................ssss............................................................................                                                                        [100%]
+310 passed, 5 skipped in 90.90s (0:01:30)                                                                                                                                                                
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --offline-replay --format json --verbose                                                                                                                                    
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1555
+Labware: 72
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 5
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 5461
+
+Issue breakdown:
+ info: 3135
+ pass: 0
+ minor: 2229
+ major: 93
+ critical: 4
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python main.py --method "C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.med" --pyhamilton-oem-plan --pyhamilton-oem-method-path "C:\Users\lynchd27\AppData\Local\Programs\Python\Python39\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.med" --format json --verbose                                                                                                                                                                          
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 1555
+Labware: 72
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 5
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 5461
+
+Issue breakdown:
+ info: 3135
+ pass: 0
+ minor: 2229
+ major: 93
+ critical: 4
+
+Report saved: C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['reconstructed_method_model','offline_replay_summary','bounded_stress_test_results','pyhamilton_oem_adapter_plan','pyhamilton_oem_launch_status']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
+{
+  "reconstructed_method_model": {
+    "method_name": "Demo",
+    "reconstructed_steps_count": 13,
+    "replayable_steps_count": 13,
+    "unresolved_steps_count": 0,
+    "prompts_detected": 3,
+    "prompts_auto_answerable_offline": 2,
+    "transfer_pairs": 1,
+    "transfer_mappings": 1,
+    "sequence_dependencies": [],
+    "labware_dependencies": [
+      "96CORESlideWaste",
+      "AP1",
+      "CORE96NEWWaste.tml",
+      "CORE96NEWWaste_0001",
+      "COREGripTool_OnWaste_1000ul.rck",
+      "COREGripTool_OnWaste_1000ul_0001",
+      "FBSMedia",
+      "FrontVerification",
+      "HTF_L.rck",
+      "HTF_L_0001",
+      "InitialThawMedia",
+      "Labware.1.Template",
+      "Labware.10.Template",
+      "Labware.11.Template",
+      "Labware.12.Template",
+      "Labware.13.Template",
+      "Labware.14.Template",
+      "Labware.15.Template",
+      "Labware.16.Template",
+      "Labware.17.Template",
+      "Labware.18.Template",
+      "Labware.19.Template",
+      "Labware.2.Template",
+      "Labware.20.Template",
+      "Labware.21.Template",
+      "Labware.3.Template",
+      "Labware.4.Template",
+      "Labware.5.Template",
+      "Labware.6.Template",
+      "Labware.7.Template",
+      "Labware.8.Template",
+      "Labware.9.Template",
+      "MlStar1000ulHighVolumeTipWithFilter",
+      "MlStarCore96TipRack",
+      "MlStarIsCore96WasteRack",
+      "MlStarIsWasteRack",
+      "MlStarSlimCoReTip300ulFilter",
+      "MlStarTipRack",
+      "P1",
+      "PCar1",
+      "PCar2",
+      "PLT_CAR_L5TAB_DWP_A00.tml",
+      "PLT_CAR_L5TAB_MTP_A00.tml",
+      "Plates",
+      "RearVerification",
+      "Resource_1",
+      "Resource_2",
+      "SCar1",
+      "SCar2",
+      "SLIM1",
+      "SMP_CAR_L5_DWP_A00",
+      "SMP_CAR_L5_MTP_A00",
+      "SampTipCar1",
+      "SlimTip300ulFilter.rck",
+      "TIP_CAR_480BC_A00.tml",
+      "TIP_CAR_480_A00",
+      "TeachingNeedle5ml",
+      "Thermo_48_Tube_Honeycomb_Rack.rck",
+      "Thermo_48_Tube_Honeycomb_Rack_0001",
+      "Waste",
+      "Waste04",
+      "Waste08",
+      "Waste12",
+      "Waste16",
+      "WasteBlock",
+      "WasteBlock.tml",
+      "core96slidewaste.rck",
+      "core96slidewaste_0001",
+      "deep",
+      "plate.rck",
+      "teachingNeedleBlock",
+      "waste2.rck"
+    ],
+    "stress_parameters": [
+      {
+        "prompt_id": "prompt_1",
+        "prompt_name": "dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;",
+        "variable_name": null,
+        "parameter_name": "dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;",
+        "data_type": "string",
+        "default_value": null,
+        "allowed_values": [],
+        "min_value": null,
+        "max_value": null,
+        "source_type": "method_step",
+        "file_path": "C:\\Users\\lynchd27\\OneDrive - Pfizer\\Documents\\PycharmProjects\\pyhamilton\\new-project\\sample_inputs\\Demo.hsl",
+        "line_number": 3,
+        "raw_text": "dialog dialogHandle7FF021E1A7C644ec99C40075E93E5F83;",
+        "confidence": "partial",
+        "unresolved_reason": "prompt_variable_not_detected"
+      }
+    ],
+    "replay_readiness": {
+      "ready_for_offline_replay": true,
+      "blocked": false,
+      "partial": false
+    },
+    "blockers": [],
+    "limitations": []
+  },
+  "offline_replay_summary": {
+    "scenario_id": "base_default",
+    "replay_completed": true,
+    "nodes_replayed": 13,
+    "prompt_blockers": 0,
+    "prompt_responses_applied": 3,
+    "transfer_events_count": 1,
+    "hardware_execution_occurred": false
+  },
+  "bounded_stress_test_results": [],
+  "pyhamilton_oem_adapter_plan": {
+    "adapter_name": "pyhamilton_STAR_OEM_noFan_foundation",
+    "method_path": "C:\\Users\\lynchd27\\AppData\\Local\\Programs\\Python\\Python39\\Lib\\site-packages\\pyhamilton\\star-oem\\VENUS_Method\\STAR_OEM_noFan.med",
+    "method_path_exists": true,
+    "method_path_basename": "STAR_OEM_noFan.med",
+    "star_oem_no_fan_detected": true,
+    "dry_run": true,
+    "launch_status": "dry_run_only",
+    "prompt_response_profile_compatibility": {
+      "profile_count": 3,
+      "offline_auto_acknowledge_count": 2,
+      "manual_profile_required": [
+        "prompt_1"
+      ],
+      "live_venus_bypass": false
+    },
+    "reconstructed_transfer_command_plan": [
+      {
+        "command_id": "dry_run_pair_00001",
+        "command_type": "reconstructed_transfer_plan",
+        "source_sequence": "ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001",
+        "target_sequence": "ML_STAR.P",
+        "active_channels": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "channel_pattern": "111111111111",
+        "volume": null,
+        "liquid_class": null,
+        "offline_simulated_only": true,
+        "pyhamilton_execution": "not_invoked"
+      }
+    ],
+    "safety_gate": {
+      "dry_run_default": true,
+      "allow_launch_requested": false,
+      "live_hardware_execution_supported_this_pass": false,
+      "hardware_execution_occurred": false,
+      "venus_prompt_bypass": false,
+      "ui_auto_clicking": false,
+      "reason": "Pass 23 emits adapter evidence and dry-run command plans only; live launch remains out of scope."
+    },
+    "limitations": [
+      "dry_run_adapter_plan_only",
+      "no_live_hardware_control",
+      "no_venus_ui_prompt_suppression",
+      "no_method_execution_claimed"
+    ],
+    "hardware_execution_occurred": false
+  },
+  "pyhamilton_oem_launch_status": "dry_run_only"
+}
