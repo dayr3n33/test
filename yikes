@@ -1,1 +1,1 @@
-
+python -c "import json; p=r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\devpal_reports\devpal_report.json'; d=json.load(open(p, encoding='utf-8')); keys=['lay_rejected_sequence_name_candidates','sequence_replayability_classification','bounded_stress_test_results']; print(json.dumps({k:d.get(k) for k in keys}, indent=2)[:20000])"
