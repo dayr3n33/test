@@ -1,5 +1,47 @@
-python -c "from pathlib import Path; p=Path(r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.lay'); text=p.read_text(errors='ignore'); terms=['ML_STAR.P','Thermo_48_Tube_Honeycomb_Rack_0001','ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001','SequenceName','DefSeq']; [print('\nTERM:',t,'COUNT:',text.count(t)) for t in terms]"
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "from pathlib import Path; p=Path(r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.lay'); text=p.read_text(errors='ignore'); terms=['ML_STAR.P','Thermo_48_Tube_Honeycomb_Rack_0001','ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001','SequenceName','DefSeq']; [print('\nTERM:',t,'COUNT:',text.count(t)) for t in terms]"
 
+TERM: ML_STAR.P COUNT: 0
 
+TERM: Thermo_48_Tube_Honeycomb_Rack_0001 COUNT: 52
 
-python -c "from pathlib import Path; p=Path(r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.lay'); text=p.read_text(errors='ignore'); terms=['ML_STAR.P','Thermo_48_Tube_Honeycomb_Rack_0001','ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001','SequenceName','DefSeq']; import re; [print('\n'.join([text[max(0,m.start()-200):m.end()+300] for m in re.finditer(re.escape(t), text)][:5])) for t in terms]"
+TERM: ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001 COUNT: 0
+
+TERM: SequenceName COUNT: 1
+
+TERM: DefSeq COUNT: 21
+(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> python -c "from pathlib import Path; p=Path(r'C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project\sample_inputs\Demo.lay'); text=p.read_text(errors='ignore'); terms=['ML_STAR.P','Thermo_48_Tube_Honeycomb_Rack_0001','ML_STAR.Thermo_48_Tube_Honeycomb_Rack_0001','SequenceName','DefSeq']; import re; [print('\n'.join([text[max(0,m.start()-200):m.end()+300] for m in re.finditer(re.escape(t), text)][:5])) for t in terms]"
+
+ue2Labware.21.Angle0Labware.21.BarcodeCnt0Labware.21.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.21.DefSeqValid1Labware.21.File(Pfizer\Thermo_48_Tube_Honeycomb_Rack.rck
+Labware.21.Id"Thermo_48_Tube_Honeycomb_Rack_0001Labware.21.InstLabware.21.IsCovered0Labware.21.SiteId1Labware.21.TForm.1.X1Labware.21.TForm.1.Y0Labware.21.TForm.1.Z0Labware.21.TForm.2.X0Labware.21.TForm.2.Y1Labware.21.TForm.2.Z0Labware.21.TForm.3.X126.5Labware.21.TForm.3.Y530Labware.21.TForm.3.Z1Labware.21.TemplateSCar1
+rans186.15Labware.9.ZTransValue0
+Labware.Cnt21Layer.1.1.LabwareNameSCar1Layer.1.1.SeqNameALayer.1.10.LabwareNameP1Layer.1.10.SeqNameWaste04Layer.1.11.LabwareNameWasteLayer.1.11.SeqName"Thermo_48_Tube_Honeycomb_Rack_0001Layer.1.12.Labw
+areName"Thermo_48_Tube_Honeycomb_Rack_0001Layer.1.12.SeqName COREGripTool_OnWaste_1000ul_0001Layer.1.13.LabwareNameSLIM1Layer.1.13.SeqName#MlStar1000ulHighVolumeTipWithFilterLayer.1.14.LabwareNameInitialThawMediaLayer.1.14.SeqNameWaste08Layer.1.15.LabwareName
+SampTipCar1Lay
+.1.LabwareNameSCar1Layer.1.1.SeqNameALayer.1.10.LabwareNameP1Layer.1.10.SeqNameWaste04Layer.1.11.LabwareNameWasteLayer.1.11.SeqName"Thermo_48_Tube_Honeycomb_Rack_0001Layer.1.12.LabwareName"Thermo_48_Tu
+be_Honeycomb_Rack_0001Layer.1.12.SeqName COREGripTool_OnWaste_1000ul_0001Layer.1.13.LabwareNameSLIM1Layer.1.13.SeqName#MlStar1000ulHighVolumeTipWithFilterLayer.1.14.LabwareNameInitialThawMediaLayer.1.14.SeqNameWaste08Layer.1.15.LabwareName
+SampTipCar1Layer.1.15.SeqNameMlStarSlimCoReTip300ulFilterLayer.1.16.La
+dWasteSeq.10.Item.2.PosId6Seq.10.Item.3.ObjIdWasteSeq.10.Item.3.PosId11Seq.10.Item.4.ObjIdWasteSeq.10.Item.4.PosId16
+Seq.10.NameWaste04Seq.10.ReadOnly0
+Seq.11.Cnt48Seq.11.Item.1.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.1.PosIdB1Seq.11.Item.10.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.10.PosIdD2Seq.11.Item.11.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.11.PosIdF2Seq.11.Item.12.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.12.PosIdH2Seq.11.Item.13.ObjId"Thermo_48_Tube_
+Seq.10.Item.4.ObjIdWasteSeq.10.Item.4.PosId16
+Seq.10.NameWaste04Seq.10.ReadOnly0
+Seq.11.Cnt48Seq.11.Item.1.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.1.PosIdB1Seq.11.Item.10.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.10.PosIdD2Seq.11.Item.11.ObjId"Thermo_48_Tube_H
+oneycomb_Rack_0001Seq.11.Item.11.PosIdF2Seq.11.Item.12.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.12.PosIdH2Seq.11.Item.13.ObjId"Thermo_48_Tube_Honeycomb_Rack_0001Seq.11.Item.13.PosIdA2Seq.11.Item.14.ObjId"Thermo_48_Tube
+
+roperties.4.Property
+MlStarTipRackLabware.15.LwProperties.4.Value45"Labware.15.LwProperties.5.PropertyhasDefaultSequenceLabware.15.LwProperties.5.Value0"Labware.15.LwProperties.6.PropertymanagedSequenceNameLabware.15.LwPro
+perties.6.ValueMlStarSlimCoReTip300ulFilter"Labware.15.LwProperties.NumOfProps6Labware.15.SiteId2Labware.15.TForm.1.X1Labware.15.TForm.1.Y0Labware.15.TForm.1.Z0Labware.15.TForm.2.X0Labware.15.TForm.2.Y1Labware.15.TForm.2.Z0Labware.15.TForm.3.X657.9Labware.15.TForm
+eLayerbaseAxis.X1Axis.Y1Axis.Z1Deck
+ML_STAR2.dck
+DefaultWashWaste                                                                                                                                L_STAR\CORE\WasteBlock.tml
+Labware.1.Id_STARLabware.1.Angle0Labware.1.BarcodeCnt0Labware.1.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.1.DefSeqValid0Labware.1.File
+WasteBlockLabware.1.InstLabware.1.SiteId
+WasteBlockLabware.1.TForm.1.X1Labware.1.TForm.1.Y0Labware.1.TForm.1.Z0Labware.1.TForm.2.X0Labware.1.TForm.2.Y1Labware.1.TForm.2.Z0Labware.1.TForm.3.X1318Labware.1.TForm.3.Y115
+are.1.TForm.3.Z1Labware.1.TemplatedefaultLabware.1.ZTrans100Labware.1.ZTransValue2Labware.10.Angle0Labware.10.BarcodeCnt0Labware.10.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.10.DefSeqValid0Labware.10.FileHAMILTON\Ham_DW_Rgt_96L_NEW.rck
+Labware.10.IdInitialThawMediaLabware.10.InstLabware.10.IsCovered0Labware.10.SiteId5Labware.10.TForm.1.X1Labware.10.TForm.1.Y0Labware.10.TForm.1.Z0Labware.10.TForm.2.X0Labware.10.TForm.2.Y1Labware.10.TForm.2.Z0Labware.10.TFor
+0.TForm.3.Z1Labware.10.TemplateSCar2Labware.10.ZTrans186.15Labware.10.ZTransValue0Labware.11.Angle0Labware.11.BarcodeCnt0Labware.11.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.11.DefSeqValid0Labware.11.File%ML_STAR\96CoReHead\CORE96NEWWaste.tml
+Labware.11.IdCORE96NEWWaste_0001Labware.11.InstLabware.11.SiteId96CORESlideWasteLabware.11.TForm.1.X1Labware.11.TForm.1.Y0Labware.11.TForm.1.Z0Labware.11.TForm.2.X0Labware.11.TForm.2.Y1Labware.11.TForm.2.Z0Labware.11.TFo
+11.TForm.3.Z1Labware.11.TemplatedefaultLabware.11.ZTrans100Labware.11.ZTransValue2Labware.12.Angle0Labware.12.BarcodeCnt0Labware.12.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.12.DefSeqValid1Labware.12.File'ml_star\96corehead\core96slidewaste.rck
+Labware.12.Idcore96slidewaste_0001Labware.12.InstLabware.12.IsCovered0Labware.12.SiteId1Labware.12.TForm.1.X1Labware.12.TForm.1.Y0Labware.12.TForm.1.Z0Labware.12.TForm.2.X0Labware.12.TForm.2.Y1Labware.12.TForm.2.Z0La
+1Labware.12.TemplateCORE96NEWWaste_0001Labware.12.ZTrans227Labware.12.ZTransValue1Labware.13.Angle0Labware.13.BarcodeCnt0Labware.13.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.13.DefSeqValid0Labware.13.FileML_STAR\TIP_CAR_480BC_A00.tml
+Labware.13.Id                                                                                                                                          lStarCarPosAreRecognizable Labware.13.LwProperties.10.Value0#Labware.13.Lnst"Labware.13.LwProperties.1.PropertyMlStarCarBCOrientationLabware.13.LwProperties.1.Value1#Labware.13.LwProperties.10.Property
