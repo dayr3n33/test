@@ -1,8 +1,1 @@
-(venv) PS C:\Users\lynchd27\Documents\DevPal\new-project>  python -m pip install --upgrade pip setuptools wheel $env:PYTHONDONTWRITEBYTECODE="1"
 
-[notice] A new release of pip is available: 26.0.1 -> 26.1.1
-[notice] To update, run: python.exe -m pip install --upgrade pip
-ERROR: Invalid requirement: '=1': Expected package name at the start of dependency specifier
-    =1                                                                                                                                                                                                   
-    ^                                                                                                                                                                                                    
-Hint: = is not a valid operator. Did you mean == ?     
