@@ -1,11 +1,1 @@
-(venv) PS C:\Users\lynchd27\OneDrive - Pfizer\Documents\PycharmProjects\pyhamilton\new-project> 'codex' --ask-for-approval untrusted 'Before creating, modifying, deleting, moving, or formatting files, ask the user for confirmation. After the user confirms, make the approved code changes.'
-At line:1 char:11
-+ 'codex' --ask-for-approval untrusted 'Before creating, modifying, del ...
-+           ~~~~~~~~~~~~~~~~
-Unexpected token 'ask-for-approval' in expression or statement.
-At line:1 char:1
-+ 'codex' --ask-for-approval untrusted 'Before creating, modifying, del ...
-+ ~~~~~~~
-The '--' operator works only on variables or on properties.
-    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
-    + FullyQualifiedErrorId : UnexpectedToken
+--
