@@ -1,46 +1,8 @@
- 
-Installing collected packages: pytz, pyserial, parse, xlrd, websockets, waiter, urllib3, tzdata, typing_extensions, tomli, six, pyodbc, pygments, pycparser, pluggy, packaging, numpy, lxml, iniconfig, idna, et-xmlfile, colorama, charset_normalizer, certifi, requests, python-docx, python-dateutil, pypdf, pylabrobot, openpyxl, exceptiongroup, cffi, pytest, pandas, clr_loader, pythonnet, pyhamilton
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺━━━━━━━━━ 28/37 [pylabrobot]
+(venv) PS C:\Users\lynchd27\Documents\DevPal\new-project>  python -m pip install --upgrade pip setuptools wheel $env:PYTHONDONTWRITEBYTECODE="1"
+
 [notice] A new release of pip is available: 26.0.1 -> 26.1.1
 [notice] To update, run: python.exe -m pip install --upgrade pip
-ERROR: Exception:
-Traceback (most recent call last):                                                                                                                                                                       
-  File "C:\Users\lynchd27\AppData\Local\Programs\Python\Python39\lib\py_compile.py", line 144, in compile                                                                                                
-    code = loader.source_to_code(source_bytes, dfile or file,                                                                                                                                            
-  File "<frozen importlib._bootstrap_external>", line 853, in source_to_code                                                                                                                             
-  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed                                                                                                                           
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\Lib\site-packages\kx2/orig_binary_interpreter.py", line 2                                                                                    
-    async def binary_interpreter(                                                                                                                                                                        
-IndentationError: unexpected indent                                                                                                                                                                      
-                                                                                                                                                                                                         
-During handling of the above exception, another exception occurred:                                                                                                                                      
-                                                                                                                                                                                                         
-Traceback (most recent call last):                                                                                                                                                                       
-  File "C:\Users\lynchd27\AppData\Local\Programs\Python\Python39\lib\compileall.py", line 238, in compile_file                                                                                           
-    ok = py_compile.compile(fullname, cfile, dfile, True,                                                                                                                                                
-  File "C:\Users\lynchd27\AppData\Local\Programs\Python\Python39\lib\py_compile.py", line 150, in compile                                                                                                
-    raise py_exc                                                                                                                                                                                         
-py_compile.PyCompileError: Sorry: IndentationError: unexpected indent (kx2/orig_binary_interpreter.py, line 2)                                                                                           
-                                                                                                                                                                                                         
-During handling of the above exception, another exception occurred:                                                                                                                                      
-                                                                                                                                                                                                         
-Traceback (most recent call last):                                                                                                                                                                       
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\cli\base_command.py", line 107, in _run_wrapper                                                              
-    status = _inner_run()                                                                                                                                                                                
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\cli\base_command.py", line 98, in _inner_run                                                                 
-    return self.run(options, args)                                                                                                                                                                       
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\cli\req_command.py", line 96, in wrapper                                                                     
-    return func(self, options, args)                                                                                                                                                                     
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\commands\install.py", line 462, in run                                                                       
-    installed = install_given_reqs(                                                                                                                                                                      
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\req\__init__.py", line 84, in install_given_reqs                                                             
-    requirement.install(                                                                                                                                                                                 
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\req\req_install.py", line 781, in install                                                                    
-    install_wheel(                                                                                                                                                                                       
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\operations\install\wheel.py", line 736, in install_wheel                                                     
-    _install_wheel(                                                                                                                                                                                      
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\venv\lib\site-packages\pip\_internal\operations\install\wheel.py", line 622, in _install_wheel                                                    
-    success = compileall.compile_file(path, force=True, quiet=True)                                                                                                                                      
-  File "C:\Users\lynchd27\AppData\Local\Programs\Python\Python39\lib\compileall.py", line 255, in compile_file                                                                                           
-    msg = err.msg.encode(sys.stdout.encoding,                                                                                                                                                            
-TypeError: encode() argument 'encoding' must be str, not None    
+ERROR: Invalid requirement: '=1': Expected package name at the start of dependency specifier
+    =1                                                                                                                                                                                                   
+    ^                                                                                                                                                                                                    
+Hint: = is not a valid operator. Did you mean == ?     
