@@ -1,8 +1,2 @@
-PS C:\Users\lynchd27> npm --version
-npm : File C:\Program Files\nodejs\npm.ps1 cannot be loaded because running scripts is disabled on this system. For
-more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170.
-At line:1 char:1
-+ npm --version
-+ ~~~
-    + CategoryInfo          : SecurityError: (:) [], PSSecurityException
-    + FullyQualifiedErro
+(venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> pip install -r requirements.txt
+Fatal error in launcher: Unable to create process using '"c:\users\lynchd27\onedrive - pfizer\documents\pycharmprojects\pyhamilton\new-project\venv\scripts\python.exe"  "C:\Users\lynchd27\Documents\DevPal\new-project\venv\Scripts\pip.exe" install -r requirements.txt': The system cannot find the file specified.
