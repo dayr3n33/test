@@ -1,16 +1,6 @@
-"platform": _safe_platform_string(),
-
-
-def _safe_platform_string() -> str:
-    try:
-        return "{0}|{1}|{2}".format(
-            platform.system(),
-            platform.release(),
-            platform.machine(),
-        )
-    except Exception:
-        return "{0}|{1}|{2}".format(
-            getattr(sys, "platform", "unknown"),
-            "unknown",
-            "unknown",
-        )
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest tests/test_local_pc_verification_script.py -q
+........                                                                                                                                                                                          [100%]
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest -q
+.........................................s....................................................................................................................................................... [ 58%]
+..........................................................ssss............................................................................                                                        [100%] 
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> 
