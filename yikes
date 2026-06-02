@@ -1,442 +1,174 @@
 from __future__ import annotations
 
-import csv
 import os
-import re
-from collections import Counter
-from dataclasses import asdict, is_dataclass
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 
-WELL_RE = re.compile(r"^[A-Za-z]{1,2}[0-9]{1,3}$")
+@dataclass
+class DevPalConfig:
+    selected_method_path: str = ""
+    project_dir: str = ""
 
+    layout_paths: List[str] = field(default_factory=list)
+    document_paths: List[str] = field(default_factory=list)
+    trace_paths: List[str] = field(default_factory=list)
 
-class DevPalLiteRunner:
-    """Emergency local-only DevPal Lite sequence/layout runner.
+    auto_discover_traces: bool = True
+    trace_directory: str = r"C:\Program Files (x86)\HAMILTON\LogFiles"
+    trace_auto_discover_max_files: int = 5
 
-    This module never launches VENUS, PyHamilton, or hardware.
-    It only creates deterministic validation and execution-plan artifacts.
-    """
+    enable_stress_tests: bool = True
+    enable_trace_analysis: bool = True
+    enable_documentation_crosscheck: bool = True
 
-    def __init__(self, model: Any):
-        self.model = model
+    liquid_class_db_override: Optional[str] = None
 
-    def list_sequences(self) -> Dict[str, Any]:
-        sequences = self._available_sequences()
-        return {
-            "devpal_lite": True,
-            "mode": "list_sequences",
-            "available_sequences_count": len(sequences),
-            "available_sequences": sequences,
-            "issues": [],
-            "limitations": [
-                "DevPal Lite lists parsed method/deck sequences only.",
-                "No hardware execution occurs.",
-            ],
-            "hardware_execution_occurred": False,
-        }
+    output_directory: str = ""
+    save_reports: bool = True
+    report_format: str = "json"
 
-    def run(
-        self,
-        layout_path: str,
-        source_sequence: str,
-        dest_sequence: str,
-        transfer_type: str,
-        volume: float,
-        sample_count: int,
-        generate_pyhamilton: bool = False,
-    ) -> Dict[str, Any]:
-        issues: List[Dict[str, Any]] = []
-        limitations: List[str] = [
-            "DevPal Lite is sequence/layout validation only.",
-            "No prompt bypass, VENUS reconstruction, infinite stress testing, or hardware execution occurs.",
-        ]
+    verbose: bool = False
+    fail_fast: bool = False
 
-        result: Dict[str, Any] = {
-            "devpal_lite": True,
-            "mode": "run",
-            "available_sequences_count": len(self._available_sequences()),
-            "selected_source_sequence": source_sequence,
-            "selected_destination_sequence": dest_sequence,
-            "transfer_type": transfer_type,
-            "volume": volume,
-            "sample_count": sample_count,
-            "source_positions": [],
-            "destination_positions": [],
-            "transfer_pairs": [],
-            "layout_crossmatch_findings": [],
-            "execution_plan": [],
-            "issues": issues,
-            "limitations": limitations,
-            "hardware_execution_occurred": False,
-        }
+    runtime_mode: str = "auto"
+    local_runtime_check: bool = False
+    allow_pyhamilton_sim: bool = False
+    phase2_runtime_research: bool = False
+    dry_run_plan: bool = False
+    evaluate_execution_readiness: bool = False
+    collect_runtime_evidence: bool = False
+    operator_attestation_path: str = ""
+    create_runtime_session: bool = False
+    venus_sim_dry_run: bool = False
+    venus_sim_run: bool = False
+    venus_run_control_path: str = ""
+    venus_log_dir: str = ""
+    venus_sim_timeout_seconds: int = 180
+    venus_trace_wait_seconds: int = 60
+    venus_trace_stabilize_seconds: int = 4
+    offline_replay: bool = False
+    offline_stress_run: bool = False
+    stress_scenario_cap: int = 100
+    pyhamilton_oem_plan: bool = False
+    pyhamilton_oem_method_path: str = ""
+    allow_pyhamilton_oem_launch: bool = False
 
-        if sample_count is None or int(sample_count) <= 0:
-            self._issue(issues, "critical", "invalid_sample_count", "sample_count must be a positive integer.")
-            return result
+    def resolve_paths(self) -> None:
+        if self.selected_method_path:
+            self.selected_method_path = os.path.abspath(self.selected_method_path)
 
-        layout_rows = self._load_layout(layout_path, issues)
-        if not layout_rows:
-            self._issue(issues, "critical", "layout_empty_or_unreadable", "Layout file could not be loaded or contained no usable rows.")
-            return result
+        if self.project_dir:
+            self.project_dir = os.path.abspath(self.project_dir)
 
-        source_items, source_resolution = self._resolve_sequence_positions(source_sequence)
-        dest_items, dest_resolution = self._resolve_sequence_positions(dest_sequence)
+        if self.trace_directory:
+            self.trace_directory = os.path.abspath(self.trace_directory)
 
-        result["source_sequence_resolution"] = source_resolution
-        result["destination_sequence_resolution"] = dest_resolution
+        self.layout_paths = [os.path.abspath(p) for p in self.layout_paths if p]
+        self.document_paths = [os.path.abspath(p) for p in self.document_paths if p]
+        self.trace_paths = [os.path.abspath(p) for p in self.trace_paths if p]
 
-        if not source_items:
-            self._issue(issues, "critical", "source_sequence_unresolved", f"Source sequence could not be resolved: {source_sequence}")
-            return result
+        if self.output_directory:
+            self.output_directory = os.path.abspath(self.output_directory)
 
-        if not dest_items:
-            self._issue(issues, "critical", "destination_sequence_unresolved", f"Destination sequence could not be resolved: {dest_sequence}")
-            return result
+    def ensure_output_directory(self) -> None:
+        if not self.save_reports:
+            return
 
-        source_positions = [self._position_to_dict(p) for p in source_items]
-        dest_positions = [self._position_to_dict(p) for p in dest_items]
+        if not self.output_directory:
+            base = os.path.dirname(self.selected_method_path or "") or os.getcwd()
+            self.output_directory = os.path.join(base, "devpal_reports")
 
-        result["source_positions"] = source_positions
-        result["destination_positions"] = dest_positions
+        os.makedirs(self.output_directory, exist_ok=True)
 
-        self._validate_layout_against_sequences(
-            layout_rows=layout_rows,
-            source_positions=source_positions,
-            dest_positions=dest_positions,
-            issues=issues,
-            findings=result["layout_crossmatch_findings"],
-        )
+    def discover_trace_files(self) -> None:
+        if not self.auto_discover_traces:
+            return
 
-        if sample_count > len(source_positions):
-            self._issue(
-                issues,
-                "critical",
-                "sample_count_exceeds_source_sequence",
-                f"sample_count {sample_count} exceeds source sequence length {len(source_positions)}.",
-            )
+        if self.trace_paths:
+            return
 
-        if sample_count > len(dest_positions):
-            self._issue(
-                issues,
-                "critical",
-                "sample_count_exceeds_destination_sequence",
-                f"sample_count {sample_count} exceeds destination sequence length {len(dest_positions)}.",
-            )
+        if not self.trace_directory or not os.path.isdir(self.trace_directory):
+            return
 
-        if len(source_positions) != len(dest_positions):
-            self._issue(
-                issues,
-                "major",
-                "source_destination_count_mismatch",
-                f"Source sequence has {len(source_positions)} positions; destination sequence has {len(dest_positions)} positions.",
-            )
+        candidates = []
 
-        if any(i["severity"] == "critical" for i in issues):
-            return result
+        for file_name in os.listdir(self.trace_directory):
+            if not file_name.lower().endswith(".trc"):
+                continue
 
-        pair_count = min(int(sample_count), len(source_positions), len(dest_positions))
-        transfer_pairs: List[Dict[str, Any]] = []
+            path = os.path.join(self.trace_directory, file_name)
 
-        for idx in range(pair_count):
-            source = source_positions[idx]
-            dest = dest_positions[idx]
-            transfer_pairs.append(
-                {
-                    "pair_index": idx + 1,
-                    "source_well": source.get("well"),
-                    "destination_well": dest.get("well"),
-                    "source_labware_id": source.get("labware_id") or source.get("object_id"),
-                    "destination_labware_id": dest.get("labware_id") or dest.get("object_id"),
-                    "source_sequence": source_sequence,
-                    "destination_sequence": dest_sequence,
-                }
-            )
+            if not os.path.isfile(path):
+                continue
 
-        result["transfer_pairs"] = transfer_pairs
-        result["execution_plan"] = [
-            {
-                "step_index": pair["pair_index"],
-                "action": "transfer",
-                "transfer_type": transfer_type,
-                "volume": volume,
-                "source_sequence": source_sequence,
-                "destination_sequence": dest_sequence,
-                "source_labware_id": pair["source_labware_id"],
-                "source_well": pair["source_well"],
-                "destination_labware_id": pair["destination_labware_id"],
-                "destination_well": pair["destination_well"],
-                "hardware_execution": "not_executed",
-                "review_required": True,
-            }
-            for pair in transfer_pairs
-        ]
-
-        if generate_pyhamilton:
-            result["pyhamilton_plan_path"] = self._write_pyhamilton_plan(result)
-
-        return result
-
-    def _available_sequences(self) -> List[Dict[str, Any]]:
-        deck = getattr(self.model, "deck", None)
-        sequences = getattr(deck, "sequences", {}) if deck else {}
-
-        rows: List[Dict[str, Any]] = []
-        for name, seq in sorted(sequences.items(), key=lambda kv: str(kv[0]).lower()):
-            items = getattr(seq, "items", []) or []
-            parsed_count = getattr(seq, "parsed_count", None)
-            declared_count = getattr(seq, "declared_count", None)
-            rows.append(
-                {
-                    "name": getattr(seq, "name", name),
-                    "original_name": getattr(seq, "original_name", None),
-                    "canonical_sequence_id": getattr(seq, "canonical_sequence_id", None),
-                    "sequence_index": getattr(seq, "sequence_index", None),
-                    "declared_count": declared_count,
-                    "parsed_count": parsed_count if parsed_count is not None else len(items),
-                    "position_count": len(items),
-                    "replayable": bool(items),
-                    "aliases": list(getattr(seq, "aliases", []) or [])[:25],
-                    "source_file": getattr(seq, "source_file", None),
-                }
-            )
-        return rows
-
-    def _resolve_sequence_positions(self, reference: str) -> Tuple[List[Any], Dict[str, Any]]:
-        if not reference:
-            return [], {"reference": reference, "resolved": False, "reason": "empty_reference"}
-
-        # Prefer existing model helper when available.
-        if hasattr(self.model, "resolve_sequence_items"):
             try:
-                items = self.model.resolve_sequence_items(reference)
-                if items:
-                    return list(items), {
-                        "reference": reference,
-                        "resolved": True,
-                        "method": "model.resolve_sequence_items",
-                        "position_count": len(items),
-                    }
-            except Exception as exc:
-                helper_error = str(exc)
-            else:
-                helper_error = None
-        else:
-            helper_error = "model.resolve_sequence_items unavailable"
+                modified_time = os.path.getmtime(path)
+            except OSError:
+                continue
 
-        deck = getattr(self.model, "deck", None)
-        sequences = getattr(deck, "sequences", {}) if deck else {}
+            candidates.append((path, modified_time))
+            trace_path = os.path.join(self.trace_directory, file_name)
 
-        candidates = [
-            reference,
-            reference.strip(),
-            reference.replace("ML_STAR.", ""),
-            f"ML_STAR.{reference}" if not reference.startswith("ML_STAR.") else reference,
+            if not os.path.isfile(trace_path):
+                continue
+
+            try:
+                modified_time = os.path.getmtime(trace_path)
+            except OSError:
+                continue
+
+            candidates.append((trace_path, modified_time))
+
+        if not candidates:
+            return
+
+        candidates.sort(key=lambda item: item[1], reverse=True)
+        candidates.sort(key=lambda item: (item[1], item[0].lower()), reverse=True)
+
+        method_stem = ""
+        if self.selected_method_path:
+            method_stem = os.path.splitext(
+                os.path.basename(self.selected_method_path)
+            )[0].lower()
+
+        prefix_matches = [
+            item
+            for item in candidates
+            if method_stem
+            and os.path.basename(item[0]).lower().startswith(method_stem)
         ]
 
-        for candidate in candidates:
-            seq = sequences.get(candidate)
-            if seq:
-                items = list(getattr(seq, "items", []) or [])
-                return items, {
-                    "reference": reference,
-                    "resolved": bool(items),
-                    "method": "deck.sequences direct/normalized lookup",
-                    "resolved_sequence": getattr(seq, "name", candidate),
-                    "position_count": len(items),
-                    "helper_error": helper_error,
-                }
+        selected = prefix_matches if prefix_matches else candidates
 
-        lowered = {str(k).lower(): v for k, v in sequences.items()}
-        for candidate in candidates:
-            seq = lowered.get(candidate.lower())
-            if seq:
-                items = list(getattr(seq, "items", []) or [])
-                return items, {
-                    "reference": reference,
-                    "resolved": bool(items),
-                    "method": "case-insensitive deck sequence lookup",
-                    "resolved_sequence": getattr(seq, "name", candidate),
-                    "position_count": len(items),
-                    "helper_error": helper_error,
-                }
+        max_files = self.trace_auto_discover_max_files
+        if max_files is not None and max_files > 0:
+            selected = selected[:max_files]
 
-        return [], {
-            "reference": reference,
-            "resolved": False,
-            "reason": "sequence_not_found_or_has_no_positions",
-            "helper_error": helper_error,
-            "searched_variants": candidates,
-        }
+        self.trace_paths = [path for path, _mtime in selected]
+        if self.trace_auto_discover_max_files > 0:
+            selected = selected[: self.trace_auto_discover_max_files]
 
-    def _load_layout(self, layout_path: str, issues: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        path = Path(layout_path)
-        if not path.exists():
-            self._issue(issues, "critical", "layout_file_not_found", f"Layout file not found: {layout_path}")
-            return []
+        self.trace_paths = [trace_path for trace_path, _mtime in selected]
 
-        rows: List[Dict[str, Any]] = []
-        try:
-            with path.open("r", encoding="utf-8-sig", newline="") as handle:
-                reader = csv.DictReader(handle)
-                for idx, raw in enumerate(reader, start=2):
-                    normalized = {self._norm_key(k): (v.strip() if isinstance(v, str) else v) for k, v in raw.items()}
-                    well = self._first_value(normalized, ["well", "position", "pos", "posid", "layout_position"])
-                    sequence = self._first_value(normalized, ["sequence", "seq", "sequence_name", "seqname"])
-                    sample_id = self._first_value(normalized, ["sample", "sample_id", "sampleid", "barcode", "id"])
-                    labware = self._first_value(normalized, ["labware", "labware_id", "plate", "rack"])
+    def validate(self) -> None:
+        if not self.selected_method_path:
+            raise ValueError("selected_method_path is required.")
 
-                    rows.append(
-                        {
-                            "row_number": idx,
-                            "well": self._normalize_well(well),
-                            "sequence": sequence,
-                            "sample_id": sample_id,
-                            "labware": labware,
-                            "raw": raw,
-                        }
-                    )
-        except Exception as exc:
-            self._issue(issues, "critical", "layout_parse_error", f"Failed to parse layout file: {exc}")
-            return []
-
-        return rows
-
-    def _validate_layout_against_sequences(
-        self,
-        layout_rows: List[Dict[str, Any]],
-        source_positions: List[Dict[str, Any]],
-        dest_positions: List[Dict[str, Any]],
-        issues: List[Dict[str, Any]],
-        findings: List[Dict[str, Any]],
-    ) -> None:
-        layout_wells = [row["well"] for row in layout_rows if row.get("well")]
-        counts = Counter(layout_wells)
-
-        duplicates = sorted([well for well, count in counts.items() if count > 1])
-        if duplicates:
-            self._issue(issues, "major", "duplicate_layout_positions", f"Duplicate layout wells detected: {duplicates[:25]}")
-            findings.append({"severity": "major", "type": "duplicate_layout_positions", "wells": duplicates})
-
-        invalid = [row for row in layout_rows if row.get("well") and not WELL_RE.match(row["well"])]
-        if invalid:
-            self._issue(issues, "major", "invalid_layout_positions", f"Invalid layout wells detected in {len(invalid)} row(s).")
-            findings.append(
-                {
-                    "severity": "major",
-                    "type": "invalid_layout_positions",
-                    "rows": [{"row_number": r["row_number"], "well": r["well"]} for r in invalid[:25]],
-                }
+        if not os.path.isfile(self.selected_method_path):
+            raise FileNotFoundError(
+                "Selected method file not found: {0}".format(self.selected_method_path)
             )
 
-        source_wells = {p.get("well") for p in source_positions if p.get("well")}
-        dest_wells = {p.get("well") for p in dest_positions if p.get("well")}
-        represented = source_wells | dest_wells
+        if self.report_format not in {"json", "txt"}:
+            raise ValueError("report_format must be 'json' or 'txt'.")
 
-        layout_not_in_selected = sorted(set(layout_wells) - represented)
-        if layout_not_in_selected:
-            self._issue(
-                issues,
-                "major",
-                "layout_positions_not_in_selected_sequences",
-                f"{len(layout_not_in_selected)} layout well(s) are not represented in selected source/destination sequences.",
-            )
-            findings.append(
-                {
-                    "severity": "major",
-                    "type": "layout_positions_not_in_selected_sequences",
-                    "wells": layout_not_in_selected[:100],
-                }
-            )
+        allowed_runtime_modes = {"static_only", "auto", "trace_replay", "pyhamilton_simulate", "venus_run_control_simulation", "dry_run_plan_only", "future_live_execution_blocked"}
+        if self.runtime_mode not in allowed_runtime_modes:
+            raise ValueError("runtime_mode must be one of: {0}".format(", ".join(sorted(allowed_runtime_modes))))
 
-        missing_source = sorted(source_wells - set(layout_wells))
-        missing_dest = sorted(dest_wells - set(layout_wells))
 
-        if missing_source:
-            findings.append({"severity": "minor", "type": "source_sequence_positions_missing_from_layout", "wells": missing_source[:100]})
-        if missing_dest:
-            findings.append({"severity": "minor", "type": "destination_sequence_positions_missing_from_layout", "wells": missing_dest[:100]})
-
-    def _write_pyhamilton_plan(self, result: Dict[str, Any]) -> str:
-        out_dir = Path("artifacts")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_path = out_dir / "devpal_lite_pyhamilton_plan.py"
-
-        lines = [
-            "# REVIEW REQUIRED. GENERATED PLAN ONLY.",
-            "# DO NOT RUN ON HARDWARE WITHOUT HUMAN VALIDATION.",
-            "# DevPal Lite does not execute hardware. This file is a review artifact only.",
-            "",
-            "EXECUTION_PLAN = [",
-        ]
-
-        for step in result.get("execution_plan", []):
-            lines.append(f"    {repr(step)},")
-        lines.extend(
-            [
-                "]",
-                "",
-                "def review_plan():",
-                "    for step in EXECUTION_PLAN:",
-                "        print(step)",
-                "",
-                "if __name__ == '__main__':",
-                "    print('REVIEW REQUIRED. This generated plan does not auto-run hardware.')",
-                "    review_plan()",
-                "",
-            ]
-        )
-        out_path.write_text("\n".join(lines), encoding="utf-8")
-        return str(out_path)
-
-    @staticmethod
-    def _position_to_dict(position: Any) -> Dict[str, Any]:
-        if is_dataclass(position):
-            data = asdict(position)
-        elif hasattr(position, "to_report_dict"):
-            data = position.to_report_dict()
-        elif isinstance(position, dict):
-            data = dict(position)
-        else:
-            data = {
-                "well": getattr(position, "well", None) or getattr(position, "pos_id", None),
-                "pos_id": getattr(position, "pos_id", None),
-                "labware_id": getattr(position, "labware_id", None),
-                "object_id": getattr(position, "object_id", None) or getattr(position, "obj_id", None),
-                "item_index": getattr(position, "item_index", None),
-            }
-
-        if not data.get("well"):
-            data["well"] = data.get("pos_id")
-        if data.get("well"):
-            data["well"] = DevPalLiteRunner._normalize_well(data["well"])
-        return data
-
-    @staticmethod
-    def _normalize_well(value: Any) -> Optional[str]:
-        if value is None:
-            return None
-        text = str(value).strip().strip('"').strip("'")
-        if not text:
-            return None
-        match = re.match(r"^([A-Za-z]+)\s*0*([0-9]+)$", text)
-        if match:
-            return f"{match.group(1).upper()}{int(match.group(2))}"
-        return text.upper()
-
-    @staticmethod
-    def _norm_key(value: Any) -> str:
-        return str(value or "").strip().lower().replace(" ", "_").replace("-", "_")
-
-    @staticmethod
-    def _first_value(row: Dict[str, Any], keys: Sequence[str]) -> Optional[str]:
-        for key in keys:
-            value = row.get(key)
-            if value not in (None, ""):
-                return str(value)
-        return None
-
-    @staticmethod
-    def _issue(issues: List[Dict[str, Any]], severity: str, code: str, message: str) -> None:
-        issues.append({"severity": severity, "code": code, "message": message})
+def build_default_config(selected_method_path: str) -> DevPalConfig:
+    config = DevPalConfig(selected_method_path=selected_method_path)
+    config.resolve_paths()
+    return config
