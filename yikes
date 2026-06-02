@@ -1,174 +1,33 @@
-from __future__ import annotations
-
-import os
-from dataclasses import dataclass, field
-from typing import List, Optional
-
-
-@dataclass
-class DevPalConfig:
-    selected_method_path: str = ""
-    project_dir: str = ""
-
-    layout_paths: List[str] = field(default_factory=list)
-    document_paths: List[str] = field(default_factory=list)
-    trace_paths: List[str] = field(default_factory=list)
-
-    auto_discover_traces: bool = True
-    trace_directory: str = r"C:\Program Files (x86)\HAMILTON\LogFiles"
-    trace_auto_discover_max_files: int = 5
-
-    enable_stress_tests: bool = True
-    enable_trace_analysis: bool = True
-    enable_documentation_crosscheck: bool = True
-
-    liquid_class_db_override: Optional[str] = None
-
-    output_directory: str = ""
-    save_reports: bool = True
-    report_format: str = "json"
-
-    verbose: bool = False
-    fail_fast: bool = False
-
-    runtime_mode: str = "auto"
-    local_runtime_check: bool = False
-    allow_pyhamilton_sim: bool = False
-    phase2_runtime_research: bool = False
-    dry_run_plan: bool = False
-    evaluate_execution_readiness: bool = False
-    collect_runtime_evidence: bool = False
-    operator_attestation_path: str = ""
-    create_runtime_session: bool = False
-    venus_sim_dry_run: bool = False
-    venus_sim_run: bool = False
-    venus_run_control_path: str = ""
-    venus_log_dir: str = ""
-    venus_sim_timeout_seconds: int = 180
-    venus_trace_wait_seconds: int = 60
-    venus_trace_stabilize_seconds: int = 4
-    offline_replay: bool = False
-    offline_stress_run: bool = False
-    stress_scenario_cap: int = 100
-    pyhamilton_oem_plan: bool = False
-    pyhamilton_oem_method_path: str = ""
-    allow_pyhamilton_oem_launch: bool = False
-
-    def resolve_paths(self) -> None:
-        if self.selected_method_path:
-            self.selected_method_path = os.path.abspath(self.selected_method_path)
-
-        if self.project_dir:
-            self.project_dir = os.path.abspath(self.project_dir)
-
-        if self.trace_directory:
-            self.trace_directory = os.path.abspath(self.trace_directory)
-
-        self.layout_paths = [os.path.abspath(p) for p in self.layout_paths if p]
-        self.document_paths = [os.path.abspath(p) for p in self.document_paths if p]
-        self.trace_paths = [os.path.abspath(p) for p in self.trace_paths if p]
-
-        if self.output_directory:
-            self.output_directory = os.path.abspath(self.output_directory)
-
-    def ensure_output_directory(self) -> None:
-        if not self.save_reports:
-            return
-
-        if not self.output_directory:
-            base = os.path.dirname(self.selected_method_path or "") or os.getcwd()
-            self.output_directory = os.path.join(base, "devpal_reports")
-
-        os.makedirs(self.output_directory, exist_ok=True)
-
-    def discover_trace_files(self) -> None:
-        if not self.auto_discover_traces:
-            return
-
-        if self.trace_paths:
-            return
-
-        if not self.trace_directory or not os.path.isdir(self.trace_directory):
-            return
-
-        candidates = []
-
-        for file_name in os.listdir(self.trace_directory):
-            if not file_name.lower().endswith(".trc"):
-                continue
-
-            path = os.path.join(self.trace_directory, file_name)
-
-            if not os.path.isfile(path):
-                continue
-
-            try:
-                modified_time = os.path.getmtime(path)
-            except OSError:
-                continue
-
-            candidates.append((path, modified_time))
-            trace_path = os.path.join(self.trace_directory, file_name)
-
-            if not os.path.isfile(trace_path):
-                continue
-
-            try:
-                modified_time = os.path.getmtime(trace_path)
-            except OSError:
-                continue
-
-            candidates.append((trace_path, modified_time))
-
-        if not candidates:
-            return
-
-        candidates.sort(key=lambda item: item[1], reverse=True)
-        candidates.sort(key=lambda item: (item[1], item[0].lower()), reverse=True)
-
-        method_stem = ""
-        if self.selected_method_path:
-            method_stem = os.path.splitext(
-                os.path.basename(self.selected_method_path)
-            )[0].lower()
-
-        prefix_matches = [
-            item
-            for item in candidates
-            if method_stem
-            and os.path.basename(item[0]).lower().startswith(method_stem)
-        ]
-
-        selected = prefix_matches if prefix_matches else candidates
-
-        max_files = self.trace_auto_discover_max_files
-        if max_files is not None and max_files > 0:
-            selected = selected[:max_files]
-
-        self.trace_paths = [path for path, _mtime in selected]
-        if self.trace_auto_discover_max_files > 0:
-            selected = selected[: self.trace_auto_discover_max_files]
-
-        self.trace_paths = [trace_path for trace_path, _mtime in selected]
-
-    def validate(self) -> None:
-        if not self.selected_method_path:
-            raise ValueError("selected_method_path is required.")
-
-        if not os.path.isfile(self.selected_method_path):
-            raise FileNotFoundError(
-                "Selected method file not found: {0}".format(self.selected_method_path)
-            )
-
-        if self.report_format not in {"json", "txt"}:
-            raise ValueError("report_format must be 'json' or 'txt'.")
-
-        allowed_runtime_modes = {"static_only", "auto", "trace_replay", "pyhamilton_simulate", "venus_run_control_simulation", "dry_run_plan_only", "future_live_execution_blocked"}
-        if self.runtime_mode not in allowed_runtime_modes:
-            raise ValueError("runtime_mode must be one of: {0}".format(", ".join(sorted(allowed_runtime_modes))))
+# DevPal Lite / emergency sequence-layout runner
+    devpal_lite: bool = False
+    devpal_lite_list_sequences: bool = False
+    source_sequence: Optional[str] = None
+    dest_sequence: Optional[str] = None
+    transfer_type: Optional[str] = None
+    volume: Optional[float] = None
+    sample_count: Optional[int] = None
+    devpal_lite_generate_pyhamilton: bool = False
 
 
-def build_default_config(selected_method_path: str) -> DevPalConfig:
-    config = DevPalConfig(selected_method_path=selected_method_path)
-    config.resolve_paths()
-    return config
+
+if self.devpal_lite or self.devpal_lite_list_sequences:
+            if not self.selected_method_path:
+                raise ValueError("DevPal Lite requires --method.")
+
+        if self.devpal_lite:
+            if not self.layout_paths:
+                raise ValueError("DevPal Lite requires --layout.")
+            if not self.source_sequence:
+                raise ValueError("DevPal Lite requires --source-sequence.")
+            if not self.dest_sequence:
+                raise ValueError("DevPal Lite requires --dest-sequence.")
+            if not self.transfer_type:
+                raise ValueError("DevPal Lite requires --transfer-type.")
+            if self.volume is None:
+                raise ValueError("DevPal Lite requires --volume.")
+            if self.sample_count is None:
+                raise ValueError("DevPal Lite requires --sample-count.")
+            if int(self.sample_count) <= 0:
+                raise ValueError("--sample-count must be greater than 0.")
+            if float(self.volume) <= 0:
+                raise ValueError("--volume must be greater than 0.")
