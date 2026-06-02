@@ -1,4 +1,131 @@
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -c "import json; p='sample_inputs/devpal_reports/devpal_report.json'; d=json.load(open(p, encoding='utf-8')); base=next((x for x in d.get('bounded_stress_test_results', []) if x.get('scenario_id')=='base_default'), {}); print('transfer_mappings=', d.get('reconstructed_method_model',{}).get('transfer_mappings')); print('base_default=', bool(base)); print('hardware_execution_occurred=', d.get('runtime',{}).get('hardware_execution_occurred'), d.get('offline_replay_state_machine',{}).get('hardware_execution_occurred'))"                
-transfer_mappings= 1
-base_default= True
-hardware_execution_occurred= None False
+Repository root:
+C:\Users\lynchd27\Documents\DevPal\new-project
+
+Work locally only. Do not use GitHub. Do not push. Do not create PRs. Do not commit automatically.
+
+Branch:
+codex/devpal-lite-sequence-layout-runner
+
+Goal:
+Implement emergency DevPal Lite CLI workflow for selected method/deck sequences and uploaded layout CSV. This is NOT full prompt bypass, full VENUS reconstruction, full infinite stress testing, or hardware execution.
+
+Required CLI:
+1.
+python main.py --method sample_inputs/Demo.med --layout sample_inputs/layout.csv --devpal-lite --source-sequence <name> --dest-sequence <name> --transfer-type sample_transfer --volume 100 --sample-count 20 --format json --verbose
+
+2.
+python main.py --method sample_inputs/Demo.med --devpal-lite-list-sequences --format json
+
+Implementation:
+Add new module:
+analyzers/devpal_lite_runner.py
+
+Reuse existing infrastructure where possible:
+- parsers/lay_parser.py
+- parsers/stp_parser.py
+- parsers/hsl_parser.py
+- analyzers/sequence_analyzer.py
+- parsers/layout_file_parser.py
+- analyzers/layout_crossmatch_analyzer.py
+- analyzers/transfer_analyzer.py only if useful
+- existing MethodModel sequence helper APIs if present, especially get_sequence_items(), resolve_sequence_items(), get_sequence_position_map()
+
+Add CLI flags in interface/cli.py and config in core/config.py:
+--devpal-lite
+--devpal-lite-list-sequences
+--source-sequence
+--dest-sequence
+--transfer-type
+--volume
+--sample-count
+--devpal-lite-generate-pyhamilton
+
+Pipeline behavior:
+When --devpal-lite-list-sequences is used:
+- parse method/deck as current pipeline already does
+- output JSON with devpal_lite=true and available_sequences
+- include replayable sequence names only if possible, but include alias/evidence fields if already available
+
+When --devpal-lite is used:
+- parse method/deck
+- parse uploaded layout CSV
+- resolve source sequence positions
+- resolve destination sequence positions
+- pair source/destination wells in order
+- enforce sample_count
+- detect missing wells
+- detect duplicate wells
+- detect source/destination count mismatch
+- detect uploaded layout positions not represented in selected sequence where relevant
+- produce deterministic execution_plan list
+- do not execute hardware
+
+JSON output must include:
+devpal_lite: true
+available_sequences_count
+selected_source_sequence
+selected_destination_sequence
+transfer_type
+volume
+sample_count
+source_positions
+destination_positions
+transfer_pairs
+layout_crossmatch_findings
+execution_plan
+issues
+limitations
+hardware_execution_occurred: false
+
+Issue severity:
+- critical: sample_count exceeds source/destination positions, no selected sequence resolved, no layout loaded when required
+- major: duplicate layout wells, missing layout wells, source/destination count mismatch
+- minor/info: limitations, sequence alias fallback, layout rows not used
+
+PyHamilton generation:
+If --devpal-lite-generate-pyhamilton is set:
+- create artifacts/devpal_lite_pyhamilton_plan.py
+- script must be review-required
+- script must not auto-run hardware
+- include clear comment:
+  REVIEW REQUIRED. GENERATED PLAN ONLY. DO NOT RUN ON HARDWARE WITHOUT HUMAN VALIDATION.
+- output command/plan only, no execution
+
+Tests:
+Add tests for:
+1. list sequences works
+2. selected sequence crossmatch passes for valid layout
+3. sample_count > sequence length fails
+4. missing layout position fails
+5. duplicate layout position fails
+6. source/destination mismatch fails
+7. JSON output contains execution_plan and transfer_pairs
+8. pyhamilton generated plan is written only when flag is set and contains review-required warning
+9. hardware_execution_occurred remains false
+
+Validation:
+Run:
+python -m pytest -q
+
+Run:
+python main.py --method sample_inputs/Demo.med --devpal-lite-list-sequences --format json
+
+Run:
+python main.py --method sample_inputs/Demo.med --layout sample_inputs/layout.csv --devpal-lite --source-sequence Thermo_48_Tube_Honeycomb_Rack_0001 --dest-sequence P --transfer-type sample_transfer --volume 100 --sample-count 20 --format json --verbose
+
+Acceptance:
+- pytest passes
+- list sequences command works
+- selected source/destination + layout produces deterministic transfer_pairs
+- invalid layouts produce clear major/critical issues
+- no hardware execution occurs
+- JSON is immediately usable by team
+
+Final response:
+- files modified
+- CLI flags added
+- runner behavior
+- tests added
+- pytest result
+- Demo Lite validation result
+- limitations
