@@ -1,96 +1,49 @@
+Rejecting this edit.
+
+This proposed change is unsafe and appears to corrupt parsers/lay_parser.py.
+
+Problems:
+1. COMPACT_VALUE_BOUNDARY_PATTERN still contains forbidden unqualified boundaries:
+   ObjId
+   PosId
+   DefSeqValid
+   File
+   Template
+   LwProperties
+
+2. The edit duplicates regex fragments into SEQUENCE_NAME_STRUCTURAL_TOKEN_PATTERN and SEQUENCE_NAME_KEY_TOKEN_PATTERN incorrectly.
+
+3. It appears to corrupt unrelated parser code and duplicate return summary.
+
+Do not modify SEQUENCE_NAME_STRUCTURAL_TOKEN_PATTERN or SEQUENCE_NAME_KEY_TOKEN_PATTERN for this hotfix.
+
+Minimal-change requirement:
+Only change COMPACT_VALUE_BOUNDARY_PATTERN.
+
+Replace the whole COMPACT_VALUE_BOUNDARY_PATTERN with exactly this:
+
 COMPACT_VALUE_BOUNDARY_PATTERN = re.compile(
-     r"(?i)(?="
-     r"Seq\.\d+\.(?:Item\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
-     r"|Labware\.\d+\.(?:LwProperties\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
-     r"|Layer\.\d+\.\d+\.[A-Za-z][A-Za-z0-9_]*"
-     r"|ObjId(?:\b|_)"
-     r"|PosId(?:\b|_)"
-     r"|DefSeqValid(?:\b|_)"
-     r"|File(?:\b|_)"
-     r"|Template(?:\b|_)"
-     r"|LwProperties(?:\b|_)"
-     r"Seq\.\d+\.Name"
-     r"|Seq\.\d+\.Cnt"
-     r"|Seq\.\d+\.ReadOnly"
-     r"|Seq\.\d+\.Item\.\d+\.ObjId"
-     r"|Seq\.\d+\.Item\.\d+\.PosId"
-     r"|Labware\.\d+\.Id"
-     r"|Labware\.\d+\.DefSeqValid"
-     r"|Labware\.\d+\.File"
-     r"|Labware\.\d+\.Template"
-     r"|Labware\.\d+\.SiteId"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
-     r"|Layer\.\d+\.\d+\.SeqName"
-     r"|Layer\.\d+\.\d+\.LabwareName"
-     r")"
- )
+    r"(?i)(?="
+    r"Seq\.\d+\.Name"
+    r"|Seq\.\d+\.Cnt"
+    r"|Seq\.\d+\.ReadOnly"
+    r"|Seq\.\d+\.Item\.\d+\.ObjId"
+    r"|Seq\.\d+\.Item\.\d+\.PosId"
+    r"|Labware\.\d+\.Id"
+    r"|Labware\.\d+\.DefSeqValid"
+    r"|Labware\.\d+\.File"
+    r"|Labware\.\d+\.Template"
+    r"|Labware\.\d+\.SiteId"
+    r"|Labware\.\d+\.LwProperties\.\d+\.Property"
+    r"|Labware\.\d+\.LwProperties\.\d+\.Value"
+    r"|Layer\.\d+\.\d+\.SeqName"
+    r"|Layer\.\d+\.\d+\.LabwareName"
+    r")"
+)
 
- SEQUENCE_NAME_STRUCTURAL_TOKEN_PATTERN = re.compile(
-     r"(?i)(Seq\.\d+|\.Item\.|Item\.\d+|ObjId|PosId|Labware\.|Layer\.|DefSeqValid|LwProperties)"
-     r"(?i)("
-     r"Seq\.\d+\.Name"
-     r"|Seq\.\d+\.Cnt"
-     r"|Seq\.\d+\.ReadOnly"
-     r"|Seq\.\d+\.Item\.\d+\.ObjId"
-     r"|Seq\.\d+\.Item\.\d+\.PosId"
-     r"|Labware\.\d+\.Id"
-     r"|Labware\.\d+\.DefSeqValid"
-     r"|Labware\.\d+\.File"
-     r"|Labware\.\d+\.Template"
-     r"|Labware\.\d+\.SiteId"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
-     r"|Layer\.\d+\.\d+\.SeqName"
-     r"|Layer\.\d+\.\d+\.LabwareName"
-     r")"
- )
+Then add only the requested tests.
 
- SEQUENCE_NAME_KEY_TOKEN_PATTERN = re.compile(
-     r"(?i)(Seq\.\d+|Item\.\d+|ObjId|PosId|Labware\.\d+|Layer\.\d+|DefSeqValid|LwProperties|Template|File)"
-     r"(?i)("
-     r"Seq\.\d+\.Name"
-     r"|Seq\.\d+\.Cnt"
-     r"|Seq\.\d+\.ReadOnly"
-     r"|Seq\.\d+\.Item\.\d+\.ObjId"
-     r"|Seq\.\d+\.Item\.\d+\.PosId"
-r"|Labware\.\d+\.Id"
-     r"|Labware\.\d+\.DefSeqValid"
-     r"|Labware\.\d+\.File"
-     r"|Labware\.\d+\.Template"
-     r"|Labware\.\d+\.SiteId"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
-     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
-     r"|Layer\.\d+\.\d+\.SeqName"
-     r"|Layer\.\d+\.\d+\.LabwareName"
-     r")"
- )
-
-
-
-         if prop_value_match:
-             property_values[prop_value_match.group("labware_index")][prop_value_match.group("property_index")] = _clean_compact_value(prop_value_match.group("value"), "value")
-        labware[prop_value_match.group("labware_index")].setdefault("raw_evidence", []).append(_raw_evidence(path, line_number, stripped))
-             labware[prop_name_match.group("labware_index")].setdefault("raw_evidence", []).append(_raw_evidence(path, line_number, stripped))
-             continue
-if len(key_like_tokens) > 1:
-         return False, "multiple_key_like_tokens"
-     if re.search(r"(?i)(?:^|[_ .-])(?:Name|Cnt|ReadOnly|ObjId|PosId|DefSeqValid|Template|File)[_ .-]*[A-Za-z0-9]", text):
-         return False, "concatenated_field_text"
-     return True, "accepted"
-
-
-
-                 "deck_track_start": labware.deck_track_start,
-                 "deck_track_end": labware.deck_track_end,
-                 "site_id": labware.site_id,
-                 "position_on_carrier": labware.position_on_carrier,
-                 "orientation": labware.orientation,
-                 "barcode": labware.barcode,
-                 "is_covered": labware.is_covered,
-                 "is_waste": labware.is_waste,
-             }
- )
-
-     return summary
-     return summary
+Do not touch unrelated parser logic.
+Do not modify unrelated regex constants.
+Do not duplicate existing code.
+Do not add standalone ObjId, PosId, File, Template, DefSeqValid, or LwProperties boundaries.
