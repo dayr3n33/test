@@ -1,24 +1,380 @@
-COMPACT_VALUE_BOUNDARY_PATTERN = re.compile(
-    r"(?i)(?="
-    r"Seq\.\d+\.Name"
-    r"|Seq\.\d+\.Cnt"
-    r"|Seq\.\d+\.ReadOnly"
-    r"|Seq\.\d+\.Item\.\d+\.ObjId"
-    r"|Seq\.\d+\.Item\.\d+\.PosId"
-    r"|Labware\.\d+\.Id"
-    r"|Labware\.\d+\.DefSeqValid"
-    r"|Labware\.\d+\.File"
-    r"|Labware\.\d+\.Template"
-    r"|Labware\.\d+\.SiteId"
-    r"|Labware\.\d+\.LwProperties\.\d+\.Property"
-    r"|Labware\.\d+\.LwProperties\.\d+\.Value"
-    r"|Layer\.\d+\.\d+\.SeqName"
-    r"|Layer\.\d+\.\d+\.LabwareName"
-    r")"
-)
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest tests/test_lay_parser.py -q
+........                                                                                                                                                                                          [100%]
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest -q
+.........................................s....FFFF............................................................................................................................................... [ 58%]
+..........................................................ssss............................................................................                                                        [100%]
+=============================================================================================== FAILURES ===============================================================================================
+______________________________________________________________________________ test_summary_written_and_nonzero_recorded _______________________________________________________________________________
 
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024FEF0C89D0>
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/3/pytest-of-LYNCHD27/pytest-1/test_summary_written_and_nonze0')
 
+    def test_summary_written_and_nonzero_recorded(monkeypatch, tmp_path):
+        monkeypatch.setattr(lpv, "REPORTS_DIR", str(tmp_path / "reports"))
+        monkeypatch.setattr(lpv, "SUMMARY_PATH", str(tmp_path / "reports" / "local_pc_verification_summary.json"))
+    
+        calls = {"count": 0}
+    
+        def fake_run(cmd, capture_output, text):
+            calls["count"] += 1
+            if calls["count"] == 3:
+                return DummyCompleted(returncode=2, stdout="boom", stderr="")
+            return DummyCompleted(returncode=0, stdout="ok", stderr="")
+    
+        monkeypatch.setattr(lpv.subprocess, "run", fake_run)
+>       summary = lpv.run_verification()
+                  ^^^^^^^^^^^^^^^^^^^^^^
 
-python -m pytest tests/test_lay_parser.py -q
-python -m pytest -q
-python main.py --method sample_inputs/Demo.med --offline-stress-run --stress-scenario-cap 25 --format json --verbose
+tests\test_local_pc_verification_script.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts\local_pc_verification.py:113: in run_verification
+    "platform": "{0}|{1}|{2}".format(platform.system(), platform.release(), platform.machine()),
+                                     ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:917: in system
+    return uname().system
+           ^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:852: in uname
+    release, version, csd, ptype = win32_ver()
+                                   ^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:370: in win32_ver
+    major, minor, build = map(int, _syscmd_ver()[2].split('.'))
+                                   ^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:284: in _syscmd_ver
+    info = subprocess.check_output(cmd,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timeout = None, popenargs = ('ver',), kwargs = {'shell': True, 'stderr': -3, 'stdin': -3, 'text': True}, kw = 'check'
+
+    def check_output(*popenargs, timeout=None, **kwargs):
+        r"""Run command with arguments and return its output.
+    
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+    
+        The arguments are the same as for the Popen constructor.  Example:
+    
+        >>> check_output(["ls", "-l", "/dev/null"])
+        b'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+    
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+    
+        >>> check_output(["/bin/sh", "-c",
+        ...               "ls -l non_existent_file ; exit 0"],
+        ...              stderr=STDOUT)
+        b'ls: non_existent_file: No such file or directory\n'
+    
+        There is an additional optional argument, "input", allowing you to
+        pass a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it too will be used internally.  Example:
+    
+        >>> check_output(["sed", "-e", "s/foo/bar/"],
+        ...              input=b"when in the course of fooman events\n")
+        b'when in the course of barman events\n'
+    
+        By default, all communication is in bytes, and therefore any "input"
+        should be bytes, and the return value will be bytes.  If in text mode,
+        any "input" should be a string, and the return value will be a string
+        decoded according to locale encoding, or by "encoding" if set. Text mode
+        is triggered by setting any of text, encoding, errors or universal_newlines.
+        """
+        for kw in ('stdout', 'check'):
+            if kw in kwargs:
+                raise ValueError(f'{kw} argument not allowed, it will be overridden.')
+    
+        if 'input' in kwargs and kwargs['input'] is None:
+            # Explicitly passing input=None was previously equivalent to passing an
+            # empty string. That is maintained here for backwards compatibility.
+            if kwargs.get('universal_newlines') or kwargs.get('text'):
+                empty = ''
+            else:
+                empty = b''
+            kwargs['input'] = empty
+    
+>       return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+                   **kwargs).stdout
+E       TypeError: test_summary_written_and_nonzero_recorded.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\subprocess.py:465: TypeError
+____________________________________________________________________ test_safety_booleans_checked_when_report_exists_and_all_false _____________________________________________________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024FECDDC150>
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/3/pytest-of-LYNCHD27/pytest-1/test_safety_booleans_checked_w0')
+
+    def test_safety_booleans_checked_when_report_exists_and_all_false(monkeypatch, tmp_path):
+        report_path = tmp_path / "r.json"
+        report_path.write_text(json.dumps({"runtime_environment": {k: False for k in lpv.SAFETY_KEYS}}), encoding="utf-8")
+    
+        monkeypatch.setattr(lpv, "REPORTS_DIR", str(tmp_path / "reports"))
+        monkeypatch.setattr(lpv, "SUMMARY_PATH", str(tmp_path / "reports" / "local_pc_verification_summary.json"))
+    
+        def fake_run(cmd, capture_output, text):
+            return DummyCompleted(returncode=0, stdout="Report saved: {0}\n".format(report_path), stderr="")
+    
+        monkeypatch.setattr(lpv.subprocess, "run", fake_run)
+>       summary = lpv.run_verification()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_local_pc_verification_script.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts\local_pc_verification.py:113: in run_verification
+    "platform": "{0}|{1}|{2}".format(platform.system(), platform.release(), platform.machine()),
+                                     ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:917: in system
+    return uname().system
+           ^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:852: in uname
+    release, version, csd, ptype = win32_ver()
+                                   ^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:370: in win32_ver
+    major, minor, build = map(int, _syscmd_ver()[2].split('.'))
+                                   ^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:284: in _syscmd_ver
+    info = subprocess.check_output(cmd,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timeout = None, popenargs = ('ver',), kwargs = {'shell': True, 'stderr': -3, 'stdin': -3, 'text': True}, kw = 'check'
+
+    def check_output(*popenargs, timeout=None, **kwargs):
+        r"""Run command with arguments and return its output.
+    
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+    
+        The arguments are the same as for the Popen constructor.  Example:
+    
+        >>> check_output(["ls", "-l", "/dev/null"])
+        b'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+    
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+    
+        >>> check_output(["/bin/sh", "-c",
+        ...               "ls -l non_existent_file ; exit 0"],
+        ...              stderr=STDOUT)
+        b'ls: non_existent_file: No such file or directory\n'
+    
+        There is an additional optional argument, "input", allowing you to
+        pass a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it too will be used internally.  Example:
+    
+        >>> check_output(["sed", "-e", "s/foo/bar/"],
+        ...              input=b"when in the course of fooman events\n")
+        b'when in the course of barman events\n'
+    
+        By default, all communication is in bytes, and therefore any "input"
+        should be bytes, and the return value will be bytes.  If in text mode,
+        any "input" should be a string, and the return value will be a string
+        decoded according to locale encoding, or by "encoding" if set. Text mode
+        is triggered by setting any of text, encoding, errors or universal_newlines.
+        """
+        for kw in ('stdout', 'check'):
+            if kw in kwargs:
+                raise ValueError(f'{kw} argument not allowed, it will be overridden.')
+    
+        if 'input' in kwargs and kwargs['input'] is None:
+            # Explicitly passing input=None was previously equivalent to passing an
+            # empty string. That is maintained here for backwards compatibility.
+            if kwargs.get('universal_newlines') or kwargs.get('text'):
+                empty = ''
+            else:
+                empty = b''
+            kwargs['input'] = empty
+    
+>       return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+                   **kwargs).stdout
+E       TypeError: test_safety_booleans_checked_when_report_exists_and_all_false.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\subprocess.py:465: TypeError
+_______________________________________________________________________________ test_safety_booleans_true_forces_failure _______________________________________________________________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024FEF0BAED0>
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/3/pytest-of-LYNCHD27/pytest-1/test_safety_booleans_true_forc0')
+
+    def test_safety_booleans_true_forces_failure(monkeypatch, tmp_path):
+        report_path = tmp_path / "r.json"
+        runtime = {k: False for k in lpv.SAFETY_KEYS}
+        runtime["venus_launched"] = True
+        report_path.write_text(json.dumps({"runtime_environment": runtime}), encoding="utf-8")
+    
+        monkeypatch.setattr(lpv, "REPORTS_DIR", str(tmp_path / "reports"))
+        monkeypatch.setattr(lpv, "SUMMARY_PATH", str(tmp_path / "reports" / "local_pc_verification_summary.json"))
+    
+        def fake_run(cmd, capture_output, text):
+            return DummyCompleted(returncode=0, stdout="Report saved: {0}\n".format(report_path), stderr="")
+    
+        monkeypatch.setattr(lpv.subprocess, "run", fake_run)
+>       summary = lpv.run_verification()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_local_pc_verification_script.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts\local_pc_verification.py:113: in run_verification
+    "platform": "{0}|{1}|{2}".format(platform.system(), platform.release(), platform.machine()),
+                                     ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:917: in system
+    return uname().system
+           ^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:852: in uname
+    release, version, csd, ptype = win32_ver()
+                                   ^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:370: in win32_ver
+    major, minor, build = map(int, _syscmd_ver()[2].split('.'))
+                                   ^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:284: in _syscmd_ver
+    info = subprocess.check_output(cmd,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timeout = None, popenargs = ('ver',), kwargs = {'shell': True, 'stderr': -3, 'stdin': -3, 'text': True}, kw = 'check'
+
+    def check_output(*popenargs, timeout=None, **kwargs):
+        r"""Run command with arguments and return its output.
+    
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+    
+        The arguments are the same as for the Popen constructor.  Example:
+    
+        >>> check_output(["ls", "-l", "/dev/null"])
+        b'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+    
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+    
+        >>> check_output(["/bin/sh", "-c",
+        ...               "ls -l non_existent_file ; exit 0"],
+        ...              stderr=STDOUT)
+        b'ls: non_existent_file: No such file or directory\n'
+    
+        There is an additional optional argument, "input", allowing you to
+        pass a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it too will be used internally.  Example:
+    
+        >>> check_output(["sed", "-e", "s/foo/bar/"],
+        ...              input=b"when in the course of fooman events\n")
+        b'when in the course of barman events\n'
+    
+        By default, all communication is in bytes, and therefore any "input"
+        should be bytes, and the return value will be bytes.  If in text mode,
+        any "input" should be a string, and the return value will be a string
+        decoded according to locale encoding, or by "encoding" if set. Text mode
+        is triggered by setting any of text, encoding, errors or universal_newlines.
+        """
+        for kw in ('stdout', 'check'):
+            if kw in kwargs:
+                raise ValueError(f'{kw} argument not allowed, it will be overridden.')
+    
+        if 'input' in kwargs and kwargs['input'] is None:
+            # Explicitly passing input=None was previously equivalent to passing an
+            # empty string. That is maintained here for backwards compatibility.
+            if kwargs.get('universal_newlines') or kwargs.get('text'):
+                empty = ''
+            else:
+                empty = b''
+            kwargs['input'] = empty
+    
+>       return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+                   **kwargs).stdout
+E       TypeError: test_safety_booleans_true_forces_failure.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\subprocess.py:465: TypeError
+________________________________________________________________________________ test_limitation_nonzero_is_not_failure ________________________________________________________________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024FECE16D90>
+tmp_path = WindowsPath('C:/Users/lynchd27/AppData/Local/Temp/3/pytest-of-LYNCHD27/pytest-1/test_limitation_nonzero_is_not0')
+
+    def test_limitation_nonzero_is_not_failure(monkeypatch, tmp_path):
+        monkeypatch.setattr(lpv, "REPORTS_DIR", str(tmp_path / "reports"))
+        monkeypatch.setattr(lpv, "SUMMARY_PATH", str(tmp_path / "reports" / "local_pc_verification_summary.json"))
+    
+        def fake_run(cmd, capture_output, text):
+            return DummyCompleted(returncode=1, stdout="runtime limitation: PyHamilton unavailable", stderr="")
+    
+        monkeypatch.setattr(lpv.subprocess, "run", fake_run)
+>       summary = lpv.run_verification()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_local_pc_verification_script.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts\local_pc_verification.py:113: in run_verification
+    "platform": "{0}|{1}|{2}".format(platform.system(), platform.release(), platform.machine()),
+                                     ^^^^^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:917: in system
+    return uname().system
+           ^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:852: in uname
+    release, version, csd, ptype = win32_ver()
+                                   ^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:370: in win32_ver
+    major, minor, build = map(int, _syscmd_ver()[2].split('.'))
+                                   ^^^^^^^^^^^^^
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\platform.py:284: in _syscmd_ver
+    info = subprocess.check_output(cmd,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timeout = None, popenargs = ('ver',), kwargs = {'shell': True, 'stderr': -3, 'stdin': -3, 'text': True}, kw = 'check'
+
+    def check_output(*popenargs, timeout=None, **kwargs):
+        r"""Run command with arguments and return its output.
+    
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+    
+        The arguments are the same as for the Popen constructor.  Example:
+    
+        >>> check_output(["ls", "-l", "/dev/null"])
+        b'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+    
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+    
+        >>> check_output(["/bin/sh", "-c",
+        ...               "ls -l non_existent_file ; exit 0"],
+        ...              stderr=STDOUT)
+        b'ls: non_existent_file: No such file or directory\n'
+    
+        There is an additional optional argument, "input", allowing you to
+        pass a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it too will be used internally.  Example:
+    
+        >>> check_output(["sed", "-e", "s/foo/bar/"],
+        ...              input=b"when in the course of fooman events\n")
+        b'when in the course of barman events\n'
+    
+        By default, all communication is in bytes, and therefore any "input"
+        should be bytes, and the return value will be bytes.  If in text mode,
+        any "input" should be a string, and the return value will be a string
+        decoded according to locale encoding, or by "encoding" if set. Text mode
+        is triggered by setting any of text, encoding, errors or universal_newlines.
+        """
+        for kw in ('stdout', 'check'):
+            if kw in kwargs:
+                raise ValueError(f'{kw} argument not allowed, it will be overridden.')
+    
+        if 'input' in kwargs and kwargs['input'] is None:
+            # Explicitly passing input=None was previously equivalent to passing an
+            # empty string. That is maintained here for backwards compatibility.
+            if kwargs.get('universal_newlines') or kwargs.get('text'):
+                empty = ''
+            else:
+                empty = b''
+            kwargs['input'] = empty
+    
+>       return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+                   **kwargs).stdout
+E       TypeError: test_limitation_nonzero_is_not_failure.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+
+..\..\..\AppData\Local\Programs\Python\Python311\Lib\subprocess.py:465: TypeError
+======================================================================================= short test summary info ========================================================================================
+FAILED tests/test_local_pc_verification_script.py::test_summary_written_and_nonzero_recorded - TypeError: test_summary_written_and_nonzero_recorded.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+FAILED tests/test_local_pc_verification_script.py::test_safety_booleans_checked_when_report_exists_and_all_false - TypeError: test_safety_booleans_checked_when_report_exists_and_all_false.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+FAILED tests/test_local_pc_verification_script.py::test_safety_booleans_true_forces_failure - TypeError: test_safety_booleans_true_forces_failure.<locals>.fake_run() got an unexpected keyword argument 'stdout'
+FAILED tests/test_local_pc_verification_script.py::test_limitation_nonzero_is_not_failure - TypeError: test_limitation_nonzero_is_not_failure.<locals>.fake_run() got an unexpected keyword argument 'stdout'
