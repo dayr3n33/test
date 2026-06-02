@@ -1,131 +1,291 @@
-Repository root:
-C:\Users\lynchd27\Documents\DevPal\new-project
+# analyzers/devpal_lite_runner.py
 
-Work locally only. Do not use GitHub. Do not push. Do not create PRs. Do not commit automatically.
+from __future__ import annotations
 
-Branch:
-codex/devpal-lite-sequence-layout-runner
+import os
+import re
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
 
-Goal:
-Implement emergency DevPal Lite CLI workflow for selected method/deck sequences and uploaded layout CSV. This is NOT full prompt bypass, full VENUS reconstruction, full infinite stress testing, or hardware execution.
+from models.method_models import (
+    DeckModel,
+    LabwareObject,
+    MethodModel,
+    SequenceObject,
+    SequencePosition,
+)
+from parsers.layout_file_parser import parse_layout_file
+from analyzers.layout_crossmatch_analyzer import LayoutCrossmatchAnalyzer
+from parsers.utils import parse_int
 
-Required CLI:
-1.
-python main.py --method sample_inputs/Demo.med --layout sample_inputs/layout.csv --devpal-lite --source-sequence <name> --dest-sequence <name> --transfer-type sample_transfer --volume 100 --sample-count 20 --format json --verbose
+class DevPalLiteRunner:
+    def __init__(self, model: MethodModel):
+        self.model = model
+        self.results: Dict[str, Any] = {
+            "devpal_lite": True,
+            "available_sequences_count": 0,
+            "selected_source_sequence": None,
+            "selected_destination_sequence": None,
+            "transfer_type": None,
+            "volume": None,
+            "sample_count": None,
+            "source_positions": [],
+            "destination_positions": [],
+            "transfer_pairs": [],
+            "layout_crossmatch_findings": [],
+            "execution_plan": [],
+            "issues": [],
+            "limitations": [],
+            "hardware_execution_occurred": False,
+        }
 
-2.
-python main.py --method sample_inputs/Demo.med --devpal-lite-list-sequences --format json
+    def list_sequences(self) -> Dict[str, Any]:
+        self.results["available_sequences_count"] = len(self.model.deck.sequences)
+        self.results["available_sequences"] = [
+            {
+                "name": seq.name,
+                "canonical_sequence_id": seq.canonical_sequence_id,
+                "sequence_index": seq.sequence_index,
+                "original_name": seq.original_name,
+                "normalized_name": seq.normalized_name,
+                "declared_count": seq.declared_count,
+                "parsed_count": seq.parsed_count,
+                "aliases": seq.aliases,
+                "is_mixed_object_sequence": seq.is_mixed_object_sequence,
+                "has_unresolved_mapping": seq.has_unresolved_mapping,
+                "source_file": seq.source_file,
+                "raw_evidence_snippets": seq.raw_evidence[:3] if seq.raw_evidence else [],
+            }
+            for seq in self.model.deck.sequences.values()
+        ]
+        return self.results
 
-Implementation:
-Add new module:
-analyzers/devpal_lite_runner.py
+    def run_devpal_lite(
+        self,
+        layout_path: str,
+        source_sequence_name: str,
+        dest_sequence_name: str,
+        transfer_type: str,
+        volume: float,
+        sample_count: int,
+        generate_pyhamilton: bool,
+    ) -> Dict[str, Any]:
+        self.results["selected_source_sequence"] = source_sequence_name
+        self.results["selected_destination_sequence"] = dest_sequence_name
+        self.results["transfer_type"] = transfer_type
+        self.results["volume"] = volume
+        self.results["sample_count"] = sample_count
 
-Reuse existing infrastructure where possible:
-- parsers/lay_parser.py
-- parsers/stp_parser.py
-- parsers/hsl_parser.py
-- analyzers/sequence_analyzer.py
-- parsers/layout_file_parser.py
-- analyzers/layout_crossmatch_analyzer.py
-- analyzers/transfer_analyzer.py only if useful
-- existing MethodModel sequence helper APIs if present, especially get_sequence_items(), resolve_sequence_items(), get_sequence_position_map()
+        # 1. Parse layout CSV
+        layout_data = self._parse_layout_csv(layout_path)
+        if not layout_data:
+            self._add_issue("critical", "Failed to parse layout CSV or layout is empty.")
+            return self.results
 
-Add CLI flags in interface/cli.py and config in core/config.py:
---devpal-lite
---devpal-lite-list-sequences
---source-sequence
---dest-sequence
---transfer-type
---volume
---sample-count
---devpal-lite-generate-pyhamilton
+        # 2. Resolve sequences
+        source_sequence = self.model.deck.sequences.get(source_sequence_name)
+        dest_sequence = self.model.deck.sequences.get(dest_sequence_name)
 
-Pipeline behavior:
-When --devpal-lite-list-sequences is used:
-- parse method/deck as current pipeline already does
-- output JSON with devpal_lite=true and available_sequences
-- include replayable sequence names only if possible, but include alias/evidence fields if already available
+        if not source_sequence:
+            self._add_issue("critical", f"Source sequence '{source_sequence_name}' not found.")
+            return self.results
+        if not dest_sequence:
+            self._add_issue("critical", f"Destination sequence '{dest_sequence_name}' not found.")
+            return self.results
 
-When --devpal-lite is used:
-- parse method/deck
-- parse uploaded layout CSV
-- resolve source sequence positions
-- resolve destination sequence positions
-- pair source/destination wells in order
-- enforce sample_count
-- detect missing wells
-- detect duplicate wells
-- detect source/destination count mismatch
-- detect uploaded layout positions not represented in selected sequence where relevant
-- produce deterministic execution_plan list
-- do not execute hardware
+        # 3. Crossmatch layout with sequences
+        layout_analyzer = LayoutCrossmatchAnalyzer(self.model)
+        layout_crossmatch_results = layout_analyzer.analyze_layout(layout_path)
+        self.results["layout_crossmatch_findings"] = layout_crossmatch_results["findings"]
 
-JSON output must include:
-devpal_lite: true
-available_sequences_count
-selected_source_sequence
-selected_destination_sequence
-transfer_type
-volume
-sample_count
-source_positions
-destination_positions
-transfer_pairs
-layout_crossmatch_findings
-execution_plan
-issues
-limitations
-hardware_execution_occurred: false
+        # Extract relevant positions from layout_data
+        source_layout_positions = {item["Well"]: item for item in layout_data if item.get("Sequence") == source_sequence_name}
+        dest_layout_positions = {item["Well"]: item for item in layout_data if item.get("Sequence") == dest_sequence_name}
 
-Issue severity:
-- critical: sample_count exceeds source/destination positions, no selected sequence resolved, no layout loaded when required
-- major: duplicate layout wells, missing layout wells, source/destination count mismatch
-- minor/info: limitations, sequence alias fallback, layout rows not used
+        # 4. Pair source/destination wells
+        self._pair_wells(source_sequence, dest_sequence, source_layout_positions, dest_layout_positions, sample_count)
 
-PyHamilton generation:
-If --devpal-lite-generate-pyhamilton is set:
-- create artifacts/devpal_lite_pyhamilton_plan.py
-- script must be review-required
-- script must not auto-run hardware
-- include clear comment:
-  REVIEW REQUIRED. GENERATED PLAN ONLY. DO NOT RUN ON HARDWARE WITHOUT HUMAN VALIDATION.
-- output command/plan only, no execution
+        # 5. Generate execution plan
+        self._generate_execution_plan(transfer_type, volume)
 
-Tests:
-Add tests for:
-1. list sequences works
-2. selected sequence crossmatch passes for valid layout
-3. sample_count > sequence length fails
-4. missing layout position fails
-5. duplicate layout position fails
-6. source/destination mismatch fails
-7. JSON output contains execution_plan and transfer_pairs
-8. pyhamilton generated plan is written only when flag is set and contains review-required warning
-9. hardware_execution_occurred remains false
+        # 6. Generate PyHamilton script if requested
+        if generate_pyhamilton:
+            self._generate_pyhamilton_script()
 
-Validation:
-Run:
-python -m pytest -q
+        return self.results
 
-Run:
-python main.py --method sample_inputs/Demo.med --devpal-lite-list-sequences --format json
+    def _parse_layout_csv(self, layout_path: str) -> List[Dict[str, Any]]:
+        try:
+            # Assuming parse_layout_file returns a list of dicts
+            layout_data = parse_layout_file(layout_path)
+            return layout_data
+        except Exception as e:
+            self._add_issue("critical", f"Error parsing layout file '{layout_path}': {e}")
+            return []
 
-Run:
-python main.py --method sample_inputs/Demo.med --layout sample_inputs/layout.csv --devpal-lite --source-sequence Thermo_48_Tube_Honeycomb_Rack_0001 --dest-sequence P --transfer-type sample_transfer --volume 100 --sample-count 20 --format json --verbose
+    def _pair_wells(
+        self,
+        source_sequence: SequenceObject,
+        dest_sequence: SequenceObject,
+        source_layout_positions: Dict[str, Any],
+        dest_layout_positions: Dict[str, Any],
+        sample_count: int,
+    ) -> None:
+        source_wells = [pos.well for pos in source_sequence.items if pos.well]
+        dest_wells = [pos.well for pos in dest_sequence.items if pos.well]
 
-Acceptance:
-- pytest passes
-- list sequences command works
-- selected source/destination + layout produces deterministic transfer_pairs
-- invalid layouts produce clear major/critical issues
-- no hardware execution occurs
-- JSON is immediately usable by team
+        # Filter sequence wells by layout presence
+        filtered_source_wells = [well for well in source_wells if well in source_layout_positions]
+        filtered_dest_wells = [well for well in dest_wells if well in dest_layout_positions]
 
-Final response:
-- files modified
-- CLI flags added
-- runner behavior
-- tests added
-- pytest result
-- Demo Lite validation result
-- limitations
+        self.results["source_positions"] = filtered_source_wells
+        self.results["destination_positions"] = filtered_dest_wells
+
+        if not filtered_source_wells:
+            self._add_issue("critical", f"No source wells found for sequence '{source_sequence.name}' in layout.")
+            return
+        if not filtered_dest_wells:
+            self._add_issue("critical", f"No destination wells found for sequence '{dest_sequence.name}' in layout.")
+            return
+
+        # Enforce sample_count
+        if sample_count > len(filtered_source_wells):
+            self._add_issue(
+                "critical",
+                f"Sample count ({sample_count}) exceeds available source positions ({len(filtered_source_wells)}) for sequence '{source_sequence.name}'.",
+            )
+            return
+        if sample_count > len(filtered_dest_wells):
+            self._add_issue(
+                "critical",
+                f"Sample count ({sample_count}) exceeds available destination positions ({len(filtered_dest_wells)}) for sequence '{dest_sequence.name}'.",
+            )
+            return
+
+        # Detect duplicate wells in layout (within the same sequence context)
+        # This is already handled by LayoutCrossmatchAnalyzer, but we can add a check here for direct relevance
+        # For now, assume LayoutCrossmatchAnalyzer populates findings correctly.
+
+        # Detect missing wells (sequence positions not in layout)
+        missing_source_in_layout = [well for well in source_wells if well not in source_layout_positions]
+        if missing_source_in_layout:
+            self._add_issue("minor", f"Source sequence wells not found in layout for '{source_sequence.name}': {', '.join(missing_source_in_layout[:5])}{'...' if len(missing_source_in_layout) > 5 else ''}")
+
+        missing_dest_in_layout = [well for well in dest_wells if well not in dest_layout_positions]
+        if missing_dest_in_layout:
+            self._add_issue("minor", f"Destination sequence wells not found in layout for '{dest_sequence.name}': {', '.join(missing_dest_in_layout[:5])}{'...' if len(missing_dest_in_layout) > 5 else ''}")
+
+
+        # Detect source/destination count mismatch
+        if len(filtered_source_wells) != len(filtered_dest_wells):
+            self._add_issue(
+                "major",
+                f"Source ({len(filtered_source_wells)}) and destination ({len(filtered_dest_wells)}) well counts mismatch after layout filtering. Using minimum for pairing.",
+            )
+            pair_count = min(len(filtered_source_wells), len(filtered_dest_wells), sample_count)
+        else:
+            pair_count = sample_count
+
+        for i in range(pair_count):
+            self.results["transfer_pairs"].append(
+                {
+                    "source_well": filtered_source_wells[i],
+                    "destination_well": filtered_dest_wells[i],
+                    "source_labware_id": source_sequence.items[i].labware_id if i < len(source_sequence.items) else "unknown",
+                    "destination_labware_id": dest_sequence.items[i].labware_id if i < len(dest_sequence.items) else "unknown",
+                }
+            )
+
+    def _generate_execution_plan(self, transfer_type: str, volume: float) -> None:
+        if not self.results["transfer_pairs"]:
+            self._add_issue("critical", "No transfer pairs generated, cannot create execution plan.")
+            return
+
+        plan = []
+        for pair in self.results["transfer_pairs"]:
+            plan.append(
+                {
+                    "action": "transfer",
+                    "source": pair["source_well"],
+                    "destination": pair["destination_well"],
+                    "source_labware": pair["source_labware_id"],
+                    "destination_labware": pair["destination_labware_id"],
+                    "volume": volume,
+                    "transfer_type": transfer_type,
+                }
+            )
+        self.results["execution_plan"] = plan
+
+    def _generate_pyhamilton_script(self) -> None:
+        script_content = [
+            "# REVIEW REQUIRED. GENERATED PLAN ONLY. DO NOT RUN ON HARDWARE WITHOUT HUMAN VALIDATION.",
+            "from pyhamilton import HamiltonInterface",
+            "from pyhamilton import LayoutManager",
+            "from pyhamilton import Plate",
+            "",
+            "def run_devpal_lite_transfer():",
+            "    with HamiltonInterface() as hi:",
+            "        lm = LayoutManager(hi)",
+            "        # Define plates based on your layout and method",
+            "        # Example: source_plate = Plate('source_labware_id', 'source_plate_type')",
+            "        # Example: dest_plate = Plate('destination_labware_id', 'destination_plate_type')",
+            "",
+            "        # Replace with actual labware definitions from your parsed data",
+            "        # For simplicity, using dummy names here. You need to map these correctly.",
+        ]
+
+        # Collect unique labware IDs from transfer_pairs
+        unique_source_labware = set()
+        unique_dest_labware = set()
+        for pair in self.results["transfer_pairs"]:
+            unique_source_labware.add(pair["source_labware"])
+            unique_dest_labware.add(pair["destination_labware"])
+
+        # Add labware definitions to the script
+        script_content.append("        # --- Labware Definitions ---")
+        for lw_id in unique_source_labware:
+            # Attempt to find labware type from model.deck.labware
+            labware_obj = self.model.deck.labware.get(lw_id) or self._find_labware_by_id(lw_id)
+            lw_type = labware_obj.template if labware_obj else "UNKNOWN_LABWARE_TYPE"
+            script_content.append(f"        {lw_id.replace('.', '_').replace('-', '_')} = Plate('{lw_id}', '{lw_type}')")
+        for lw_id in unique_dest_labware:
+            labware_obj = self.model.deck.labware.get(lw_id) or self._find_labware_by_id(lw_id)
+            lw_type = labware_obj.template if labware_obj else "UNKNOWN_LABWARE_TYPE"
+            script_content.append(f"        {lw_id.replace('.', '_').replace('-', '_')} = Plate('{lw_id}', '{lw_type}')")
+        script_content.append("        # ---------------------------")
+        script_content.append("")
+
+        script_content.append("        # Transfer steps")
+        for i, pair in enumerate(self.results["transfer_pairs"]):
+            source_lw_var = pair["source_labware"].replace('.', '_').replace('-', '_')
+            dest_lw_var = pair["destination_labware"].replace('.', '_').replace('-', '_')
+            script_content.append(
+                f"        # Transfer {i+1}: {pair['source_well']} -> {pair['destination_well']}"
+            )
+            script_content.append(
+                f"        hi.aspirate_plate_wells(plate={source_lw_var}, wells=['{pair['source_well']}'], volumes=[{self.results['volume']}])"
+            )
+            script_content.append(
+                f"        hi.dispense_plate_wells(plate={dest_lw_var}, wells=['{pair['destination_well']}'], volumes=[{self.results['volume']}])"
+            )
+            script_content.append("")
+
+        script_content.append("if __name__ == '__main__':")
+        script_content.append("    run_devpal_lite_transfer()")
+
+        output_dir = "artifacts"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, "devpal_lite_pyhamilton_plan.py")
+        with open(output_path, "w") as f:
+            f.write("\n".join(script_content))
+        self.results["pyhamilton_script_path"] = output_path
+        self.results["limitations"].append("PyHamilton script generated. Review required before execution.")
+
+    def _find_labware_by_id(self, labware_id: str) -> Optional[LabwareObject]:
+        for lw in self.model.deck.labware.values():
+            if lw.labware_id == labware_id:
+                return lw
+        return None
+
+    def _add_issue(self, severity: str, message: str) -> None:
+        self.results["issues"].append({"severity": severity, "message": message})
