@@ -1,18 +1,1 @@
 
- COMPACT_VALUE_BOUNDARY_PATTERN = re.compile(
-     r"(?i)(?="
-     r"Seq\.\d+\.(?:Item\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
-     r"|Labware\.\d+\.(?:LwProperties\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
-     r"|Layer\.\d+\.\d+\.[A-Za-z][A-Za-z0-9_]*"
-     r"|ObjId(?:\b|_)"
-     r"|PosId(?:\b|_)"
-     r"|DefSeqValid(?:\b|_)"
-     r"|File(?:\b|_)"
-     r"|Template(?:\b|_)"
-     r"|LwProperties(?:\b|_)"
-     r"Seq\.\d+\.Name"
-     r"|Seq\.\d+\.Cnt"
-     r"|Seq\.\d+\.ReadOnly"
-     r"|Seq\.\d+\.Item\.\d+\.ObjId"
-     r"|Seq\.\d+\.Item\.\d+\.PosId"
-     r"|Labware\.\d+\.Id"
