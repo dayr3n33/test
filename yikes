@@ -1,1 +1,55 @@
 
+Rejecting this edit.
+
+The proposed COMPACT_VALUE_BOUNDARY_PATTERN still contains unqualified boundaries:
+
+ObjId
+PosId
+DefSeqValid
+File
+Template
+LwProperties
+
+These are explicitly forbidden by the task because they can occur inside legitimate sequence names and cause truncation.
+
+Examples that must remain intact:
+
+Input_File_Sequence
+Output_Template_Plate
+My_ObjId_Label
+My_PosId_Label
+
+Do not use any standalone boundary tokens such as:
+
+ObjId(?:\b|_)
+PosId(?:\b|_)
+File(?:\b|_)
+Template(?:\b|_)
+DefSeqValid(?:\b|_)
+LwProperties(?:\b|_)
+
+Instead, rebuild COMPACT_VALUE_BOUNDARY_PATTERN using ONLY fully-qualified serialized compact keys:
+
+Seq\.\d+\.Name
+Seq\.\d+\.Cnt
+Seq\.\d+\.ReadOnly
+Seq\.\d+\.Item\.\d+\.ObjId
+Seq\.\d+\.Item\.\d+\.PosId
+Labware\.\d+\.Id
+Labware\.\d+\.DefSeqValid
+Labware\.\d+\.File
+Labware\.\d+\.Template
+Labware\.\d+\.SiteId
+Labware\.\d+\.LwProperties\.\d+\.Property
+Labware\.\d+\.LwProperties\.\d+\.Value
+Layer\.\d+\.\d+\.SeqName
+Layer\.\d+\.\d+\.LabwareName
+
+Also verify every alternation is syntactically correct and begins with | except the first pattern after (?=.
+
+Before modifying code again:
+
+1. Show the exact final COMPACT_VALUE_BOUNDARY_PATTERN you intend to use.
+2. Explain why Input_File_Sequence will no longer truncate.
+3. Explain why Seq.1.Item.1.ObjId and Labware.1.File still act as valid boundaries.
+4. Wait for approval before applying the next edit.
