@@ -1,1 +1,148 @@
  
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> codex doctor
+Codex Doctor v0.136.0 · windows-x86_64
+
+Notes
+   ✗ auth         no Codex credentials were found - Run codex login or provide an API key through a supported auth env var.
+   ⚠ updates      update configuration is locally consistent
+   ⚠ websocket    Responses WebSocket failed; HTTPS fallback may still work - Check proxy, VPN, firewall, DNS, custom CA, and WebSocket policy support.
+   ⚠ terminal     height 16 rows - content may scroll off (recommended >=24)
+─────────────────────────────────────────────────────────────
+
+Environment
+  ✓ system       en-US
+      os                       Windows 10.0.22631 (Windows 11 Enterprise) [64-bit]
+      OS language              en-US
+  ✓ runtime      npm (package C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc, bin C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin, resources C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-resources, path C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-path)
+      version                  0.136.0
+      install method           npm (package C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc, bin C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin, resources C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-resources, path C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-path)
+      commit                   unknown
+      executable               C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin\codex.exe
+  ✓ install      consistent
+      context                  npm (package C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc, bin C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin, resources C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-resources, path C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-path)
+      managed by               npm: yes · bun: no · package root C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex
+      PATH entries (2)         C:\Users\lynchd27\AppData\Roaming\npm\codex
+                               C:\Users\lynchd27\AppData\Roaming\npm\codex.cmd
+      npm update target        C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex
+  ✓ search       file exists (bundled, C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-path\rg.exe)
+      search command           C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\codex-path\rg.exe
+      search provider          bundled
+      search command readiness file exists
+  ✓ git          git version 2.45.1.windows.1
+      selected git             C:\Program Files\Git\cmd\git.exe
+      version                  git version 2.45.1.windows.1
+      exec path                C:/Program Files/Git/mingw64/libexec/git-core
+      repo detected            true
+      repo root                C:\Users\lynchd27\Documents\DevPal\new-project
+      .git entry               directory
+      branch                   code/hotfix-lay-boundary-real-key-prefixes
+      PATH entries (1)         C:\Program Files\Git\cmd\git.exe
+  ⚠ terminal     height 16 rows - content may scroll off (recommended >=24)
+      terminal                 Apple Terminal
+      stdin is terminal        true
+      stdout is terminal       true
+      stderr is terminal       true
+    ▸ terminal size            201x16 (expected >= 24 rows)
+      color output             enabled
+      console input code page  437
+      console output code page 437
+      stdout console mode      0x00000007 (VT processing: true)
+      stderr console mode      0x00000007 (VT processing: true)
+    → resize the window to at least 24 rows
+  ✓ title        default · project new-project
+      title source             default
+      title items              activity, project-name
+      activity item            true
+      project source           git repo root
+      project value            new-project
+  ✓ state        databases healthy
+      CODEX_HOME               C:\Users\lynchd27\.codex (dir)
+      log dir                  C:\Users\lynchd27\.codex\log (dir)
+      sqlite home              C:\Users\lynchd27\.codex (dir)
+      state DB                 C:\Users\lynchd27\.codex\state_5.sqlite (file) · integrity ok
+      log DB                   C:\Users\lynchd27\.codex\logs_2.sqlite (file) · integrity ok
+      goals DB                 C:\Users\lynchd27\.codex\goals_1.sqlite (file) · integrity ok
+      memories DB              C:\Users\lynchd27\.codex\memories_1.sqlite (file) · integrity ok
+      active rollouts          0 files · 0 B (avg 0 B)
+      archived rollouts        0 files · 0 B (avg 0 B)
+  ✓ threads      rollout files and state DB thread inventory agree
+      default model provider   openai
+      rollout DB active files  0
+      rollout DB archived files 0
+      rollout DB scan errors   0
+      rollout DB malformed file names 0
+      rollout DB scan cap reached false
+      rollout DB rows          0
+      rollout DB active rows   0
+      rollout DB archived rows 0
+      rollout DB missing active rows 0
+      rollout DB missing archived rows 0
+      rollout DB stale rows    0
+      rollout DB archive mismatches 0
+      rollout DB duplicate rollout thread ids 0
+      rollout DB duplicate DB paths 0
+      rollout DB model providers none
+      rollout DB sources       none
+
+Configuration
+  ✓ config       loaded
+      model                    <default> · openai
+      cwd                      C:\Users\lynchd27\Documents\DevPal\new-project
+      config.toml              C:\Users\lynchd27\.codex\config.toml
+      MCP servers              0
+      feature flags            26 enabled · 0 overridden (full list with --all)
+  ✗ auth         no Codex credentials were found — Run codex login or provide an API key through a supported auth env var.
+      auth storage mode        File
+      auth file                C:\Users\lynchd27\.codex\auth.json
+  ✓ mcp          no MCP servers configured
+  ✓ sandbox      restricted fs + restricted network · approval OnRequest
+      approval policy          OnRequest
+      filesystem sandbox       restricted
+      network sandbox          restricted
+      linux helper             none
+      execve wrapper helper    none
+
+Updates
+  ⚠ updates      update configuration is locally consistent
+      startup update check     true
+      update action            npm install -g @openai/codex
+      version cache            C:\Users\lynchd27\.codex\version.json
+      cached latest version    0.136.0
+      last checked at          2026-06-02 14:19 UTC
+      npm update target        C:\Users\lynchd27\AppData\Roaming\npm\node_modules\@openai\codex
+      latest version probe     curl: (35) schannel: next InitializeSecurityContext failed: CRYPT_E_NO_REVOCATION_CHECK (0x80092012) - The revocation function was unable to check revocation for the certificate.
+
+Connectivity
+  ✓ network      no proxy env vars
+      proxy env vars           none
+  ⚠ websocket    Responses WebSocket failed; HTTPS fallback may still work — Check proxy, VPN, firewall, DNS, custom CA, and WebSocket policy support.
+      model provider           openai
+      provider name            OpenAI
+      wire API                 responses
+      supports websockets      true
+      proxy env vars           none
+      connect timeout          15000 ms
+      auth mode                none
+      endpoint                 wss://api.openai.com/v1/<redacted>
+      DNS                      2 IPv4, 0 IPv6, first IPv4
+      handshake transport error network error: An existing connection was forcibly closed by the remote host. (os error 10054)
+  ✓ reachability active provider endpoints are reachable over HTTP
+      reachability mode        ChatGPT auth
+      ChatGPT base URL         https://chatgpt.com/backend-api/ reachable (HTTP 503)
+
+Background Server
+  ○ app-server   not running (ephemeral mode)
+      daemon state dir         C:\Users\lynchd27\.codex\app-server-daemon
+      settings                 C:\Users\lynchd27\.codex\app-server-daemon\settings.json (missing)
+      pid file                 C:\Users\lynchd27\.codex\app-server-daemon\app-server.pid (missing)
+      update-loop pid file     C:\Users\lynchd27\.codex\app-server-daemon\app-server-updater.pid (missing)
+      control socket           C:\Users\lynchd27\.codex\app-server-control\app-server-control.sock
+      status                   not running
+      mode                     ephemeral
+
+─────────────────────────────────────────────────────────────
+13 ok · 1 idle · 4 notes · 3 warn · 1 fail failed
+
+--summary compact output   --all expand truncated lists
+--json redacted report
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> 
