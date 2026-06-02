@@ -1,55 +1,96 @@
+COMPACT_VALUE_BOUNDARY_PATTERN = re.compile(
+     r"(?i)(?="
+     r"Seq\.\d+\.(?:Item\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
+     r"|Labware\.\d+\.(?:LwProperties\.\d+\.)?[A-Za-z][A-Za-z0-9_]*"
+     r"|Layer\.\d+\.\d+\.[A-Za-z][A-Za-z0-9_]*"
+     r"|ObjId(?:\b|_)"
+     r"|PosId(?:\b|_)"
+     r"|DefSeqValid(?:\b|_)"
+     r"|File(?:\b|_)"
+     r"|Template(?:\b|_)"
+     r"|LwProperties(?:\b|_)"
+     r"Seq\.\d+\.Name"
+     r"|Seq\.\d+\.Cnt"
+     r"|Seq\.\d+\.ReadOnly"
+     r"|Seq\.\d+\.Item\.\d+\.ObjId"
+     r"|Seq\.\d+\.Item\.\d+\.PosId"
+     r"|Labware\.\d+\.Id"
+     r"|Labware\.\d+\.DefSeqValid"
+     r"|Labware\.\d+\.File"
+     r"|Labware\.\d+\.Template"
+     r"|Labware\.\d+\.SiteId"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
+     r"|Layer\.\d+\.\d+\.SeqName"
+     r"|Layer\.\d+\.\d+\.LabwareName"
+     r")"
+ )
 
-Rejecting this edit.
+ SEQUENCE_NAME_STRUCTURAL_TOKEN_PATTERN = re.compile(
+     r"(?i)(Seq\.\d+|\.Item\.|Item\.\d+|ObjId|PosId|Labware\.|Layer\.|DefSeqValid|LwProperties)"
+     r"(?i)("
+     r"Seq\.\d+\.Name"
+     r"|Seq\.\d+\.Cnt"
+     r"|Seq\.\d+\.ReadOnly"
+     r"|Seq\.\d+\.Item\.\d+\.ObjId"
+     r"|Seq\.\d+\.Item\.\d+\.PosId"
+     r"|Labware\.\d+\.Id"
+     r"|Labware\.\d+\.DefSeqValid"
+     r"|Labware\.\d+\.File"
+     r"|Labware\.\d+\.Template"
+     r"|Labware\.\d+\.SiteId"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
+     r"|Layer\.\d+\.\d+\.SeqName"
+     r"|Layer\.\d+\.\d+\.LabwareName"
+     r")"
+ )
 
-The proposed COMPACT_VALUE_BOUNDARY_PATTERN still contains unqualified boundaries:
+ SEQUENCE_NAME_KEY_TOKEN_PATTERN = re.compile(
+     r"(?i)(Seq\.\d+|Item\.\d+|ObjId|PosId|Labware\.\d+|Layer\.\d+|DefSeqValid|LwProperties|Template|File)"
+     r"(?i)("
+     r"Seq\.\d+\.Name"
+     r"|Seq\.\d+\.Cnt"
+     r"|Seq\.\d+\.ReadOnly"
+     r"|Seq\.\d+\.Item\.\d+\.ObjId"
+     r"|Seq\.\d+\.Item\.\d+\.PosId"
+r"|Labware\.\d+\.Id"
+     r"|Labware\.\d+\.DefSeqValid"
+     r"|Labware\.\d+\.File"
+     r"|Labware\.\d+\.Template"
+     r"|Labware\.\d+\.SiteId"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Property"
+     r"|Labware\.\d+\.LwProperties\.\d+\.Value"
+     r"|Layer\.\d+\.\d+\.SeqName"
+     r"|Layer\.\d+\.\d+\.LabwareName"
+     r")"
+ )
 
-ObjId
-PosId
-DefSeqValid
-File
-Template
-LwProperties
 
-These are explicitly forbidden by the task because they can occur inside legitimate sequence names and cause truncation.
 
-Examples that must remain intact:
+         if prop_value_match:
+             property_values[prop_value_match.group("labware_index")][prop_value_match.group("property_index")] = _clean_compact_value(prop_value_match.group("value"), "value")
+        labware[prop_value_match.group("labware_index")].setdefault("raw_evidence", []).append(_raw_evidence(path, line_number, stripped))
+             labware[prop_name_match.group("labware_index")].setdefault("raw_evidence", []).append(_raw_evidence(path, line_number, stripped))
+             continue
+if len(key_like_tokens) > 1:
+         return False, "multiple_key_like_tokens"
+     if re.search(r"(?i)(?:^|[_ .-])(?:Name|Cnt|ReadOnly|ObjId|PosId|DefSeqValid|Template|File)[_ .-]*[A-Za-z0-9]", text):
+         return False, "concatenated_field_text"
+     return True, "accepted"
 
-Input_File_Sequence
-Output_Template_Plate
-My_ObjId_Label
-My_PosId_Label
 
-Do not use any standalone boundary tokens such as:
 
-ObjId(?:\b|_)
-PosId(?:\b|_)
-File(?:\b|_)
-Template(?:\b|_)
-DefSeqValid(?:\b|_)
-LwProperties(?:\b|_)
+                 "deck_track_start": labware.deck_track_start,
+                 "deck_track_end": labware.deck_track_end,
+                 "site_id": labware.site_id,
+                 "position_on_carrier": labware.position_on_carrier,
+                 "orientation": labware.orientation,
+                 "barcode": labware.barcode,
+                 "is_covered": labware.is_covered,
+                 "is_waste": labware.is_waste,
+             }
+ )
 
-Instead, rebuild COMPACT_VALUE_BOUNDARY_PATTERN using ONLY fully-qualified serialized compact keys:
-
-Seq\.\d+\.Name
-Seq\.\d+\.Cnt
-Seq\.\d+\.ReadOnly
-Seq\.\d+\.Item\.\d+\.ObjId
-Seq\.\d+\.Item\.\d+\.PosId
-Labware\.\d+\.Id
-Labware\.\d+\.DefSeqValid
-Labware\.\d+\.File
-Labware\.\d+\.Template
-Labware\.\d+\.SiteId
-Labware\.\d+\.LwProperties\.\d+\.Property
-Labware\.\d+\.LwProperties\.\d+\.Value
-Layer\.\d+\.\d+\.SeqName
-Layer\.\d+\.\d+\.LabwareName
-
-Also verify every alternation is syntactically correct and begins with | except the first pattern after (?=.
-
-Before modifying code again:
-
-1. Show the exact final COMPACT_VALUE_BOUNDARY_PATTERN you intend to use.
-2. Explain why Input_File_Sequence will no longer truncate.
-3. Explain why Seq.1.Item.1.ObjId and Labware.1.File still act as valid boundaries.
-4. Wait for approval before applying the next edit.
+     return summary
+     return summary
