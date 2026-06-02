@@ -1,6 +1,25 @@
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest tests/test_local_pc_verification_script.py -q
-........                                                                                                                                                                                          [100%]
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest -q
-.........................................s....................................................................................................................................................... [ 58%]
-..........................................................ssss............................................................................                                                        [100%] 
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> 
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python main.py --method sample_inputs/Demo.med --offline-stress-run --stress-scenario-cap 25 --format json --verbose
+
+=== DevPal Summary ===
+Method: Demo
+Steps: 13
+Sequences: 35
+Labware: 80
+Uploaded layouts: 0
+Requirements: 0
+Trace runs: 0
+Transfer pairs: 1
+Transfer mappings: 1
+Issues: 141
+
+Issue breakdown:
+ info: 86
+ pass: 0
+ minor: 37
+ major: 17
+ critical: 1
+
+Report saved: C:\Users\lynchd27\Documents\DevPal\new-project\sample_inputs\devpal_reports\devpal_report.json
+
+Parse/runtime warnings:
+ - .med parsing is Phase 1 stub-only; OCR/GUI/image parsing is not performed.
