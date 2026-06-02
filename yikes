@@ -1,26 +1,24 @@
+COMPACT_VALUE_BOUNDARY_PATTERN = re.compile(
+    r"(?i)(?="
+    r"Seq\.\d+\.Name"
+    r"|Seq\.\d+\.Cnt"
+    r"|Seq\.\d+\.ReadOnly"
+    r"|Seq\.\d+\.Item\.\d+\.ObjId"
+    r"|Seq\.\d+\.Item\.\d+\.PosId"
+    r"|Labware\.\d+\.Id"
+    r"|Labware\.\d+\.DefSeqValid"
+    r"|Labware\.\d+\.File"
+    r"|Labware\.\d+\.Template"
+    r"|Labware\.\d+\.SiteId"
+    r"|Labware\.\d+\.LwProperties\.\d+\.Property"
+    r"|Labware\.\d+\.LwProperties\.\d+\.Value"
+    r"|Layer\.\d+\.\d+\.SeqName"
+    r"|Layer\.\d+\.\d+\.LabwareName"
+    r")"
+)
 
-Do not modify:
 
-SEQUENCE_NAME_STRUCTURAL_TOKEN_PATTERN
-SEQUENCE_NAME_KEY_TOKEN_PATTERN
-PUNCTUATION_BOUNDARY_FRAGMENT_PATTERN
-Any sequence validation logic
 
-Modify ONLY:
-
-COMPACT_VALUE_BOUNDARY_PATTERN
-
-The previous edit changed additional parser validation patterns. Reject those changes and generate a new patch that only updates COMPACT_VALUE_BOUNDARY_PATTERN.
-
-The only goal is removing standalone boundaries:
-
-ObjId(?:\b|_)
-PosId(?:\b|_)
-File(?:\b|_)
-Template(?:\b|_)
-DefSeqValid(?:\b|_)
-LwProperties(?:\b|_)
-
-and replacing them with qualified serialized-key boundaries.
-
-Show only the lay_parser.py diff before making changes.
+python -m pytest tests/test_lay_parser.py -q
+python -m pytest -q
+python main.py --method sample_inputs/Demo.med --offline-stress-run --stress-scenario-cap 25 --format json --verbose
