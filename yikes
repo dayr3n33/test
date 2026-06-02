@@ -1,33 +1,239 @@
-# DevPal Lite / emergency sequence-layout runner
-    devpal_lite: bool = False
-    devpal_lite_list_sequences: bool = False
-    source_sequence: Optional[str] = None
-    dest_sequence: Optional[str] = None
-    transfer_type: Optional[str] = None
-    volume: Optional[float] = None
-    sample_count: Optional[int] = None
-    devpal_lite_generate_pyhamilton: bool = False
+from __future__ import annotations
+
+import argparse
+import sys
+from typing import List, Optional
+
+from core import DevPalConfig, run_devpal
+from core.runtime_modes import RUNTIME_MODE_AUTO, RUNTIME_MODE_DRY_RUN_PLAN_ONLY, RUNTIME_MODE_FUTURE_LIVE_EXECUTION_BLOCKED, RUNTIME_MODE_PYHAMILTON_SIMULATE, RUNTIME_MODE_STATIC_ONLY, RUNTIME_MODE_TRACE_REPLAY, RUNTIME_MODE_VENUS_RUN_CONTROL_SIMULATION
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="devpal",
+        description="DevPal - Hamilton method analyzer and stress tester",
+    )
 
-if self.devpal_lite or self.devpal_lite_list_sequences:
-            if not self.selected_method_path:
-                raise ValueError("DevPal Lite requires --method.")
+    parser.add_argument(
+        "--method",
+        required=False,
+        default="",
+        help="Path to selected Hamilton method file (.med/.hsl/.lay/.stp/.res/.sub)",
+    )
 
-        if self.devpal_lite:
-            if not self.layout_paths:
-                raise ValueError("DevPal Lite requires --layout.")
-            if not self.source_sequence:
-                raise ValueError("DevPal Lite requires --source-sequence.")
-            if not self.dest_sequence:
-                raise ValueError("DevPal Lite requires --dest-sequence.")
-            if not self.transfer_type:
-                raise ValueError("DevPal Lite requires --transfer-type.")
-            if self.volume is None:
-                raise ValueError("DevPal Lite requires --volume.")
-            if self.sample_count is None:
-                raise ValueError("DevPal Lite requires --sample-count.")
-            if int(self.sample_count) <= 0:
-                raise ValueError("--sample-count must be greater than 0.")
-            if float(self.volume) <= 0:
-                raise ValueError("--volume must be greater than 0.")
+    parser.add_argument(
+        "--project-dir",
+        default="",
+        help="Project directory containing method files",
+    )
+
+    parser.add_argument(
+        "--layout",
+        nargs="*",
+        default=[],
+        help="Uploaded plate/layout file(s): .csv, .xls, .xlsx, .docx",
+    )
+
+    parser.add_argument(
+        "--docs",
+        nargs="*",
+        default=[],
+        help="Requirement / MP / UR documentation file(s)",
+    )
+
+    parser.add_argument(
+        "--trace",
+        nargs="*",
+        default=[],
+        help="Trace file(s): .trc",
+    )
+
+    parser.add_argument(
+        "--output",
+        default="",
+        help="Output directory for DevPal report",
+    )
+
+    parser.add_argument(
+        "--format",
+        default="json",
+        choices=["json", "txt"],
+        help="Report format",
+    )
+
+    parser.add_argument(
+        "--no-stress",
+        action="store_true",
+        help="Disable stress test analysis",
+    )
+
+    parser.add_argument(
+        "--no-trace",
+        action="store_true",
+        help="Disable trace analysis",
+    )
+
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print summary after analysis",
+    )
+
+    parser.add_argument(
+        "--runtime-mode",
+        default=RUNTIME_MODE_AUTO,
+        choices=[RUNTIME_MODE_STATIC_ONLY, RUNTIME_MODE_AUTO, RUNTIME_MODE_TRACE_REPLAY, RUNTIME_MODE_PYHAMILTON_SIMULATE, RUNTIME_MODE_VENUS_RUN_CONTROL_SIMULATION, RUNTIME_MODE_DRY_RUN_PLAN_ONLY, RUNTIME_MODE_FUTURE_LIVE_EXECUTION_BLOCKED],
+        help="Runtime behavior mode (safe/readiness only in Phase 1)",
+    )
+
+    parser.add_argument("--local-runtime-check", action="store_true", help="Run local runtime readiness checks and report capabilities")
+    parser.add_argument("--allow-pyhamilton-sim", action="store_true", help="Allow guarded HamiltonInterface(simulate=True) creation check")
+
+    parser.add_argument("--phase2-runtime-research", action="store_true", help="Enable Phase 2 runtime execution research mode (non-executing)")
+    parser.add_argument("--dry-run-plan", action="store_true", help="Generate non-executable PyHamilton dry-run plan")
+    parser.add_argument("--evaluate-execution-readiness", action="store_true", help="Evaluate execution safety gates and report blocked readiness")
+    parser.add_argument("--collect-runtime-evidence", action="store_true", help="Collect local runtime evidence using safe bounded checks")
+    parser.add_argument("--operator-attestation", default="", help="Path to operator runtime attestation JSON")
+    parser.add_argument("--create-runtime-session", action="store_true", help="Create immutable runtime research session package metadata")
+    parser.add_argument("--venus-sim-dry-run", action="store_true", help="Build VENUS simulation plan only; no launch")
+    parser.add_argument("--venus-sim-run", action="store_true", help="Allow local VENUS simulation launch attempt")
+    parser.add_argument("--venus-run-control-path", default="", help="Optional explicit VENUS Run Control executable path")
+    parser.add_argument("--venus-log-dir", default="", help="Optional explicit VENUS trace/log directory")
+    parser.add_argument("--venus-sim-timeout-seconds", type=int, default=180, help="VENUS simulation subprocess timeout")
+    parser.add_argument("--venus-trace-wait-seconds", type=int, default=60, help="Trace polling wait window")
+    parser.add_argument("--venus-trace-stabilize-seconds", type=int, default=4, help="Trace stabilization seconds")
+    parser.add_argument("--offline-replay", action="store_true", help="Run deterministic offline replay state machine only; no VENUS launch")
+    parser.add_argument("--offline-stress-run", action="store_true", help="Run bounded deterministic offline replay stress scenarios")
+    parser.add_argument("--stress-scenario-cap", type=int, default=100, help="Maximum offline stress replay scenarios")
+    parser.add_argument("--pyhamilton-oem-plan", action="store_true", help="Generate dry-run PyHamilton STAR_OEM_noFan adapter plan")
+    parser.add_argument("--pyhamilton-oem-method-path", default="", help="Optional STAR_OEM_noFan.med path for dry-run adapter plan")
+    parser.add_argument("--allow-pyhamilton-oem-launch", action="store_true", help="Accepted safety gate flag; live launch remains gated unless simulator-safe implementation exists")
+
+    return parser
+
+
+def run_cli(argv: Optional[List[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    method_path = args.method or _select_method_file()
+
+    if not method_path:
+        print("No method file selected.", file=sys.stderr)
+        return 1
+
+    layout_paths = list(args.layout or [])
+    document_paths = list(args.docs or [])
+    trace_paths = list(args.trace or [])
+
+    config = DevPalConfig(
+        selected_method_path=method_path,
+        project_dir=args.project_dir,
+        layout_paths=layout_paths,
+        document_paths=document_paths,
+        trace_paths=trace_paths,
+        output_directory=args.output,
+        report_format=args.format,
+        enable_stress_tests=not args.no_stress,
+        enable_trace_analysis=not args.no_trace,
+        verbose=args.verbose,
+        runtime_mode=args.runtime_mode,
+        local_runtime_check=args.local_runtime_check,
+        allow_pyhamilton_sim=args.allow_pyhamilton_sim,
+        phase2_runtime_research=args.phase2_runtime_research,
+        dry_run_plan=args.dry_run_plan,
+        evaluate_execution_readiness=args.evaluate_execution_readiness,
+        collect_runtime_evidence=args.collect_runtime_evidence,
+        operator_attestation_path=args.operator_attestation,
+        create_runtime_session=args.create_runtime_session,
+        venus_sim_dry_run=args.venus_sim_dry_run,
+        venus_sim_run=args.venus_sim_run,
+        venus_run_control_path=args.venus_run_control_path,
+        venus_log_dir=args.venus_log_dir,
+        venus_sim_timeout_seconds=args.venus_sim_timeout_seconds,
+        venus_trace_wait_seconds=args.venus_trace_wait_seconds,
+        venus_trace_stabilize_seconds=args.venus_trace_stabilize_seconds,
+        offline_replay=args.offline_replay,
+        offline_stress_run=args.offline_stress_run,
+        stress_scenario_cap=args.stress_scenario_cap,
+        pyhamilton_oem_plan=args.pyhamilton_oem_plan,
+        pyhamilton_oem_method_path=args.pyhamilton_oem_method_path,
+        allow_pyhamilton_oem_launch=args.allow_pyhamilton_oem_launch,
+    )
+
+    try:
+        model = run_devpal(config)
+
+        if args.verbose:
+            _print_summary(model)
+
+        return 0
+
+    except Exception as exc:
+        print("DevPal execution failed: {0}".format(exc), file=sys.stderr)
+        return 1
+
+
+def _select_method_file() -> str:
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+    except ImportError:
+        return ""
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+
+    path = filedialog.askopenfilename(
+        title="Select Hamilton Method File",
+        filetypes=[
+            ("Hamilton method files", "*.med *.hsl *.lay *.stp *.res *.sub"),
+            ("MED files", "*.med"),
+            ("HSL files", "*.hsl"),
+            ("LAY files", "*.lay"),
+            ("STP files", "*.stp"),
+            ("RES files", "*.res"),
+            ("SUB files", "*.sub"),
+            ("All files", "*.*"),
+        ],
+    )
+
+    root.destroy()
+    return path or ""
+
+
+def _print_summary(model) -> None:
+    print("\n=== DevPal Summary ===")
+    print("Method:", model.files.method_name or model.files.selected_method_path)
+    print("Steps:", len(model.steps))
+    print("Sequences:", len(model.deck.sequences))
+    print("Labware:", len(model.deck.labware))
+    print("Uploaded layouts:", len(model.uploaded_layouts))
+    print("Requirements:", len(model.documents.requirements))
+    print("Trace runs:", len(model.trace_runs))
+    print("Transfer pairs:", len(model.transfer_pairs))
+    print("Transfer mappings:", len(model.transfer_mappings))
+    if not model.transfer_mappings:
+        unresolved = [
+            issue for issue in model.validation_issues
+            if issue.category == "layout-transfer-mapping"
+        ]
+        if unresolved:
+            print("Transfer mapping status: unresolved")
+            for issue in unresolved[:2]:
+                print(" - {0}".format(issue.message))
+    print("Issues:", len(model.validation_issues))
+
+    print("\nIssue breakdown:")
+    for severity, issues in model.all_issues_by_severity().items():
+        print(" {0}: {1}".format(severity, len(issues)))
+
+    report_output_path = model.runtime_metadata.get("report_output_path")
+    if report_output_path:
+        print("\nReport saved:", report_output_path)
+
+    if model.parse_warnings:
+        print("\nParse/runtime warnings:")
+        for warning in model.parse_warnings:
+            print(" - {0}".format(warning))
