@@ -289,3 +289,54 @@ class DevPalLiteRunner:
 
     def _add_issue(self, severity: str, message: str) -> None:
         self.results["issues"].append({"severity": severity, "message": message})
+
+
+
+I've made analyzers/devpal_lite_runner.py. Next, I'll integrate it into the CLI and config. First, I'll modify core/config.py to add new CLI flags, then interface/cli.py for argument parsing and DevPalLiteRunner integration. Finally, I'll add tests. Starting with core/config.py now.
+
+
+
+
+     pyhamilton_oem_method_path: str = ""
+     allow_pyhamilton_oem_launch: bool = False
+​
+     # DevPal Lite flags
+     devpal_lite: bool = False
+     devpal_lite_list_sequences: bool = False
+     source_sequence: Optional[str] = None
+     dest_sequence: Optional[str] = None
+     transfer_type: Optional[str] = None
+     volume: Optional[float] = None
+     sample_count: Optional[int] = None
+     devpal_lite_generate_pyhamilton: bool = False
+
+     def resolve_paths(self) -> None:
+
+
+         if self.runtime_mode not in allowed_runtime_modes:
+             raise ValueError("runtime_mode must be one of: {0}".format(", ".join(sorted(allowed_runtime_modes))))
+​
+         if self.devpal_lite or self.devpal_lite_list_sequences:
+             if not self.selected_method_path:
+                 raise ValueError("DevPal Lite requires --method to be specified.")
+             if self.devpal_lite and not self.layout_paths:
+                 raise ValueError("DevPal Lite run requires --layout to be specified.")
+             if self.devpal_lite and not
+self.source_sequence:
+                 raise ValueError("DevPal Lite run requires --source-sequence to be specified.")
+             if self.devpal_lite and not self.dest_sequence:
+                 raise ValueError("DevPal Lite run requires --dest-sequence to be specified.")
+             if self.devpal_lite and self.volume is None:
+raise ValueError("DevPal Lite run requires --volume to be specified.")
+             if self.devpal_lite and self.sample_count is None:
+                 raise ValueError("DevPal Lite run requires --sample-count to be specified.")
+             if self.devpal_lite and self.transfer_type is None:
+                 raise ValueError("DevPal Lite run requires --transfer-type to be specified.")
+
+
+
+
+     config = DevPalConfig(selected_method_path=selected_method_path)
+     config.resolve_paths()
+     return config
+     return config
