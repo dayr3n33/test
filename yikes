@@ -40,6 +40,7 @@ class DevPalConfig:
     collect_runtime_evidence: bool = False
     operator_attestation_path: str = ""
     create_runtime_session: bool = False
+
     venus_sim_dry_run: bool = False
     venus_sim_run: bool = False
     venus_run_control_path: str = ""
@@ -47,19 +48,29 @@ class DevPalConfig:
     venus_sim_timeout_seconds: int = 180
     venus_trace_wait_seconds: int = 60
     venus_trace_stabilize_seconds: int = 4
+
     offline_replay: bool = False
     offline_stress_run: bool = False
     stress_scenario_cap: int = 100
+
     pyhamilton_oem_plan: bool = False
     pyhamilton_oem_method_path: str = ""
     allow_pyhamilton_oem_launch: bool = False
+
     devpal_lite: bool = False
+    devpal_lite_ui: bool = False
     devpal_lite_list_sequences: bool = False
+
     source_sequence: Optional[str] = None
     dest_sequence: Optional[str] = None
     transfer_type: Optional[str] = None
     volume: Optional[float] = None
     sample_count: Optional[int] = None
+
+    devpal_lite_marker: Optional[str] = None
+    devpal_lite_replicate: str = "single"
+    devpal_lite_report_format: str = "docx"
+    devpal_lite_allow_runtime: bool = False
     devpal_lite_generate_pyhamilton: bool = False
 
     def resolve_paths(self) -> None:
@@ -71,6 +82,21 @@ class DevPalConfig:
 
         if self.trace_directory:
             self.trace_directory = os.path.abspath(self.trace_directory)
+
+        if self.venus_log_dir:
+            self.venus_log_dir = os.path.abspath(self.venus_log_dir)
+
+        if self.venus_run_control_path:
+            self.venus_run_control_path = os.path.abspath(self.venus_run_control_path)
+
+        if self.pyhamilton_oem_method_path:
+            self.pyhamilton_oem_method_path = os.path.abspath(self.pyhamilton_oem_method_path)
+
+        if self.operator_attestation_path:
+            self.operator_attestation_path = os.path.abspath(self.operator_attestation_path)
+
+        if self.liquid_class_db_override:
+            self.liquid_class_db_override = os.path.abspath(self.liquid_class_db_override)
 
         self.layout_paths = [os.path.abspath(p) for p in self.layout_paths if p]
         self.document_paths = [os.path.abspath(p) for p in self.document_paths if p]
@@ -116,22 +142,10 @@ class DevPalConfig:
                 continue
 
             candidates.append((path, modified_time))
-            trace_path = os.path.join(self.trace_directory, file_name)
-
-            if not os.path.isfile(trace_path):
-                continue
-
-            try:
-                modified_time = os.path.getmtime(trace_path)
-            except OSError:
-                continue
-
-            candidates.append((trace_path, modified_time))
 
         if not candidates:
             return
 
-        candidates.sort(key=lambda item: item[1], reverse=True)
         candidates.sort(key=lambda item: (item[1], item[0].lower()), reverse=True)
 
         method_stem = ""
@@ -154,12 +168,41 @@ class DevPalConfig:
             selected = selected[:max_files]
 
         self.trace_paths = [path for path, _mtime in selected]
-        if self.trace_auto_discover_max_files > 0:
-            selected = selected[: self.trace_auto_discover_max_files]
-
-        self.trace_paths = [trace_path for trace_path, _mtime in selected]
 
     def validate(self) -> None:
+        if self.report_format not in {"json", "txt", "docx", "pdf"}:
+            raise ValueError("report_format must be 'json', 'txt', 'docx', or 'pdf'.")
+
+        if self.devpal_lite_report_format not in {"json", "txt", "docx", "pdf"}:
+            raise ValueError(
+                "devpal_lite_report_format must be 'json', 'txt', 'docx', or 'pdf'."
+            )
+
+        allowed_runtime_modes = {
+            "static_only",
+            "auto",
+            "trace_replay",
+            "pyhamilton_simulate",
+            "venus_run_control_simulation",
+            "dry_run_plan_only",
+            "future_live_execution_blocked",
+        }
+
+        if self.runtime_mode not in allowed_runtime_modes:
+            raise ValueError(
+                "runtime_mode must be one of: {0}".format(
+                    ", ".join(sorted(allowed_runtime_modes))
+                )
+            )
+
+        if self.devpal_lite_replicate not in {"single", "duplicate", "triplicate"}:
+            raise ValueError(
+                "devpal_lite_replicate must be 'single', 'duplicate', or 'triplicate'."
+            )
+
+        if self.devpal_lite_ui:
+            return
+
         if not self.selected_method_path:
             raise ValueError("selected_method_path is required.")
 
@@ -168,12 +211,6 @@ class DevPalConfig:
                 "Selected method file not found: {0}".format(self.selected_method_path)
             )
 
-        if self.report_format not in {"json", "txt"}:
-            raise ValueError("report_format must be 'json' or 'txt'.")
-
-        allowed_runtime_modes = {"static_only", "auto", "trace_replay", "pyhamilton_simulate", "venus_run_control_simulation", "dry_run_plan_only", "future_live_execution_blocked"}
-        if self.runtime_mode not in allowed_runtime_modes:
-            raise ValueError("runtime_mode must be one of: {0}".format(", ".join(sorted(allowed_runtime_modes))))
         if self.devpal_lite or self.devpal_lite_list_sequences:
             if not self.selected_method_path:
                 raise ValueError("DevPal Lite requires --method.")
