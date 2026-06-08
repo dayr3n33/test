@@ -1,1 +1,2 @@
 
+SELECT SERVERPROPERTY('IsIntegratedSecurityOnly') AS AuthenticationMode;
