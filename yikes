@@ -1,18 +1,6 @@
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python -m pytest
-.........................................s................................................F...................................................................................................... [ 58%]
-..........................................................ssss............................................................................                                                        [100%] 
-=============================================================================================== FAILURES ===============================================================================================
-__________________________________________________________________________ test_cli_help_mentions_supported_method_extensions __________________________________________________________________________
-
-    def test_cli_help_mentions_supported_method_extensions():
-        parser = build_parser()
-        help_text = parser.format_help()
-    
-        assert ".med/.hsl/.lay/.stp/.res/.sub" in help_text
->       assert "Trace file(s): .trc" in help_text
-E       AssertionError: assert 'Trace file(s): .trc' in 'usage: devpal [-h] [--method METHOD] [--project-dir PROJECT_DIR]\n              [--layout [LAYOUT ...]] [--docs [DOCS... --devpal-lite-report-format {json,txt,docx,pdf}\n  --devpal-lite-allow-runtime\n  --devpal-lite-generate-pyhamilton\n'                                                                                                          
-
-tests\test_phase1_readiness_docs_cli.py:13: AssertionError
-======================================================================================= short test summary info ========================================================================================
-FAILED tests/test_phase1_readiness_docs_cli.py::test_cli_help_mentions_supported_method_extensions - AssertionError: assert 'Trace file(s): .trc' in 'usage: devpal [-h] [--method METHOD] [--project-dir PROJECT_DIR]\n              [--layout [LAYOUT ...]] [--docs [DOCS... --devpal-lite-report-forma...
-1 failed, 325 passed, 5 skipped in 20.73s
+parser.add_argument(
+    "--trace",
+    nargs="*",
+    default=[],
+    help="Trace file(s): .trc",
+)
