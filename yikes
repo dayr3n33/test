@@ -1,143 +1,60 @@
-def read_text_file_safely(path: str) -> str:
-    for encoding in ("utf-8", "latin-1", "cp1252"):
-        try:
-            with open(path, "r", encoding=encoding, errors="ignore") as file:
-                return file.read()
-        except Exception:
-            continue
-    return ""
+def upload_lay(self):
+    path = filedialog.askopenfilename(
+        title="Select .lay File",
+        filetypes=[("LAY files", "*.lay")]
+    )
+    if not path:
+        return
 
+    self.lay_path = path
+    self.lay_label.config(text=path)
 
-def find_related_method_files(lay_path: str) -> List[str]:
-    method_dir = os.path.dirname(os.path.abspath(lay_path))
-    method_stem = os.path.splitext(os.path.basename(lay_path))[0].lower()
+    try:
+        self.sequence_names = sorted(parse_lay_file(path))
 
-    exts = [
-        "*.hsl",
-        "*.sub",
-        "*.stp",
-        "*.res",
-        "*.med",
-        "*.lay",
-    ]
+        if not self.sequence_names:
+            self.status.config(text="Loaded 0 sequences.")
+            return
 
-    candidates = []
-
-    for ext in exts:
-        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
-
-    ranked = []
-
-    for path in candidates:
-        name = os.path.basename(path).lower()
-        score = 0
-
-        if os.path.splitext(name)[0] == method_stem:
-            score += 100
-
-        if method_stem in name:
-            score += 50
-
-        if path.lower().endswith(".hsl"):
-            score += 20
-        elif path.lower().endswith(".sub"):
-            score += 15
-        elif path.lower().endswith(".stp"):
-            score += 10
-        elif path.lower().endswith(".lay"):
-            score += 5
-
-        ranked.append((score, path))
-
-    ranked.sort(key=lambda item: item[0], reverse=True)
-
-    return [path for _score, path in ranked]
-
-
-def extract_channel_pattern_candidates(text: str) -> List[str]:
-    candidates = []
-
-    patterns = [
-        re.compile(r"\bchannel\s*[:=]\s*([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\bchannels\s*[:=]\s*([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\bchannelPattern\s*[:=]\s*([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\bchannel_pattern\s*[:=]\s*([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\bChannelPattern\s*\^\w+\^([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\bChannel\s*\^\w+\^([01]{8}|[01]{12}|[01]{14}|[01]{16})\b", re.IGNORECASE),
-        re.compile(r"\b([01]{8}|[01]{12}|[01]{14}|[01]{16})\b"),
-    ]
-
-    for pattern in patterns:
-        for match in pattern.findall(text):
-            value = str(match).strip()
-            if value and "1" in value and value not in candidates:
-                candidates.append(value)
-
-    return candidates
-
-
-def extract_sequence_context_windows(text: str, sequence_name: str, window: int = 1200) -> List[str]:
-    contexts = []
-    if not sequence_name:
-        return contexts
-
-    for match in re.finditer(re.escape(sequence_name), text, flags=re.IGNORECASE):
-        start = max(0, match.start() - window)
-        end = min(len(text), match.end() + window)
-        contexts.append(text[start:end])
-
-    return contexts
-
-
-def detect_channel_pattern_for_sequence(sequence_name: str, method_files: List[str]) -> str:
-    seq_upper = str(sequence_name).upper()
-
-    if "CO-RE" in seq_upper or "CORE" in seq_upper or "96" in seq_upper or "HEAD" in seq_upper:
-        return "1" * 96
-
-    fallback_candidates = []
-
-    for path in method_files:
-        text = read_text_file_safely(path)
-        if not text:
-            continue
-
-        for context in extract_sequence_context_windows(text, sequence_name):
-            candidates = extract_channel_pattern_candidates(context)
-            if candidates:
-                return candidates[0]
-
-        fallback_candidates.extend(extract_channel_pattern_candidates(text))
-
-    if fallback_candidates:
-        return fallback_candidates[0]
-
-    return "111111111111"
-
-
-def detect_channel_patterns_for_sequences(sequence_names: List[str], lay_path: str) -> Dict[str, str]:
-    method_files = find_related_method_files(lay_path)
-    detected = {}
-
-    for sequence_name in sequence_names:
-        detected[sequence_name] = detect_channel_pattern_for_sequence(
-            sequence_name,
-            method_files,
+        self.detected_channel_patterns = detect_channel_patterns_for_sequences(
+            self.sequence_names,
+            path,
         )
 
-    debug_path = os.path.join(os.getcwd(), "devpal_lite_channel_pattern_debug.json")
-    try:
-        with open(debug_path, "w", encoding="utf-8") as file:
-            json.dump(
-                {
-                    "lay_path": lay_path,
-                    "method_files_scanned": method_files,
-                    "detected_patterns": detected,
-                },
-                file,
-                indent=2,
-            )
-    except Exception:
-        pass
+        self.load_liquid_classes()
+        self.render_sequences()
 
-    return detected
+        self.status.config(
+            text=(
+                f"Loaded {len(self.sequence_names)} sequences. "
+                "Channel patterns auto-detected where available."
+            )
+        )
+
+    except Exception as exc:
+        messagebox.showerror("LAY Parse Error", str(exc))
+
+
+
+
+
+*****
+
+
+channel_var = tk.StringVar(
+    value=self.detected_channel_patterns.get(name, "")
+)
+
+
+
+
+channel = self.channel_vars[name].get().strip()
+
+if not channel:
+    channel = self.detected_channel_patterns.get(name, "")
+
+if hardware == "channels" and not channel:
+    channel = "111111111111"
+
+if hardware == "stamp" and not channel:
+    channel = "1" * 96
