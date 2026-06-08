@@ -1,137 +1,60 @@
-def run_pyhamilton_simulation(
-    lay_path: str,
-    configs: List[SequenceStepConfig],
-    execution_plan: List[Dict[str, Any]],
-) -> Tuple[str, str]:
-    if phi is None or LayoutManager is None:
-        raise RuntimeError(
-            "pyhamilton did not import correctly. DevPal Lite cannot run simulation."
-        )
-
-    temp_dir = tempfile.mkdtemp(prefix="devpal_lite_pyhamilton_")
-
-    generated_script_path = generate_pyhamilton_review_script(
-        configs=configs,
-        execution_plan=execution_plan,
-        output_dir=temp_dir,
-    )
-
-    run_start_time = time.time()
-
-    layout_manager = LayoutManager(lay_path)
-    plate1 = layout_manager.assign_unused_resource(ResourceType(Plate96, ""))
-
-    with AutoRunHamiltonInterface(simulate=True) as ham_int:
-        normal_logging(ham_int, temp_dir)
-        initialize(ham_int)
-
-        for item in execution_plan:
-            action = item.get("action")
-            seq = item.get("sequence", "")
-            mode = item.get("hardware_mode", "channels")
-            channel = item.get("channel_pattern") or "111111111111"
-            volume = float(item.get("volume_ul") or 0)
-            liquid_class = item.get("liquid_class", "")
-
-            if action == "tip_pick":
-                if mode == "stamp":
-                    tip_pick_up_96_seq(ham_int, tip96_seq=seq)
-                else:
-                    tip_pick_up_seq(ham_int, tipseq=seq, channel=channel)
-
-            elif action == "aspirate":
-                if mode == "stamp":
-                    aspirate_96_seq(
-                        ham_int,
-                        plate96=plate1,
-                        head_asp_seq=seq,
-                        vols=volume,
-                        liq_class=liquid_class,
-                    )
-                else:
-                    aspirate_seq(
-                        ham_int,
-                        asp_seq=seq,
-                        vols=volume,
-                        channel=channel,
-                        liq_class=liquid_class,
-                    )
-
-            elif action == "dispense":
-                if item.get("autoincrement"):
-                    inc_sequence(
-                        ham_int,
-                        sequence=seq,
-                        increment=int(item.get("increment", 12)),
-                    )
-
-                if mode == "stamp":
-                    dispense_96_seq2(
-                        ham_int,
-                        plate96=plate1,
-                        head_disp_seq=seq,
-                        vols=volume,
-                    )
-                else:
-                    dispense_seq(
-                        ham_int,
-                        disp_seq=seq,
-                        vols=volume,
-                        channel=channel,
-                        liq_class=liquid_class,
-                    )
-
-            elif action == "tip_eject":
-                if mode == "stamp":
-                    tip_eject_96(ham_int)
-                else:
-                    tip_eject_seq2(
-                        ham_int,
-                        waste_seq="Waste",
-                        channel=channel,
-                    )
-
-    time.sleep(5)
-
-    trace_path = get_latest_trc_file(run_start_time=run_start_time)
-
-    if not trace_path:
-        raise RuntimeError(
-            "PyHamilton simulation finished, but no new .trc trace file was found."
-        )
-
-    return trace_path, generated_script_path
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+PYHAMILTON_IMPORT_ERROR = ""
 
 try:
-    self.status.config(text="Running PyHamilton simulation...")
-    self.root.update_idletasks()
+    import pyhamilton.interface as phi
 
-    runtime_trace, review_script = run_pyhamilton_simulation(
-        self.lay_path,
-        configs,
-        execution_plan,
+    from pyhamilton import (
+        HamiltonError,
+        HamiltonStepError,
+        HamiltonTimeoutError,
+        LayoutManager,
+        Plate96,
+        ResourceType,
+        OEM_HSL_PATH,
+        OEM_RUN_EXE_PATH,
+        normal_logging,
+        initialize,
+        inc_sequence,
+        tip_pick_up_seq,
+        aspirate_seq,
+        dispense_seq,
+        tip_pick_up_96_seq,
+        aspirate_96_seq,
+        dispense_96_seq2,
+        tip_eject_96,
     )
 
-    self.trace_path = runtime_trace
+    try:
+        from pyhamilton import tip_eject_seq2
+    except ImportError:
+        from pyhamilton import tip_eject_seq as tip_eject_seq2
 
 except Exception as exc:
-    messagebox.showerror(
-        "PyHamilton Simulation Failed",
-        str(exc),
-    )
-    self.status.config(text="Simulation failed. Validation stopped.")
-    return
+    PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+
+    phi = None
+    HamiltonStepError = Exception
+    HamiltonError = Exception
+    HamiltonTimeoutError = Exception
+    LayoutManager = None
+    Plate96 = None
+    ResourceType = None
+    OEM_RUN_EXE_PATH = ""
+    OEM_HSL_PATH = ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+raise RuntimeError(
+    "pyhamilton did not import correctly. DevPal Lite cannot run simulation.\n\n"
+    f"Import error: {PYHAMILTON_IMPORT_ERROR}"
+)
