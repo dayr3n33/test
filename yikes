@@ -1,12 +1,21 @@
-def load_liquid_classes(self):
-        try:
-            self.liquid_classes = load_liquid_classes_from_access("LC.mdb")
-        except Exception as exc:
-            messagebox.showwarning("Liquid Class Warning", str(exc))
-            self.liquid_classes = []
+cleaned = re.sub(r"[\x00-\x1F]+", "", raw_value).strip()
+cleaned = cleaned.strip("^").strip()
+cleaned = cleaned.strip('"').strip("'").strip()
 
-        self.liquid_combo.completevalues = self.liquid_classes
-        self.liquid_combo["values"] = self.liquid_classes
+# Keep only valid sequence names.
+# VENUS sequence names should start with a letter.
+match = re.search(r"[A-Za-z][A-Za-z0-9_\- .]*", cleaned)
+if not match:
+    continue
 
-        if self.liquid_classes and not self.liquid_class_var.get():
-            self.liquid_class_var.set(self.liquid_classes[0])
+cleaned = match.group(0).strip()
+
+if not cleaned:
+    continue
+
+if not cleaned[0].isalpha():
+    continue
+
+if cleaned not in seen:
+    seen.add(cleaned)
+    sequence_names.append(cleaned)
