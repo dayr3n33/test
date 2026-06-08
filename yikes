@@ -1,60 +1,103 @@
-def upload_lay(self):
-    path = filedialog.askopenfilename(
-        title="Select .lay File",
-        filetypes=[("LAY files", "*.lay")]
-    )
-    if not path:
-        return
+def render_sequences(self):
+    for child in self.scroll_frame.winfo_children():
+        child.destroy()
 
-    self.lay_path = path
-    self.lay_label.config(text=path)
+    self.sequence_vars.clear()
+    self.role_vars.clear()
+    self.channel_vars.clear()
 
-    try:
-        self.sequence_names = sorted(parse_lay_file(path))
+    for idx, name in enumerate(self.sequence_names):
+        use_var = tk.IntVar(value=0)
+        role_var = tk.StringVar(value="aspirate")
 
-        if not self.sequence_names:
-            self.status.config(text="Loaded 0 sequences.")
-            return
+        detected_pattern = self.detected_channel_patterns.get(name, "")
+        hardware = detect_hardware_mode(name, role_var.get())
 
-        self.detected_channel_patterns = detect_channel_patterns_for_sequences(
-            self.sequence_names,
-            path,
-        )
+        if hardware == "stamp" and not detected_pattern:
+            detected_pattern = "1" * 96
+        elif hardware == "channels" and not detected_pattern:
+            detected_pattern = "111111111111"
 
-        self.load_liquid_classes()
-        self.render_sequences()
+        channel_var = tk.StringVar(value=detected_pattern)
 
-        self.status.config(
-            text=(
-                f"Loaded {len(self.sequence_names)} sequences. "
-                "Channel patterns auto-detected where available."
+        tk.Checkbutton(
+            self.scroll_frame,
+            variable=use_var,
+        ).grid(row=idx, column=0, padx=2, pady=1)
+
+        tk.Label(
+            self.scroll_frame,
+            text=name,
+            anchor="w",
+            width=65,
+        ).grid(row=idx, column=1, sticky="w", padx=2, pady=1)
+
+        ttk.Combobox(
+            self.scroll_frame,
+            textvariable=role_var,
+            values=ROLE_OPTIONS,
+            state="readonly",
+            width=13,
+        ).grid(row=idx, column=2, padx=2, pady=1)
+
+        tk.Entry(
+            self.scroll_frame,
+            textvariable=channel_var,
+            width=18,
+        ).grid(row=idx, column=3, padx=2, pady=1)
+
+        tk.Label(
+            self.scroll_frame,
+            text=hardware,
+            width=12,
+        ).grid(row=idx, column=4, padx=2, pady=1)
+
+        self.sequence_vars.append((name, use_var))
+        self.role_vars[name] = role_var
+        self.channel_vars[name] = channel_var
+
+
+
+def collect_configs(self) -> List[SequenceStepConfig]:
+    configs = []
+
+    transfer_type = self.transfer_type_var.get().strip()
+    replicate = self.replicate_var.get().strip()
+    marker = self.marker_var.get().strip().upper()
+    liquid_class = self.liquid_class_var.get().strip()
+    volume = safe_float(self.volume_var.get())
+
+    for idx, (name, use_var) in enumerate(self.sequence_vars):
+        if not use_var.get():
+            continue
+
+        role = self.role_vars[name].get().strip()
+        hardware = detect_hardware_mode(name, role)
+
+        channel = self.channel_vars[name].get().strip()
+
+        if not channel:
+            channel = self.detected_channel_patterns.get(name, "")
+
+        if hardware == "channels" and not channel:
+            channel = "111111111111"
+
+        if hardware == "stamp" and not channel:
+            channel = "1" * 96
+
+        configs.append(
+            SequenceStepConfig(
+                sequence=name,
+                role=role,
+                liquid_class=liquid_class if role in ("aspirate", "dispense") else "",
+                transfer_type=transfer_type,
+                replicate=replicate,
+                volume_ul=volume,
+                marker=marker,
+                channel_pattern=channel,
+                hardware_mode=hardware,
+                selected_index=idx,
             )
         )
 
-    except Exception as exc:
-        messagebox.showerror("LAY Parse Error", str(exc))
-
-
-
-
-
-*****
-
-
-channel_var = tk.StringVar(
-    value=self.detected_channel_patterns.get(name, "")
-)
-
-
-
-
-channel = self.channel_vars[name].get().strip()
-
-if not channel:
-    channel = self.detected_channel_patterns.get(name, "")
-
-if hardware == "channels" and not channel:
-    channel = "111111111111"
-
-if hardware == "stamp" and not channel:
-    channel = "1" * 96
+    return configs
