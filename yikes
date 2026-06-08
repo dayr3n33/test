@@ -1,64 +1,34 @@
 def parse_lay_file(lay_path: str) -> List[str]:
-    try:
-        content = Path(lay_path).read_text(encoding="utf-8", errors="ignore")
-    except Exception:
-        content = Path(lay_path).read_text(encoding="latin-1", errors="ignore")
-
     sequence_names = []
-    seen = set()
 
-    patterns = [
-        r"Seq\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)",
-        r"Sequence\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)",
-        r"SequenceName\^[^\^]*\^([^\r\n\^]+)",
-        r"\bSeqName\^[^\^]*\^([^\r\n\^]+)",
-        r"\bName\^[^\^]*\^([A-Za-z0-9_\- .:/\\]+)",
-    ]
+    try:
+        with open(lay_path, "r", encoding="utf-8") as file:
+            content = file.read()
+    except UnicodeDecodeError:
+        with open(lay_path, "r", encoding="latin-1") as file:
+            content = file.read()
 
-    for pattern in patterns:
-        for match in re.findall(pattern, content, flags=re.IGNORECASE):
-            name = str(match).strip()
+    pattern = re.compile(r"Seq\.\d+\.Name\^\w+\^(\w+[^\^]*)")
+    matches = pattern.findall(content)
 
-            if not name:
-                continue
+    for match in matches:
+        sequence_names.append(match.strip())
 
-            bad_prefixes = (
-                "Deck",
-                "Carrier",
-                "Labware",
-                "Resource",
-                "Site",
-                "Object",
-                "Class",
-            )
+    return sequence_names
 
-            if name in seen:
-                continue
 
-            if any(name.lower().startswith(prefix.lower()) for prefix in bad_prefixes):
-                continue
 
-            seen.add(name)
-            sequence_names.append(name)
 
-    if not sequence_names:
-        sequence_block_pattern = re.compile(
-            r"(?:Seq|Sequence)\.\d+\.[^\r\n]*",
-            re.IGNORECASE,
-        )
-
-        for line in sequence_block_pattern.findall(content):
-            tokens = re.split(r"\^|\t|,", line)
-            for token in tokens:
-                token = token.strip()
-                if (
-                    token
-                    and len(token) > 2
-                    and re.search(r"[A-Za-z]", token)
-                    and not token.lower().startswith(("seq.", "sequence.", "name"))
-                    and token not in seen
-                ):
-                    seen.add(token)
-                    sequence_names.append(token)
-
-    return sorted(sequence_names)
+def upload_lay(self):
+    path = filedialog.askopenfilename(title="Select .lay File", filetypes=[("LAY files", "*.lay")])
+    if not path:
+        return
+    self.lay_path = path
+    self.lay_label.config(text=path)
+    try:
+        self.sequence_names = sorted(parse_lay_file(path))
+        self.load_liquid_classes()
+        self.render_sequences()
+        self.status.config(text=f"Loaded {len(self.sequence_names)} sequences.")
+    except Exception as exc:
+        messagebox.showerror("LAY Parse Error", str(exc))
