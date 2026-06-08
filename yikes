@@ -1,1 +1,208 @@
 
+from __future__ import annotations
+
+from typing import Optional
+
+from connectors.pyhamilton_connector import create_simulated_interface
+from connectors.pyhamilton_execution_research import build_pyhamilton_dry_run_plan, summarize_pyhamilton_plan, validate_pyhamilton_dry_run_plan
+from connectors.venus_execution_research import build_venus_execution_readiness_summary, detect_run_control_candidates, explain_required_manual_steps
+from connectors.venus_simulation_runner import build_venus_simulation_plan, run_venus_simulation_plan, validate_venus_simulation_plan
+from connectors.pyhamilton_oem_adapter import build_pyhamilton_oem_adapter_plan
+from core.runtime_evidence_collectors import collect_all_runtime_evidence
+from core.operator_attestation import load_operator_attestation, summarize_operator_attestation
+from core.runtime_session import build_runtime_session_artifacts, create_runtime_research_session, summarize_runtime_session
+from core.safety_gates import evaluate_execution_readiness
+from core.runtime_environment import detect_runtime_environment
+from core.runtime_modes import RUNTIME_MODE_PYHAMILTON_SIMULATE, RUNTIME_MODE_VENUS_RUN_CONTROL_SIMULATION
+from core.sequence_trace_mapping import build_sequence_trace_mapping
+from parsers.trace_parser import parse_trace_file
+from datetime import datetime
+
+from analyzers.runtime_simulation_analyzer import analyze_runtime_simulation
+from analyzers.runtime_trace_correlator import correlate_runtime_trace
+from analyzers.offline_replay_engine import build_offline_replay_artifacts
+from core.bounded_sweep import generate_bounded_scenarios
+from core.config import DevPalConfig
+from core.orchestrator import build_full_method_model, run_full_analysis
+from models.method_models import MethodModel, StressScenario
+
+
+def run_pipeline(config: DevPalConfig) -> MethodModel:
+    config.resolve_paths(); config.discover_trace_files(); config.ensure_output_directory(); config.validate()
+    model = build_full_method_model(selected_method_path=config.selected_method_path, project_dir=config.project_dir, layout_paths=config.layout_paths, document_paths=config.document_paths, trace_paths=config.trace_paths if config.enable_trace_analysis else [])
+    model.runtime_metadata.update({"requested_runtime_mode": config.runtime_mode, "local_runtime_check_requested": config.local_runtime_check, "pyhamilton_sim_allowed": config.allow_pyhamilton_sim, "execution_performed": False, "venus_launch_performed": False, "method_execution_performed": False, "hardware_execution_occurred": False})
+
+    runtime_data = detect_runtime_environment(config.trace_paths if config.enable_trace_analysis else [])
+    model.runtime_metadata["runtime_environment"] = runtime_data["environment"].__dict__
+    model.runtime_metadata["runtime_capabilities"] = [cap.__dict__ for cap in runtime_data["capabilities"]]
+    model.runtime_metadata["runtime_validation_attempts"] = []
+
+    if config.local_runtime_check and config.runtime_mode == RUNTIME_MODE_PYHAMILTON_SIMULATE:
+        if config.allow_pyhamilton_sim:
+            sim_result = create_simulated_interface()
+            model.runtime_metadata["pyhamilton_sim_interface_created"] = bool(sim_result["simulated_interface_created"])
+            model.runtime_metadata["runtime_validation_attempts"].append({"mode": RUNTIME_MODE_PYHAMILTON_SIMULATE, "attempted": True, "result": {k: v for k, v in sim_result.items() if k != "interface"}})
+            for lim in sim_result.get("limitations", []):
+                model.add_issue(severity="minor", category="runtime-limitation", message=lim, recommendation="Validate local Windows VENUS/PyHamilton runtime setup.")
+        else:
+            model.runtime_metadata["pyhamilton_sim_interface_created"] = False
+            model.add_issue(severity="minor", category="runtime-limitation", message="pyhamilton_simulate requested without --allow-pyhamilton-sim; simulate interface creation was not attempted.", recommendation="Re-run with --allow-pyhamilton-sim for guarded simulate=True interface check.")
+
+    if config.local_runtime_check and config.runtime_mode == RUNTIME_MODE_VENUS_RUN_CONTROL_SIMULATION:
+        model.runtime_metadata["venus_readiness_checked"] = True
+        model.add_issue(severity="info", category="runtime-readiness", message="VENUS run-control readiness checked only; live VENUS launch/execution is not implemented in Phase 1.", recommendation="Use this evidence for local validation planning; keep execution outside DevPal Phase 1 scope.")
+
+    sweep = generate_bounded_scenarios(model)
+    model.runtime_metadata["sweep_metadata"] = sweep.metadata
+    model.runtime_metadata["sweep_boundaries"] = [boundary.__dict__ for boundary in sweep.boundaries]
+    model.runtime_metadata["generated_stress_scenarios"] = [scenario.__dict__ for scenario in sweep.scenarios]
+    linkage_payload = _build_linkage_payload(model, preview_limit=50)
+    generated = []
+    for item in sweep.scenarios:
+        scenario_linkage = dict(item.linkage)
+        scenario_linkage.update({
+            "transfer_pair_ids": list(linkage_payload["transfer_pair_ids"]),
+            "transfer_pair_ids_preview": list(linkage_payload["transfer_pair_ids_preview"]),
+            "mapping_ids": list(linkage_payload["mapping_ids"]),
+            "mapping_ids_preview": list(linkage_payload["mapping_ids_preview"]),
+        })
+        generated.append(StressScenario(scenario_id=item.scenario_id, description=item.reasoning, expected_to_pass=item.expected_to_pass, expected_error=item.expected_error, parameters={item.dimension: item.value, "evidence": list(item.evidence), "linkage": scenario_linkage}, sample_count=item.value if item.dimension == "sample_count" else None, replicate_count=item.value if item.dimension == "replicate_count" else None, plate_count=item.value if item.dimension == "plate_count" else None, worklist_count=item.value if item.dimension == "worklist_count" else None))
+    existing = {scenario.scenario_id for scenario in model.stress_test_plan.scenarios}
+    for scenario in generated:
+        if scenario.scenario_id not in existing:
+            model.stress_test_plan.scenarios.append(scenario)
+
+    phase2_payload = {"enabled": bool(config.phase2_runtime_research or config.dry_run_plan or config.evaluate_execution_readiness or config.collect_runtime_evidence or config.create_runtime_session or bool(config.operator_attestation_path)), "execution_performed": False, "hardware_execution_occurred": False, "venus_launched": False, "method_execution_occurred": False, "no_live_execution_statement": "Phase 2 pass 2 performs evidence collection and attestation only; no live execution is performed.", "rollback_playbook_reference": "docs/RUNTIME_ABORT_AND_ROLLBACK_PLAYBOOK.md"}
+    runtime_evidence = {}
+    if config.collect_runtime_evidence or config.phase2_runtime_research or config.evaluate_execution_readiness:
+        runtime_evidence = collect_all_runtime_evidence(trace_directory=config.trace_directory)
+        phase2_payload["runtime_evidence_collectors"] = runtime_evidence
+
+    attestation_summary = {}
+    if config.operator_attestation_path:
+        try:
+            attestation = load_operator_attestation(config.operator_attestation_path)
+            attestation_summary = summarize_operator_attestation(attestation)
+        except Exception as exc:
+            attestation_summary = {"validation": {"valid": False, "errors": ["attestation_load_failed: {0}".format(exc)]}}
+        phase2_payload["operator_attestation"] = attestation_summary
+
+    if config.dry_run_plan or config.phase2_runtime_research:
+        dry_plan = build_pyhamilton_dry_run_plan(model)
+        phase2_payload["dry_run_plan_summary"] = summarize_pyhamilton_plan(dry_plan)
+        phase2_payload["dry_run_plan_validation"] = validate_pyhamilton_dry_run_plan(dry_plan)
+    if config.evaluate_execution_readiness or config.phase2_runtime_research:
+        readiness = evaluate_execution_readiness(config.runtime_mode, evidence={
+            "method_inputs_validated": True,
+            "static_analysis_completed": True,
+            "bounded_sweep_completed": True,
+            "hardware_execution_disabled_by_default": True,
+            "dry_run_plan_generated": bool(config.dry_run_plan or config.phase2_runtime_research),
+            "pyhamilton_available": any(c.get("collector_name") == "collect_pyhamilton_install_evidence" and c.get("passed") for c in runtime_evidence.get("collectors", [])),
+            "venus_detected": any(c.get("collector_name") == "collect_venus_install_evidence" and c.get("passed") for c in runtime_evidence.get("collectors", [])),
+            "trace_output_directory_available": any(c.get("collector_name") == "collect_trace_directory_evidence" and c.get("passed") for c in runtime_evidence.get("collectors", [])),
+            "local_windows_environment_confirmed": any(c.get("collector_name") == "collect_windows_runtime_evidence" and c.get("passed") for c in runtime_evidence.get("collectors", [])),
+        })
+        phase2_payload["execution_readiness"] = {"requested_mode": readiness.requested_mode, "allowed": readiness.allowed, "limitations": readiness.limitations, "recommendation": readiness.recommendation, "execution_performed": readiness.execution_performed, "gates": [g.__dict__ for g in readiness.gates]}
+        phase2_payload["blocked_execution_reason"] = readiness.recommendation
+    if config.phase2_runtime_research:
+        phase2_payload["venus_research"] = {"candidates": detect_run_control_candidates(), "readiness": build_venus_execution_readiness_summary(), "manual_steps": explain_required_manual_steps()}
+
+    if config.create_runtime_session or config.phase2_runtime_research:
+        session = create_runtime_research_session(
+            operator=(attestation_summary.get("operator_name") if attestation_summary else "unknown"),
+            runtime_mode=config.runtime_mode,
+            evidence=runtime_evidence,
+            safety_gates=phase2_payload.get("execution_readiness", {}),
+            dry_run_plan=phase2_payload.get("dry_run_plan_summary", {}),
+        )
+        artifact_bundle = build_runtime_session_artifacts([
+            {"artifact_type": "operator_attestation", "path": config.operator_attestation_path},
+        ] if config.operator_attestation_path else [])
+        phase2_payload["runtime_session"] = summarize_runtime_session(session)
+        phase2_payload["generated_artifacts"] = artifact_bundle.get("generated_artifacts", [])
+        phase2_payload["artifact_hashes"] = artifact_bundle.get("artifact_hashes", {})
+        phase2_payload["chain_of_custody"] = {
+            "session_id": session.session_id,
+            "operator_attestation_status": (attestation_summary.get("validation", {}) if attestation_summary else {"valid": False, "errors": ["operator attestation not supplied"]}),
+            "evidence_collection_summary": runtime_evidence.get("summary", {}),
+            "generated_artifacts": phase2_payload.get("generated_artifacts", []),
+            "artifact_hashes": phase2_payload.get("artifact_hashes", {}),
+            "rollback_playbook_reference": phase2_payload.get("rollback_playbook_reference"),
+        }
+
+    if config.venus_sim_dry_run or config.venus_sim_run:
+        plan = build_venus_simulation_plan(
+            method_path=config.selected_method_path,
+            run_control_path=config.venus_run_control_path or None,
+            log_dir=config.venus_log_dir or None,
+        )
+        validation = validate_venus_simulation_plan(plan)
+        model.runtime_metadata["venus_simulation_plan"] = plan
+        model.runtime_metadata["venus_simulation_plan_validation"] = validation
+        model.runtime_metadata["simulation_trace_path"] = ""
+        model.runtime_metadata["venus_trace_capture"] = {"status": "not_attempted", "candidates": []}
+        model.runtime_metadata["simulation_trace_limitations"] = list(validation.get("limitations", []))
+
+        if config.venus_sim_dry_run and not config.venus_sim_run:
+            model.runtime_metadata["venus_simulation_result"] = {
+                "status": "dry_run_only",
+                "execution_performed": False,
+                "venus_launched": False,
+                "hardware_execution_occurred": False,
+                "method_execution_occurred": False,
+            }
+        else:
+            result = run_venus_simulation_plan(plan, allow_launch=bool(config.venus_sim_run), sim_timeout_seconds=config.venus_sim_timeout_seconds, trace_wait_seconds=config.venus_trace_wait_seconds, trace_stabilize_seconds=config.venus_trace_stabilize_seconds)
+            model.runtime_metadata["venus_simulation_result"] = result
+            capture = result.get("trace_capture", {"status": "not_found", "candidates": []})
+            model.runtime_metadata["venus_trace_capture"] = capture
+            if capture.get("status") == "found" and capture.get("selected_trace"):
+                trace_path = capture.get("selected_trace")
+                model.runtime_metadata["simulation_trace_path"] = trace_path
+                try:
+                    parse_trace_file(trace_path, model)
+                except Exception as exc:
+                    model.runtime_metadata["venus_trace_capture"]["status"] = "parse_failed"
+                    model.runtime_metadata["venus_trace_capture"]["parse_error"] = str(exc)
+            elif capture.get("status") != "found":
+                model.runtime_metadata["simulation_trace_limitations"].append("no_new_trace_discovered")
+
+    model.runtime_metadata["simulation_trace_sequence_mapping_readiness"] = model.runtime_metadata.get("sequence_trace_mapping_readiness", "unavailable")
+
+    model.runtime_metadata["phase2_runtime_research"] = phase2_payload
+
+    model.runtime_metadata.update(build_sequence_trace_mapping(model))
+    model.runtime_metadata["simulation_trace_sequence_mapping_readiness"] = model.runtime_metadata.get("sequence_trace_mapping_readiness", "unavailable")
+
+    analyzed = run_full_analysis(model)
+    if config.offline_replay or config.offline_stress_run or config.pyhamilton_oem_plan:
+        build_offline_replay_artifacts(analyzed, run_replay=bool(config.offline_replay or config.offline_stress_run or config.pyhamilton_oem_plan), run_stress=bool(config.offline_stress_run), scenario_cap=config.stress_scenario_cap)
+    if config.pyhamilton_oem_plan:
+        build_pyhamilton_oem_adapter_plan(analyzed, method_path=config.pyhamilton_oem_method_path or None, allow_launch=bool(config.allow_pyhamilton_oem_launch))
+    analyzed.runtime_metadata["hardware_execution_occurred"] = False
+    analyzed.analyzer_results.append(analyze_runtime_simulation(analyzed))
+    analyzed.runtime_metadata["runtime_trace_correlation"] = correlate_runtime_trace(analyzed)
+    for limitation in runtime_data["environment"].limitations:
+        analyzed.add_issue(severity="minor", category="runtime-limitation", message=limitation, recommendation="Run local Windows/VENUS/PyHamilton validation for runtime readiness evidence.")
+    return analyzed
+
+
+def run_pipeline_from_path(selected_method_path: str, project_dir: str = "", output_directory: str = "") -> MethodModel:
+    return run_pipeline(DevPalConfig(selected_method_path=selected_method_path, project_dir=project_dir, output_directory=output_directory))
+
+
+def attach_inputs(config: DevPalConfig, layout_path: Optional[str] = None, document_path: Optional[str] = None, trace_path: Optional[str] = None) -> DevPalConfig:
+    if layout_path and layout_path not in config.layout_paths: config.layout_paths.append(layout_path)
+    if document_path and document_path not in config.document_paths: config.document_paths.append(document_path)
+    if trace_path and trace_path not in config.trace_paths: config.trace_paths.append(trace_path)
+    return config
+
+
+def _build_linkage_payload(model: MethodModel, preview_limit: int = 50) -> dict:
+    return {
+        "transfer_pair_ids": [pair.pair_id for pair in model.transfer_pairs],
+        "transfer_pair_ids_preview": [pair.pair_id for pair in model.transfer_pairs[:preview_limit]],
+        "mapping_ids": [mapping.mapping_id for mapping in model.transfer_mappings],
+        "mapping_ids_preview": [mapping.mapping_id for mapping in model.transfer_mappings[:preview_limit]],
+    }
