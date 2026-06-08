@@ -1,5 +1,15 @@
+parser.add_argument(
+    "--method",
+    required=False,
+    default="",
+    help="Path to selected Hamilton method file (.med/.hsl/.lay/.stp/.res/.sub)",
+)
+
+
 #!/usr/bin/env python3
 """Safe local PC verification runner for DevPal Phase 1."""
+
+from __future__ import annotations
 
 import json
 import os
@@ -11,6 +21,7 @@ from typing import Any, Dict, List
 
 REPORTS_DIR = "reports"
 SUMMARY_PATH = os.path.join(REPORTS_DIR, "local_pc_verification_summary.json")
+
 SAFETY_KEYS = [
     "execution_performed",
     "hardware_execution_occurred",
@@ -21,65 +32,185 @@ SAFETY_KEYS = [
 
 def build_commands() -> List[List[str]]:
     py = sys.executable
+
     return [
         [py, "-m", "pytest"],
         [py, "main.py", "--help"],
-        [py, "main.py", "--method", "sample_inputs/Demo.med", "--layout", "sample_inputs/layout.csv", "--docs", "sample_inputs/user_requirements.txt", "--format", "json", "--verbose"],
-        [py, "main.py", "--method", "sample_inputs/Demo.med", "--layout", "sample_inputs/layout.csv", "--docs", "sample_inputs/user_requirements.txt", "--trace", "sample_inputs/example.trc", "--runtime-mode", "trace_replay", "--format", "json", "--verbose"],
-        [py, "main.py", "--method", "sample_inputs/Demo.med", "--layout", "sample_inputs/layout.csv", "--docs", "sample_inputs/user_requirements.txt", "--local-runtime-check", "--runtime-mode", "auto", "--format", "json", "--verbose"],
-        [py, "main.py", "--method", "sample_inputs/Demo.med", "--layout", "sample_inputs/layout.csv", "--docs", "sample_inputs/user_requirements.txt", "--local-runtime-check", "--runtime-mode", "pyhamilton_simulate", "--allow-pyhamilton-sim", "--format", "json", "--verbose"],
-        [py, "main.py", "--method", "sample_inputs/Demo.med", "--layout", "sample_inputs/layout.csv", "--docs", "sample_inputs/user_requirements.txt", "--local-runtime-check", "--runtime-mode", "venus_run_control_simulation", "--format", "json", "--verbose"],
+        [
+            py,
+            "main.py",
+            "--method",
+            "sample_inputs/Demo.med",
+            "--layout",
+            "sample_inputs/layout.csv",
+            "--docs",
+            "sample_inputs/user_requirements.txt",
+            "--format",
+            "json",
+            "--verbose",
+        ],
+        [
+            py,
+            "main.py",
+            "--method",
+            "sample_inputs/Demo.med",
+            "--layout",
+            "sample_inputs/layout.csv",
+            "--docs",
+            "sample_inputs/user_requirements.txt",
+            "--trace",
+            "sample_inputs/example.trc",
+            "--runtime-mode",
+            "trace_replay",
+            "--format",
+            "json",
+            "--verbose",
+        ],
+        [
+            py,
+            "main.py",
+            "--method",
+            "sample_inputs/Demo.med",
+            "--layout",
+            "sample_inputs/layout.csv",
+            "--docs",
+            "sample_inputs/user_requirements.txt",
+            "--local-runtime-check",
+            "--runtime-mode",
+            "auto",
+            "--format",
+            "json",
+            "--verbose",
+        ],
+        [
+            py,
+            "main.py",
+            "--method",
+            "sample_inputs/Demo.med",
+            "--layout",
+            "sample_inputs/layout.csv",
+            "--docs",
+            "sample_inputs/user_requirements.txt",
+            "--local-runtime-check",
+            "--runtime-mode",
+            "pyhamilton_simulate",
+            "--allow-pyhamilton-sim",
+            "--format",
+            "json",
+            "--verbose",
+        ],
+        [
+            py,
+            "main.py",
+            "--method",
+            "sample_inputs/Demo.med",
+            "--layout",
+            "sample_inputs/layout.csv",
+            "--docs",
+            "sample_inputs/user_requirements.txt",
+            "--local-runtime-check",
+            "--runtime-mode",
+            "venus_run_control_simulation",
+            "--format",
+            "json",
+            "--verbose",
+        ],
     ]
 
 
 def classify_limitation(text: str) -> bool:
     lowered = text.lower()
-    return "limitation" in lowered or "pyhamilton" in lowered or "venus" in lowered
+    return (
+        "limitation" in lowered
+        or "pyhamilton" in lowered
+        or "venus" in lowered
+    )
 
 
 def extract_latest_report_path(output: str) -> str:
     markers = ("Report saved:", "Report written to:")
+
     for line in output.splitlines()[::-1]:
         for marker in markers:
             if marker in line:
                 path = line.split(marker, 1)[1].strip().strip("\"'")
                 return os.path.normpath(path) if path else ""
+
     return ""
 
 
 def read_safety_flags(report_path: str) -> Dict[str, Any]:
-    result = {"report_path": report_path, "found": False, "values": {}, "all_false": None}
+    result: Dict[str, Any] = {
+        "report_path": report_path,
+        "found": False,
+        "values": {},
+        "all_false": None,
+    }
+
     if not report_path or not os.path.exists(report_path):
         return result
+
     try:
         with open(report_path, "r", encoding="utf-8") as handle:
             data = json.load(handle)
+
         runtime = data.get("runtime_environment", {}) if isinstance(data, dict) else {}
         values = {key: runtime.get(key) for key in SAFETY_KEYS}
+
         result["found"] = True
         result["values"] = values
         result["all_false"] = all(values.get(key) is False for key in SAFETY_KEYS)
+
     except Exception as exc:
         result["error"] = str(exc)
+
     return result
+
+
+def _safe_platform_string() -> str:
+    try:
+        system_name = sys.platform
+    except Exception:
+        system_name = "unknown"
+
+    try:
+        release = platform.release()
+    except Exception:
+        release = "unknown"
+
+    try:
+        machine = platform.machine()
+    except Exception:
+        machine = "unknown"
+
+    return "{0}|{1}|{2}".format(
+        system_name,
+        release,
+        machine,
+    )
 
 
 def run_verification() -> Dict[str, Any]:
     os.makedirs(REPORTS_DIR, exist_ok=True)
+
     commands = build_commands()
     command_results = []
+
     passed = 0
     limitations = 0
     failed = 0
 
     for cmd in commands:
         completed = subprocess.run(cmd, capture_output=True, text=True)
+
         combined_output = (completed.stdout or "") + "\n" + (completed.stderr or "")
         report_path = extract_latest_report_path(combined_output)
         safety_flags = read_safety_flags(report_path)
+
         is_limitation = completed.returncode != 0 and classify_limitation(combined_output)
 
         status = "pass"
+
         if completed.returncode != 0 and not is_limitation:
             status = "fail"
             failed += 1
@@ -92,38 +223,50 @@ def run_verification() -> Dict[str, Any]:
         if safety_flags.get("found") and safety_flags.get("all_false") is False:
             if status == "pass":
                 passed = max(0, passed - 1)
-            if status == "limitation":
+            elif status == "limitation":
                 limitations = max(0, limitations - 1)
+
             status = "fail"
             failed += 1
 
-        command_results.append({
-            "command": cmd,
-            "command_text": " ".join(cmd),
-            "exit_code": completed.returncode,
-            "status": status,
-            "is_limitation": bool(is_limitation),
-            "stdout": completed.stdout,
-            "stderr": completed.stderr,
-            "report_safety_flags": safety_flags,
-        })
+        command_results.append(
+            {
+                "command": cmd,
+                "command_text": " ".join(cmd),
+                "exit_code": completed.returncode,
+                "status": status,
+                "is_limitation": bool(is_limitation),
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "report_safety_flags": safety_flags,
+            }
+        )
 
     summary = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "platform": "{0}|{1}|{2}".format(platform.system(), platform.release(), platform.machine()),
+        "platform": _safe_platform_string(),
         "python_executable": sys.executable,
         "python_version": platform.python_version(),
         "commands": command_results,
-        "totals": {"total": len(commands), "passed": passed, "limitations": limitations, "failed": failed},
+        "totals": {
+            "total": len(commands),
+            "passed": passed,
+            "limitations": limitations,
+            "failed": failed,
+        },
         "verification_passed": failed == 0,
     }
+
     with open(SUMMARY_PATH, "w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2)
+
     return summary
 
 
 if __name__ == "__main__":
     result = run_verification()
+
     print("Local PC verification summary written to:", SUMMARY_PATH)
     print(json.dumps(result.get("totals", {}), indent=2))
+
     sys.exit(0 if result.get("verification_passed") else 1)
