@@ -1,2 +1,64 @@
+def parse_lay_file(lay_path: str) -> List[str]:
+    try:
+        content = Path(lay_path).read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        content = Path(lay_path).read_text(encoding="latin-1", errors="ignore")
 
-SELECT SERVERPROPERTY('IsIntegratedSecurityOnly') AS AuthenticationMode;
+    sequence_names = []
+    seen = set()
+
+    patterns = [
+        r"Seq\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)",
+        r"Sequence\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)",
+        r"SequenceName\^[^\^]*\^([^\r\n\^]+)",
+        r"\bSeqName\^[^\^]*\^([^\r\n\^]+)",
+        r"\bName\^[^\^]*\^([A-Za-z0-9_\- .:/\\]+)",
+    ]
+
+    for pattern in patterns:
+        for match in re.findall(pattern, content, flags=re.IGNORECASE):
+            name = str(match).strip()
+
+            if not name:
+                continue
+
+            bad_prefixes = (
+                "Deck",
+                "Carrier",
+                "Labware",
+                "Resource",
+                "Site",
+                "Object",
+                "Class",
+            )
+
+            if name in seen:
+                continue
+
+            if any(name.lower().startswith(prefix.lower()) for prefix in bad_prefixes):
+                continue
+
+            seen.add(name)
+            sequence_names.append(name)
+
+    if not sequence_names:
+        sequence_block_pattern = re.compile(
+            r"(?:Seq|Sequence)\.\d+\.[^\r\n]*",
+            re.IGNORECASE,
+        )
+
+        for line in sequence_block_pattern.findall(content):
+            tokens = re.split(r"\^|\t|,", line)
+            for token in tokens:
+                token = token.strip()
+                if (
+                    token
+                    and len(token) > 2
+                    and re.search(r"[A-Za-z]", token)
+                    and not token.lower().startswith(("seq.", "sequence.", "name"))
+                    and token not in seen
+                ):
+                    seen.add(token)
+                    sequence_names.append(token)
+
+    return sorted(sequence_names)
