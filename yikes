@@ -1,34 +1,105 @@
 def parse_lay_file(lay_path: str) -> List[str]:
-    sequence_names = []
-
     try:
-        with open(lay_path, "r", encoding="utf-8") as file:
+        with open(lay_path, "r", encoding="utf-8", errors="ignore") as file:
             content = file.read()
-    except UnicodeDecodeError:
-        with open(lay_path, "r", encoding="latin-1") as file:
+    except Exception:
+        with open(lay_path, "r", encoding="latin-1", errors="ignore") as file:
             content = file.read()
 
-    pattern = re.compile(r"Seq\.\d+\.Name\^\w+\^(\w+[^\^]*)")
-    matches = pattern.findall(content)
+    sequence_names = []
+    seen = set()
 
-    for match in matches:
-        sequence_names.append(match.strip())
+    patterns = [
+        # Original Sequence Analyzer Lite pattern
+        re.compile(r"Seq\.\d+\.Name\^\w+\^(\w+[^\^]*)", re.IGNORECASE),
 
-    return sequence_names
+        # Same structure but allows non-word type between carets
+        re.compile(r"Seq\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)", re.IGNORECASE),
+
+        # Handles spaces around separators
+        re.compile(r"Seq\.\d+\.Name\s*\^\s*[^\^]*\s*\^\s*([^\r\n\^]+)", re.IGNORECASE),
+
+        # Some exports use Sequence instead of Seq
+        re.compile(r"Sequence\.\d+\.Name\^[^\^]*\^([^\r\n\^]+)", re.IGNORECASE),
+
+        # Some files put name/value on same line with quoted values
+        re.compile(r"Seq\.\d+\.Name[^\r\n]*?['\"]([^'\"]+)['\"]", re.IGNORECASE),
+    ]
+
+    for pattern in patterns:
+        for match in pattern.findall(content):
+            name = str(match).strip()
+
+            if not name:
+                continue
+
+            name = name.strip("^").strip()
+
+            if not name:
+                continue
+
+            if name not in seen:
+                seen.add(name)
+                sequence_names.append(name)
+
+    if sequence_names:
+        return sequence_names
+
+    debug_path = os.path.join(
+        os.getcwd(),
+        "devpal_lite_lay_sequence_debug.txt",
+    )
+
+    lines_with_seq = []
+    for line in content.splitlines():
+        if "Seq." in line or "Sequence" in line or ".Name" in line:
+            lines_with_seq.append(line)
+
+    with open(debug_path, "w", encoding="utf-8") as debug_file:
+        debug_file.write("LAY FILE:\n")
+        debug_file.write(str(lay_path) + "\n\n")
+        debug_file.write("TOTAL CHARACTERS:\n")
+        debug_file.write(str(len(content)) + "\n\n")
+        debug_file.write("LINES CONTAINING Seq. / Sequence / .Name:\n")
+        debug_file.write("=" * 100 + "\n")
+        for line in lines_with_seq[:500]:
+            debug_file.write(line + "\n")
+
+    messagebox.showerror(
+        "Sequence Parse Error",
+        "No sequences were found in the .lay file.\n\n"
+        f"A debug file was written here:\n{debug_path}\n\n"
+        "Open that file and send/paste 10-20 lines that show Seq/Sequence/Name."
+    )
+
+    return []
+
 
 
 
 
 def upload_lay(self):
-    path = filedialog.askopenfilename(title="Select .lay File", filetypes=[("LAY files", "*.lay")])
+    path = filedialog.askopenfilename(
+        title="Select .lay File",
+        filetypes=[("LAY files", "*.lay")]
+    )
     if not path:
         return
+
     self.lay_path = path
     self.lay_label.config(text=path)
+
     try:
-        self.sequence_names = sorted(parse_lay_file(path))
+        self.sequence_names = parse_lay_file(path)
+
+        if not self.sequence_names:
+            self.status.config(text="Loaded 0 sequences. See devpal_lite_lay_sequence_debug.txt.")
+            return
+
+        self.sequence_names = sorted(self.sequence_names)
         self.load_liquid_classes()
         self.render_sequences()
         self.status.config(text=f"Loaded {len(self.sequence_names)} sequences.")
+
     except Exception as exc:
         messagebox.showerror("LAY Parse Error", str(exc))
