@@ -14,7 +14,6 @@ try:
         OEM_RUN_EXE_PATH,
         normal_logging,
         initialize,
-        inc_sequence,
         tip_pick_up_seq,
         aspirate_seq,
         dispense_seq,
@@ -25,9 +24,25 @@ try:
     )
 
     try:
+        from pyhamilton import inc_sequence
+    except ImportError:
+        try:
+            from pyhamilton import increment_sequence as inc_sequence
+        except ImportError:
+            def inc_sequence(ham_int, sequence, increment):
+                return ham_int.send_command(
+                    command="INCSEQ",
+                    sequence=sequence,
+                    increment=increment,
+                )
+
+    try:
         from pyhamilton import tip_eject_seq2
     except ImportError:
-        from pyhamilton import tip_eject_seq as tip_eject_seq2
+        try:
+            from pyhamilton import tip_eject_seq as tip_eject_seq2
+        except ImportError:
+            from pyhamilton import tip_eject as tip_eject_seq2
 
 except Exception as exc:
     PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
@@ -41,20 +56,3 @@ except Exception as exc:
     ResourceType = None
     OEM_RUN_EXE_PATH = ""
     OEM_HSL_PATH = ""
-
-
-
-
-
-
-
-
-
-
-
-
-
-raise RuntimeError(
-    "pyhamilton did not import correctly. DevPal Lite cannot run simulation.\n\n"
-    f"Import error: {PYHAMILTON_IMPORT_ERROR}"
-)
