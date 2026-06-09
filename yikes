@@ -1,78 +1,101 @@
-def render_sequences(self):
-    for child in self.scroll_frame.winfo_children():
-        child.destroy()
+def write_docx_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    if Document is None:
+        return write_text_report(output, output_dir)
 
-    self.sequence_vars.clear()
-    self.role_vars.clear()
-    self.channel_vars.clear()
-    self.manual_vars.clear()
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.docx",
+    )
 
-    for idx, name in enumerate(self.sequence_names):
-        use_var = tk.IntVar(value=0)
-        role_var = tk.StringVar(value="aspirate")
-        channel_var = tk.StringVar(value="")
-        manual_var = tk.IntVar(value=0)
+    doc = Document()
 
-        hardware = detect_hardware_mode(name, role_var.get())
+    doc.add_heading("DevPal Lite Validation Report", 0)
 
-        use_checkbox = tk.Checkbutton(
-            self.scroll_frame,
-            variable=use_var,
-        )
-        use_checkbox.grid(row=idx, column=0, padx=2, pady=1)
+    summary_items = [
+        ("Generated", datetime.now().isoformat()),
+        ("LAY File", output.lay_file or "Not provided"),
+        ("Layout File", output.layout_file or "Not provided"),
+        ("Trace File", output.trace_file or "Not found"),
+        ("Generated Review Script", output.generated_review_script or "Not generated"),
+        ("Report Path", output.report_path or "Pending"),
+    ]
 
-        sequence_label = tk.Label(
-            self.scroll_frame,
-            text=name,
-            anchor="w",
-            width=65,
-        )
-        sequence_label.grid(row=idx, column=1, sticky="w", padx=2, pady=1)
+    doc.add_heading("Run Summary", level=1)
+    for label, value in summary_items:
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(f"{label}: ").bold = True
+        paragraph.add_run(str(value))
 
-        role_combo = ttk.Combobox(
-            self.scroll_frame,
-            textvariable=role_var,
-            values=ROLE_OPTIONS,
-            state="readonly",
-            width=13,
-        )
-        role_combo.grid(row=idx, column=2, padx=2, pady=1)
+    urgent_issues = [
+        issue for issue in output.issues
+        if is_error_record(issue)
+    ]
 
-        manual_checkbox = tk.Checkbutton(
-            self.scroll_frame,
-            variable=manual_var,
-        )
-        manual_checkbox.grid(row=idx, column=3, padx=2, pady=1)
+    if urgent_issues:
+        doc.add_heading("Urgent / Critical Issues Found", level=1)
 
-        channel_entry = tk.Entry(
-            self.scroll_frame,
-            textvariable=channel_var,
-            width=18,
-        )
-        channel_entry.grid(row=idx, column=4, padx=2, pady=1)
+        for index, issue in enumerate(urgent_issues, start=1):
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run(f"Issue {index}")
+            run.bold = True
+            if RGBColor is not None:
+                run.font.color.rgb = RGBColor(255, 0, 0)
 
-        hardware_label = tk.Label(
-            self.scroll_frame,
-            text=hardware,
-            width=12,
-        )
-        hardware_label.grid(row=idx, column=5, padx=2, pady=1)
-
-        def sync_row(*_args, rv=role_var, hv_label=hardware_label, seq_name=name, cb=manual_checkbox, mv=manual_var):
-            role = rv.get().strip()
-            detected_hardware = detect_hardware_mode(seq_name, role)
-            hv_label.config(text=detected_hardware)
-
-            if role in ("aspirate", "dispense"):
-                cb.grid()
+            if isinstance(issue, dict):
+                for key, value in issue.items():
+                    line = f"{humanize_key(key)}: {safe_text(value)}"
+                    docx_add_line(doc, line, force_red=True)
             else:
-                mv.set(0)
-                cb.grid_remove()
+                docx_add_line(doc, safe_text(issue), force_red=True)
 
-        role_var.trace_add("write", sync_row)
-        sync_row()
+    sections = [
+        ("Selected Sequences", output.selected_sequences),
+        ("Source Positions", output.source_positions),
+        ("Destination Positions", output.destination_positions),
+        ("Transfer Pairs", output.transfer_pairs),
+        ("Execution Plan", output.execution_plan),
+        ("Marker Matches", output.marker_matches),
+        ("Layout Findings", output.layout_findings),
+        ("Trace Findings", output.trace_findings),
+        ("Validation Findings", output.validation_findings),
+        ("Issues", output.issues),
+        ("Limitations", output.limitations),
+    ]
 
-        self.sequence_vars.append((name, use_var))
-        self.role_vars[name] = role_var
-        self.channel_vars[name] = channel_var
-        self.manual_vars[name] = manual_var
+    for title, data in sections:
+        write_human_section_docx(doc, title, data)
+
+    doc.save(path)
+    return path
+
+
+
+
+
+
+
+
+def is_error_record(value: Any) -> bool:
+    text = str(value).lower()
+    return (
+        "urgent" in text
+        or "critical" in text
+        or "error" in text
+        or "fail" in text
+        or "mismatch" in text
+        or "wrong labware" in text
+    )
+
+
+def safe_text(value: Any) -> str:
+    if value is None:
+        return "None"
+    return str(value)
+
+
+def docx_add_line(doc, text: str, force_red: bool = False) -> None:
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run(str(text))
+
+    if RGBColor is not None and (force_red or is_error_record(text)):
+        run.font.color.rgb = RGBColor(255, 0, 0)
