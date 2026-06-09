@@ -1,61 +1,272 @@
+def _clean_liquid_class(liq_class: str) -> str:
+    return str(liq_class or "").strip()
+
+
 def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
-    func = _get_optional_pyhamilton_function("tip_pick_up_seq", "tip_pickup_seq")
+    func = _get_optional_pyhamilton_function(
+        "tip_pick_up_seq",
+        "tip_pickup_seq",
+        "tip_pick_up",
+        "tip_pickup",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, tipseq=tipseq, tip_seq=tipseq, sequence=tipseq, channel=channel)
-    return _send_command_best_effort(ham_int, "tip_pick_up_seq", tipseq=tipseq, tip_seq=tipseq, sequence=tipseq, channel=channel)
+        return _call_best_effort(
+            func,
+            ham_int,
+            tipseq=tipseq,
+            tip_seq=tipseq,
+            sequence=tipseq,
+            channel=channel,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "tip_pick_up_seq",
+        tipseq=tipseq,
+        tip_seq=tipseq,
+        sequence=tipseq,
+        channel=channel,
+    )
 
 
 def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class: str):
-    func = _get_optional_pyhamilton_function("aspirate_seq", "aspirate_from_seq")
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING CHANNEL ASPIRATE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "aspirate_seq",
+        "aspirate_from_seq",
+        "aspirate",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, asp_seq=asp_seq, sequence=asp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
-    return _send_command_best_effort(ham_int, "aspirate_seq", asp_seq=asp_seq, sequence=asp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
+        return _call_best_effort(
+            func,
+            ham_int,
+            asp_seq=asp_seq,
+            sequence=asp_seq,
+            vols=vols,
+            volume=vols,
+            channel=channel,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "aspirate_seq",
+        asp_seq=asp_seq,
+        sequence=asp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
 
 
 def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class: str):
-    func = _get_optional_pyhamilton_function("dispense_seq", "dispense_to_seq")
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING CHANNEL DISPENSE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "dispense_seq",
+        "dispense_to_seq",
+        "dispense",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, disp_seq=disp_seq, sequence=disp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
-    return _send_command_best_effort(ham_int, "dispense_seq", disp_seq=disp_seq, sequence=disp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
+        return _call_best_effort(
+            func,
+            ham_int,
+            disp_seq=disp_seq,
+            sequence=disp_seq,
+            vols=vols,
+            volume=vols,
+            channel=channel,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "dispense_seq",
+        disp_seq=disp_seq,
+        sequence=disp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
 
 
 def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
-    func = _get_optional_pyhamilton_function("tip_eject_seq2", "tip_eject_seq")
+    func = _get_optional_pyhamilton_function(
+        "tip_eject_seq2",
+        "tip_eject_seq",
+        "tip_eject",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, waste_seq=waste_seq, sequence=waste_seq, channel=channel)
-    return _send_command_best_effort(ham_int, "tip_eject_seq2", waste_seq=waste_seq, sequence=waste_seq, channel=channel)
+        return _call_best_effort(
+            func,
+            ham_int,
+            waste_seq=waste_seq,
+            sequence=waste_seq,
+            channel=channel,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "tip_eject_seq2",
+        waste_seq=waste_seq,
+        sequence=waste_seq,
+        channel=channel,
+    )
 
 
 def ph_inc_sequence(ham_int, sequence: str, increment: int):
-    func = _get_optional_pyhamilton_function("inc_sequence", "increment_sequence")
+    func = _get_optional_pyhamilton_function(
+        "inc_sequence",
+        "increment_sequence",
+        "increment_seq",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, sequence=sequence, increment=increment)
-    return _send_command_best_effort(ham_int, "inc_sequence", sequence=sequence, increment=increment)
+        return _call_best_effort(
+            func,
+            ham_int,
+            sequence=sequence,
+            increment=increment,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "inc_sequence",
+        sequence=sequence,
+        increment=increment,
+    )
 
 
 def ph_tip_pick_up_96_seq(ham_int, tip96_seq: str):
-    func = _get_optional_pyhamilton_function("tip_pick_up_96_seq", "tip_pickup_96_seq")
+    func = _get_optional_pyhamilton_function(
+        "tip_pick_up_96_seq",
+        "tip_pickup_96_seq",
+        "tip_pick_up_96",
+        "tip_pickup_96",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, tip96_seq=tip96_seq, sequence=tip96_seq)
-    return _send_command_best_effort(ham_int, "tip_pick_up_96_seq", tip96_seq=tip96_seq, sequence=tip96_seq)
+        return _call_best_effort(
+            func,
+            ham_int,
+            tip96_seq=tip96_seq,
+            tip_seq=tip96_seq,
+            sequence=tip96_seq,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "tip_pick_up_96_seq",
+        tip96_seq=tip96_seq,
+        tip_seq=tip96_seq,
+        sequence=tip96_seq,
+    )
 
 
 def ph_aspirate_96_seq(ham_int, plate96, head_asp_seq: str, vols: float, liq_class: str):
-    func = _get_optional_pyhamilton_function("aspirate_96_seq", "aspirate96_seq")
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING 96-HEAD ASPIRATE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "aspirate_96_seq",
+        "aspirate96_seq",
+        "aspirate_96",
+        "aspirate96",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, plate96=plate96, head_asp_seq=head_asp_seq, sequence=head_asp_seq, vols=vols, volume=vols, liq_class=liq_class)
-    return _send_command_best_effort(ham_int, "aspirate_96_seq", head_asp_seq=head_asp_seq, sequence=head_asp_seq, vols=vols, volume=vols, liq_class=liq_class)
+        return _call_best_effort(
+            func,
+            ham_int,
+            plate96=plate96,
+            plate=plate96,
+            head_asp_seq=head_asp_seq,
+            asp_seq=head_asp_seq,
+            sequence=head_asp_seq,
+            vols=vols,
+            volume=vols,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "aspirate_96_seq",
+        plate96=plate96,
+        plate=plate96,
+        head_asp_seq=head_asp_seq,
+        asp_seq=head_asp_seq,
+        sequence=head_asp_seq,
+        vols=vols,
+        volume=vols,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
 
 
-def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float):
-    func = _get_optional_pyhamilton_function("dispense_96_seq2", "dispense_96_seq", "dispense96_seq")
+def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float, liq_class: str):
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING 96-HEAD DISPENSE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "dispense_96_seq2",
+        "dispense_96_seq",
+        "dispense96_seq",
+        "dispense_96",
+        "dispense96",
+    )
+
     if func:
-        return _call_best_effort(func, ham_int, plate96=plate96, head_disp_seq=head_disp_seq, sequence=head_disp_seq, vols=vols, volume=vols)
-    return _send_command_best_effort(ham_int, "dispense_96_seq2", head_disp_seq=head_disp_seq, sequence=head_disp_seq, vols=vols, volume=vols)
+        return _call_best_effort(
+            func,
+            ham_int,
+            plate96=plate96,
+            plate=plate96,
+            head_disp_seq=head_disp_seq,
+            disp_seq=head_disp_seq,
+            sequence=head_disp_seq,
+            vols=vols,
+            volume=vols,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "dispense_96_seq2",
+        plate96=plate96,
+        plate=plate96,
+        head_disp_seq=head_disp_seq,
+        disp_seq=head_disp_seq,
+        sequence=head_disp_seq,
+        vols=vols,
+        volume=vols,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
 
 
 def ph_tip_eject_96(ham_int):
-    func = _get_optional_pyhamilton_function("tip_eject_96", "tip_eject_96_seq")
+    func = _get_optional_pyhamilton_function(
+        "tip_eject_96",
+        "tip_eject_96_seq",
+        "tip_eject96",
+    )
+
     if func:
         return _call_best_effort(func, ham_int)
+
     return _send_command_best_effort(ham_int, "tip_eject_96")
