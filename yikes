@@ -1,104 +1,168 @@
-def parse_lay_file(lay_path: str) -> List[str]:
-    text = read_text_file_best_effort(lay_path)
-
-    if not text:
-        return []
-
-    found = []
-    seen = set()
-
-    seq_ids = sorted(
-        {int(value) for value in re.findall(r"Seq\.(\d+)\.Name", text, re.IGNORECASE)}
-    )
-
-    for seq_id in seq_ids:
-        pattern = re.compile(
-            rf"Seq\.{seq_id}\.Name(.*?)(?=Seq\.{seq_id}\.(?:ReadOnly|Cnt|Item)|Seq\.\d+\.Name|Seq\.Cnt|$)",
-            re.IGNORECASE | re.DOTALL,
-        )
-
-        match = pattern.search(text)
-        if not match:
-            continue
-
-        raw_name = match.group(1)
-        raw_name = raw_name.replace("\x00", " ")
-        raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
-        raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
-
-        name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
-        if not name_match:
-            continue
-
-        name = clean_control_chars(name_match.group(1)).strip()
-        name = re.sub(r"\s+", " ", name)
-
-        if not name:
-            continue
-
-        if name.lower().startswith(("readonly", "cnt", "item")):
-            continue
-
-        if name not in seen:
-            found.append(name)
-            seen.add(name)
-
-    return found
+def count_active_channels(channel_pattern: str) -> int:
+    text = str(channel_pattern or "").strip()
+    return sum(1 for char in text if char == "1")
 
 
+def infer_transfer_direction_from_positions(positions: List[str]) -> str:
+    normalized = [normalize_position_text(pos) for pos in positions if pos]
+
+    parsed = []
+    for pos in normalized:
+        match = re.match(r"^([A-P])(\d{1,2})$", pos)
+        if match:
+            parsed.append((match.group(1), int(match.group(2)), pos))
+        else:
+            num = extract_position_number(pos)
+            if num is not None:
+                parsed.append(("", num, pos))
+
+    if len(parsed) < 2:
+        return "single position / direction not inferable"
+
+    rows = [item[0] for item in parsed if item[0]]
+    cols = [item[1] for item in parsed]
+
+    if rows and len(set(rows)) == 1 and len(set(cols)) > 1:
+        return "left-to-right across columns"
+
+    if rows and len(set(cols)) == 1 and len(set(rows)) > 1:
+        return "top-to-bottom down rows"
+
+    if cols == sorted(cols):
+        return "ascending numeric order"
+
+    if cols == sorted(cols, reverse=True):
+        return "descending numeric order"
+
+    return "mixed/non-linear order"
 
 
+def infer_labware_orientation_from_layout(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+    layout_summary = summarize_layout_format(layout_matches)
+    row_count = int(layout_summary.get("row_count") or 0)
+    column_count = int(layout_summary.get("column_count") or 0)
 
-def parse_lay_sequence_counts(lay_path: str) -> Dict[str, int]:
-    text = read_text_file_best_effort(lay_path)
-
-    if not text:
-        return {}
-
-    counts_by_num = {}
-    names_by_num = {}
-
-    for seq_num, cnt in re.findall(r"Seq\.(\d+)\.Cnt[^\d]*(\d+)", text, re.IGNORECASE):
-        try:
-            counts_by_num[int(seq_num)] = int(cnt)
-        except Exception:
-            pass
-
-    seq_ids = sorted(
-        {int(value) for value in re.findall(r"Seq\.(\d+)\.Name", text, re.IGNORECASE)}
-    )
-
-    for seq_id in seq_ids:
-        pattern = re.compile(
-            rf"Seq\.{seq_id}\.Name(.*?)(?=Seq\.{seq_id}\.(?:ReadOnly|Cnt|Item)|Seq\.\d+\.Name|Seq\.Cnt|$)",
-            re.IGNORECASE | re.DOTALL,
-        )
-
-        match = pattern.search(text)
-        if not match:
-            continue
-
-        raw_name = match.group(1)
-        raw_name = raw_name.replace("\x00", " ")
-        raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
-        raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
-
-        name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
-        if not name_match:
-            continue
-
-        name = clean_control_chars(name_match.group(1)).strip()
-        name = re.sub(r"\s+", " ", name)
-
-        if name:
-            names_by_num[seq_id] = name
+    if column_count > row_count:
+        orientation = "landscape"
+    elif row_count > column_count:
+        orientation = "portrait"
+    else:
+        orientation = "square/unknown"
 
     return {
-        name: counts_by_num.get(seq_num, 0)
-        for seq_num, name in names_by_num.items()
+        "type": "labware_orientation",
+        "orientation": orientation,
+        "row_count": row_count,
+        "column_count": column_count,
+        "inferred_plate_format": layout_summary.get("inferred_plate_format", "unknown"),
     }
 
 
+def analyze_orientation_and_tip_usage(
+    configs: List[SequenceStepConfig],
+    execution_plan: List[Dict[str, Any]],
+    layout_matches: Dict[str, List[Dict[str, Any]]],
+    aspirate_steps: List[str],
+    dispense_steps: List[str],
+    cross_match: Any,
+) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
+    findings = []
+    issues = []
+
+    orientation = infer_labware_orientation_from_layout(layout_matches) if layout_matches else {
+        "type": "labware_orientation",
+        "orientation": "unknown/no layout",
+        "row_count": 0,
+        "column_count": 0,
+        "inferred_plate_format": "unknown",
+    }
+
+    findings.append(orientation)
+
+    normalized_aspirates = normalize_channel_steps(aspirate_steps)
+    normalized_dispenses = normalize_channel_steps(dispense_steps)
+
+    aspirate_channels = sorted({item[0] for item in normalized_aspirates}, key=lambda x: int(x) if str(x).isdigit() else 999)
+    dispense_channels = sorted({item[0] for item in normalized_dispenses}, key=lambda x: int(x) if str(x).isdigit() else 999)
+
+    aspirate_positions = [item[2] for item in normalized_aspirates]
+    dispense_positions = [item[2] for item in normalized_dispenses]
+
+    findings.append({
+        "type": "channel_transfer_direction",
+        "labware_orientation": orientation.get("orientation"),
+        "aspirate_channel_count": len(aspirate_channels),
+        "dispense_channel_count": len(dispense_channels),
+        "aspirate_channels_used": aspirate_channels,
+        "dispense_channels_used": dispense_channels,
+        "aspirate_direction": infer_transfer_direction_from_positions(aspirate_positions),
+        "dispense_direction": infer_transfer_direction_from_positions(dispense_positions),
+        "transfer_mode": "single tip/channel at a time" if max(len(aspirate_channels), len(dispense_channels)) <= 1 else "multiple tips/channels in parallel",
+    })
+
+    tip_pick_steps = [item for item in execution_plan if item.get("action") == "tip_pick"]
+
+    for index, tip_step in enumerate(tip_pick_steps, start=1):
+        pattern = str(tip_step.get("channel_pattern") or "")
+        picked_tip_count = count_active_channels(pattern)
+
+        if str(tip_step.get("hardware_mode", "")).lower() == "stamp":
+            picked_tip_count = 96
+
+        used_aspirate_count = len(aspirate_channels)
+        used_dispense_count = len(dispense_channels)
+        max_used_count = max(used_aspirate_count, used_dispense_count)
+
+        unused_count = max(picked_tip_count - max_used_count, 0)
+
+        status = "pass"
+        if picked_tip_count > 0 and max_used_count == 0:
+            status = "fail"
+        elif unused_count > 0:
+            status = "warning"
+
+        finding = {
+            "type": "tip_usage_check",
+            "tip_pick_step_index": index,
+            "tip_sequence": tip_step.get("sequence"),
+            "hardware_mode": tip_step.get("hardware_mode"),
+            "channel_pattern": pattern,
+            "picked_tip_count": picked_tip_count,
+            "aspirate_channels_used_count": used_aspirate_count,
+            "dispense_channels_used_count": used_dispense_count,
+            "unused_picked_tip_count": unused_count,
+            "aspirate_channels_used": aspirate_channels,
+            "dispense_channels_used": dispense_channels,
+            "status": status,
+            "message": (
+                f"Picked up {picked_tip_count} tip(s); used "
+                f"{used_aspirate_count} aspirate channel(s) and "
+                f"{used_dispense_count} dispense channel(s)."
+            ),
+        }
+
+        findings.append(finding)
+
+        if status == "fail":
+            issues.append(ValidationIssue(
+                "critical",
+                "tip_usage",
+                f"Tips were picked up from {tip_step.get('sequence')}, but no aspirate/dispense channel usage was detected.",
+                finding,
+            ))
+
+        elif status == "warning":
+            issues.append(ValidationIssue(
+                "major",
+                "tip_usage",
+                (
+                    f"Possible unused tips: {tip_step.get('sequence')} picked up "
+                    f"{picked_tip_count} tip(s), but only {max_used_count} channel(s) were used."
+                ),
+                finding,
+            ))
+
+    return findings, issues
 
 
 
@@ -106,55 +170,15 @@ def parse_lay_sequence_counts(lay_path: str) -> Dict[str, int]:
 
 
 
-def render_sequences(self):
-        if not hasattr(self, "sequence_frame") or self.sequence_frame is None:
-            messagebox.showerror(
-                "UI Error",
-                "Sequence frame does not exist. Rebuild UI before rendering sequences.",
-            )
-            return
 
-        sequence_frame = self.sequence_frame
+orientation_tip_findings, orientation_tip_issues = analyze_orientation_and_tip_usage(
+                    configs,
+                    execution_plan,
+                    marker_matches,
+                    aspirate_steps,
+                    dispense_steps,
+                    cross_match,
+                )
 
-
-
-
-
-
-list_frame = tk.LabelFrame(self.root, text="Extracted Method/Deck Sequences")
-        list_frame.pack(fill="both", expand=True, padx=10, pady=8)
-
-        header = tk.Frame(list_frame)
-        header.pack(fill="x")
-
-        tk.Label(header, text="Use", width=5).grid(row=0, column=0, sticky="w")
-        tk.Label(header, text="Sequence", width=55).grid(row=0, column=1, sticky="w")
-        tk.Label(header, text="Step Role", width=14).grid(row=0, column=2, sticky="w")
-        tk.Label(header, text="Manual", width=8).grid(row=0, column=3, sticky="w")
-        tk.Label(header, text="Channel Pattern", width=18).grid(row=0, column=4, sticky="w")
-        tk.Label(header, text="Hardware", width=12).grid(row=0, column=5, sticky="w")
-        tk.Label(header, text="Seq Count", width=10).grid(row=0, column=6, sticky="w")
-
-        self.canvas = tk.Canvas(list_frame, highlightthickness=0)
-        self.sequence_canvas = self.canvas
-        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.canvas.yview)
-
-        self.sequence_frame = tk.Frame(self.canvas)
-        self.scroll_frame = self.sequence_frame
-
-        self.sequence_window = self.canvas.create_window((0, 0), window=self.sequence_frame, anchor="nw")
-
-        self.sequence_frame.bind(
-            "<Configure>",
-            lambda event: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
-        )
-
-        self.canvas.bind(
-            "<Configure>",
-            lambda event: self.canvas.itemconfig(self.sequence_window, width=event.width),
-        )
-
-        self.canvas.configure(yscrollcommand=scrollbar.set)
-
-        self.canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+                trace_findings.extend(orientation_tip_findings)
+                issues.extend(orientation_tip_issues)
