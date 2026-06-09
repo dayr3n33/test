@@ -1,99 +1,100 @@
-PYHAMILTON_IMPORT_ERROR = ""
+2026-06-08 13:11:14.15 Server      Microsoft SQL Server 2019 (RTM) - 15.0.2000.5 (X64) 
+	Sep 24 2019 13:48:23 
+	Copyright (C) 2019 Microsoft Corporation
+	Express Edition (64-bit) on Windows 10 Enterprise 10.0 <X64> (Build 22631: ) (Hypervisor)
 
-try:
-    import pyhamilton
-    import pyhamilton.interface as phi
+2026-06-08 13:11:14.15 Server      UTC adjustment: -4:00
+2026-06-08 13:11:14.15 Server      (c) Microsoft Corporation.
+2026-06-08 13:11:14.15 Server      All rights reserved.
+2026-06-08 13:11:14.15 Server      Server process ID is 7628.
+2026-06-08 13:11:14.15 Server      System Manufacturer: 'LENOVO', System Model: '21QKS1SN00'.
+2026-06-08 13:11:14.15 Server      Authentication mode is MIXED.
+2026-06-08 13:11:14.15 Server      Logging SQL Server messages in file 'C:\Program Files\Microsoft SQL Server\MSSQL15.HAMILTON\MSSQL\Log\ERRORLOG'.
+2026-06-08 13:11:14.15 Server      The service account is 'NT Service\MSSQL$HAMILTON'. This is an informational message; no user action is required.
+2026-06-08 13:11:14.15 Server      Registry startup parameters: 
+	 -d C:\Program Files\Microsoft SQL Server\MSSQL15.HAMILTON\MSSQL\DATA\master.mdf
+	 -e C:\Program Files\Microsoft SQL Server\MSSQL15.HAMILTON\MSSQL\Log\ERRORLOG
+	 -l C:\Program Files\Microsoft SQL Server\MSSQL15.HAMILTON\MSSQL\DATA\mastlog.ldf
+2026-06-08 13:11:14.15 Server      Command Line Startup Parameters:
+	 -s "HAMILTON"
+2026-06-08 13:11:14.16 Server      SQL Server detected 1 sockets with 8 cores per socket and 16 logical processors per socket, 16 total logical processors; using 8 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
+2026-06-08 13:11:14.16 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
+2026-06-08 13:11:14.17 Server      Detected 28309 MB of RAM. This is an informational message; no user action is required.
+2026-06-08 13:11:14.17 Server      Using conventional memory in the memory manager.
+2026-06-08 13:11:14.17 Server      Page exclusion bitmap is enabled.
+2026-06-08 13:11:14.25 Server      Buffer Pool: Allocating 8388608 bytes for 4423680 hashPages.
+2026-06-08 13:11:14.27 Server      Default collation: SQL_Latin1_General_CP1_CI_AS (us_english 1033)
+2026-06-08 13:11:14.37 Server      Buffer pool extension is already disabled. No action is necessary.
+2026-06-08 13:11:14.52 Server      Query Store settings initialized with enabled = 1, 
+2026-06-08 13:11:14.53 Server      The maximum number of dedicated administrator connections for this instance is '1'
+2026-06-08 13:11:14.53 Server      This instance of SQL Server last reported using a process ID of 19192 at 6/8/2026 1:10:38 PM (local) 6/8/2026 5:10:38 PM (UTC). This is an informational message only; no user action is required.
+2026-06-08 13:11:14.53 Server      Node configuration: node 0: CPU mask: 0x00000000000000ff:0 Active CPU mask: 0x00000000000000ff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
+2026-06-08 13:11:14.55 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
+2026-06-08 13:11:14.55 Server      Lock partitioning is enabled.  This is an informational message only. No user action is required.
+2026-06-08 13:11:14.55 Server      In-Memory OLTP initialized on standard machine.
+2026-06-08 13:11:14.57 Server      [INFO] Created Extended Events session 'hkenginexesession'
 
-    from pyhamilton import (
-        HamiltonError,
-        HamiltonStepError,
-        HamiltonTimeoutError,
-        LayoutManager,
-        Plate96,
-        ResourceType,
-        OEM_HSL_PATH,
-        OEM_RUN_EXE_PATH,
-        normal_logging,
-        initialize,
-    )
+2026-06-08 13:11:14.58 Server      Database Instant File Initialization: disabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
+2026-06-08 13:11:14.58 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
+2026-06-08 13:11:14.59 Server      clwb is selected for pmem flush operation.
+2026-06-08 13:11:14.59 Server      Software Usage Metrics is disabled.
+2026-06-08 13:11:14.60 spid9s      Starting up database 'master'.
+2026-06-08 13:11:14.70 Server      CLR version v4.0.30319 loaded.
+2026-06-08 13:11:14.71 spid9s      SQL Server Audit is starting the audits. This is an informational message. No user action is required.
+2026-06-08 13:11:14.72 spid9s      SQL Server Audit has started the audits. This is an informational message. No user action is required.
+2026-06-08 13:11:14.74 spid9s      SQL Trace ID 1 was started by login "sa".
+2026-06-08 13:11:14.75 spid9s      Server name is 'AMRPRWBF5YWC02\HAMILTON'. This is an informational message only. No user action is required.
+2026-06-08 13:11:14.76 spid9s      Starting up database 'msdb'.
+2026-06-08 13:11:14.76 spid14s     Starting up database 'mssqlsystemresource'.
+2026-06-08 13:11:14.76 spid14s     The resource database build version is 15.00.2000. This is an informational message only. No user action is required.
+2026-06-08 13:11:14.77 Server      Common language runtime (CLR) functionality initialized using CLR version v4.0.30319 from C:\Windows\Microsoft.NET\Framework64\v4.0.30319\.
+2026-06-08 13:11:14.78 spid14s     Starting up database 'model'.
+2026-06-08 13:11:14.81 spid14s     Clearing tempdb database.
+2026-06-08 13:11:14.90 spid14s     Starting up database 'tempdb'.
+2026-06-08 13:11:14.92 spid20s     A self-generated certificate was successfully loaded for encryption.
+2026-06-08 13:11:14.92 spid20s     Server local connection provider is ready to accept connection on [ \\.\pipe\SQLLocal\HAMILTON ].
+2026-06-08 13:11:14.92 spid20s     Server local connection provider is ready to accept connection on [ \\.\pipe\MSSQL$HAMILTON\sql\query ].
+2026-06-08 13:11:14.92 spid20s     Dedicated administrator connection support was not started because it is disabled on this edition of SQL Server. If you want to use a dedicated administrator connection, restart SQL Server using the trace flag 7806. This is an informational message only. No user action is required.
+2026-06-08 13:11:14.92 spid20s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
+2026-06-08 13:11:14.93 Server      SQL Server is attempting to register a Service Principal Name (SPN) for the SQL Server service. Kerberos authentication will not be possible until a SPN is registered for the SQL Server service. This is an informational message. No user action is required.
+2026-06-08 13:11:14.93 Server      The SQL Server Network Interface library could not register the Service Principal Name (SPN) [ MSSQLSvc/AMRPRWBF5YWC02.amer.pfizer.com:HAMILTON ] for the SQL Server service. Windows return code: 0xffffffff, state: 63. Failure to register a SPN might cause integrated authentication to use NTLM instead of Kerberos. This is an informational message. Further action is only required if Kerberos authentication is required by authentication policies and if the SPN has not been manually registered.
+2026-06-08 13:11:14.97 spid23s     The Service Broker endpoint is in disabled or stopped state.
+2026-06-08 13:11:14.97 spid23s     The Database Mirroring endpoint is in disabled or stopped state.
+2026-06-08 13:11:14.98 spid23s     Service Broker manager has started.
+2026-06-08 13:11:14.98 spid9s      Recovery is complete. This is an informational message only. No user action is required.
+2026-06-08 13:16:17.41 spid51      Attempting to load library 'xplog70.dll' into memory. This is an informational message only. No user action is required.
+2026-06-08 13:16:17.42 spid51      Using 'xplog70.dll' version '2019.150.2000' to execute extended stored procedure 'xp_msver'. This is an informational message only; no user action is required.
+2026-06-08 13:16:17.58 spid51      Starting up database 'HamiltonVectorDB'.
+2026-06-08 13:16:17.60 spid51      Parallel redo is started for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 13:16:17.61 spid51      Parallel redo is shutdown for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 13:34:15.59 spid56      Attempting to load library 'xpstar.dll' into memory. This is an informational message only. No user action is required.
+2026-06-08 13:34:15.61 spid56      Using 'xpstar.dll' version '2019.150.2000' to execute extended stored procedure 'xp_instance_regread'. This is an informational message only; no user action is required.
+2026-06-08 13:34:15.67 spid56      Starting up database 'HamiltonVectorDB'.
+2026-06-08 13:34:15.69 spid56      Parallel redo is started for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 13:34:15.70 spid56      Parallel redo is shutdown for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 13:34:15.84 spid56      Starting up database 'HamiltonVectorDB'.
+2026-06-08 13:34:15.87 spid56      Parallel redo is started for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 13:34:15.88 spid56      Parallel redo is shutdown for database 'HamiltonVectorDB' with worker pool size [4].
+2026-06-08 14:34:07.26 Server      SQL Server is terminating because of a system shutdown. This is an informational message only. No user action is required.
+2026-06-08 14:34:07.59 spid23s     Service Broker manager has shut down.
+2026-06-08 14:34:07.59 spid23s     Error: 17054, Severity: 16, State: 1.
+2026-06-08 14:34:07.59 spid23s     The current event was not reported to the operating system error log. Operating system error = (null). You may need to clear the operating system error log if it is full.
+2026-06-08 14:34:07.59 spid9s      .NET Framework runtime has been stopped.
+2026-06-08 14:34:07.61 spid9s      SQL Trace was stopped due to server shutdown. Trace ID = '1'. This is an informational message only; no user action is required.
 
-    def _get_pyhamilton_function(*names):
-        for module in (pyhamilton, phi):
-            for name in names:
-                if hasattr(module, name):
-                    return getattr(module, name)
-        raise ImportError(f"Could not find any PyHamilton function aliases: {names}")
 
-    tip_pick_up_seq = _get_pyhamilton_function(
-        "tip_pick_up_seq",
-        "tip_pickup_seq",
-        "tip_pick_up",
-        "tip_pickup",
-    )
 
-    aspirate_seq = _get_pyhamilton_function(
-        "aspirate_seq",
-        "aspirate",
-    )
 
-    dispense_seq = _get_pyhamilton_function(
-        "dispense_seq",
-        "dispense",
-    )
 
-    tip_eject_seq2 = _get_pyhamilton_function(
-        "tip_eject_seq2",
-        "tip_eject_seq",
-        "tip_eject",
-    )
+C:\Users\lynchd27>net start MSSQLHAMILTON
+The service name is invalid.
 
-    try:
-        inc_sequence = _get_pyhamilton_function(
-            "inc_sequence",
-            "increment_sequence",
-        )
-    except ImportError:
-        def inc_sequence(ham_int, sequence, increment):
-            return ham_int.send_command(
-                command="INCSEQ",
-                sequence=sequence,
-                increment=increment,
-            )
+More help is available by typing NET HELPMSG 2185.
 
-    tip_pick_up_96_seq = _get_pyhamilton_function(
-        "tip_pick_up_96_seq",
-        "tip_pickup_96_seq",
-        "tip_pick_up_96",
-    )
 
-    aspirate_96_seq = _get_pyhamilton_function(
-        "aspirate_96_seq",
-        "aspirate96_seq",
-        "aspirate_96",
-    )
+C:\Users\lynchd27>NET HELPMSG 2185
 
-    dispense_96_seq2 = _get_pyhamilton_function(
-        "dispense_96_seq2",
-        "dispense_96_seq",
-        "dispense96_seq",
-        "dispense_96",
-    )
+The service name is invalid.
 
-    tip_eject_96 = _get_pyhamilton_function(
-        "tip_eject_96",
-        "tip_eject_96_seq",
-    )
 
-except Exception as exc:
-    PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
 
-    pyhamilton = None
-    phi = None
-    HamiltonStepError = Exception
-    HamiltonError = Exception
-    HamiltonTimeoutError = Exception
-    LayoutManager = None
-    Plate96 = None
-    ResourceType = None
-    OEM_RUN_EXE_PATH = ""
-    OEM_HSL_PATH = ""
