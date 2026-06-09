@@ -94,4 +94,61 @@ def infer_plate_format_from_position_count(count: int) -> str:
 
 
 
+def build_labware_validation_summary(
+    layout_matches: Dict[str, List[Dict[str, Any]]],
+    trace_findings: List[Dict[str, Any]],
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    summary = []
+
+    layout_summary = summarize_layout_format(layout_matches)
+    expected_format = layout_summary.get("inferred_plate_format", "unknown")
+
+    for config in configs:
+        if config.role not in ("aspirate", "dispense"):
+            continue
+
+        seq_meta = get_sequence_labware_metadata(config.sequence, lay_metadata)
+
+        sequence_format = seq_meta.get("labware_format", "unknown")
+        labware_name = seq_meta.get("labware_name", "unknown")
+        position_count = seq_meta.get("position_count", 0)
+
+        status = "pass"
+
+        if config.role == "dispense":
+            if expected_format != "unknown" and sequence_format != "unknown" and sequence_format != expected_format:
+                status = "fail"
+
+        message = (
+            f"Sequence '{config.sequence}' uses labware '{labware_name}' "
+            f"with detected format {sequence_format} and {position_count} position(s)."
+        )
+
+        if status == "fail":
+            message = (
+                f"URGENT ERROR: Wrong destination labware detected. "
+                f"Dispense sequence '{config.sequence}' uses labware '{labware_name}' "
+                f"detected as {sequence_format}, but uploaded layout requires {expected_format}."
+            )
+
+        summary.append({
+            "type": "labware_validation_summary",
+            "status": status,
+            "step_role": config.role,
+            "sequence": config.sequence,
+            "trace_or_method_labware": labware_name,
+            "detected_labware_format": sequence_format,
+            "position_count": position_count,
+            "expected_layout_format": expected_format if config.role == "dispense" else "not applicable to source",
+            "message": message,
+        })
+
+    return summary
+
+
+
+
+
 
