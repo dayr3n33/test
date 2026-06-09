@@ -1,189 +1,78 @@
-tk.Label(header, text="Step Role", width=14).grid(row=0, column=2)
-tk.Label(header, text="Manual", width=8).grid(row=0, column=3)
-tk.Label(header, text="Channel Pattern", width=18).grid(row=0, column=4)
-tk.Label(header, text="Hardware", width=12).grid(row=0, column=5)
-
-
-
-
-
-channel_var = tk.StringVar(value="")
-manual_var = tk.IntVar(value=0)
-hardware = detect_hardware_mode(name, role_var.get())
-
-
-
-
-
-
-manual_checkbox = tk.Checkbutton(self.scroll_frame, variable=manual_var)
-
-def sync_manual_visibility(*_args, cb=manual_checkbox, rv=role_var, row=idx):
-    if rv.get() in ("aspirate", "dispense"):
-        cb.grid(row=row, column=3, padx=2, pady=1)
-    else:
-        manual_var.set(0)
-        cb.grid_remove()
-
-tk.Checkbutton(self.scroll_frame, variable=use_var).grid(row=idx, column=0, padx=2, pady=1)
-tk.Label(self.scroll_frame, text=name, anchor="w", width=65).grid(row=idx, column=1, sticky="w", padx=2, pady=1)
-ttk.Combobox(self.scroll_frame, textvariable=role_var, values=ROLE_OPTIONS, state="readonly", width=13).grid(row=idx, column=2, padx=2, pady=1)
-
-manual_checkbox.grid(row=idx, column=3, padx=2, pady=1)
-
-tk.Entry(self.scroll_frame, textvariable=channel_var, width=18).grid(row=idx, column=4, padx=2, pady=1)
-tk.Label(self.scroll_frame, text=hardware, width=12).grid(row=idx, column=5, padx=2, pady=1)
-
-role_var.trace_add("write", sync_manual_visibility)
-sync_manual_visibility()
-
-
-
-
-
-
-
-
-
-
-
-manual=bool(self.manual_vars[name].get()) if role in ("aspirate", "dispense") else False,
-
-
-
-
-
-
-
-
-
-
-def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, Any]]:
-    replicate = configs[0].replicate if configs else "single"
-    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
-
-    tip_steps = [config for config in configs if config.role == "tip_pick"]
-    asp_steps = [config for config in configs if config.role == "aspirate"]
-    dsp_steps = [config for config in configs if config.role == "dispense"]
-
-    max_len = max(
-        len(tip_steps),
-        len(asp_steps),
-        len(dsp_steps),
-        0,
-    )
-
-    plan = []
-    order = 1
-
-    for rep_index in range(1, replicate_count + 1):
-        for idx in range(max_len):
-
-            if idx < len(tip_steps):
-                step = tip_steps[idx]
-
-                plan.append({
-                    "order": order,
-                    "action": "tip_pick",
-                    "sequence": step.sequence,
-                    "hardware_mode": step.hardware_mode,
-                    "replicate_index": rep_index,
-                    "manual": False,
-                    "autoincrement": False,
-                    "reset_to_first_position": False,
-                    "increment": 0,
-                    "channel_pattern": step.channel_pattern,
-                    "volume_ul": "",
-                    "liquid_class": "",
-                    "transfer_type": step.transfer_type,
-                    "marker": step.marker,
-                })
-                order += 1
-
-            if idx < len(asp_steps):
-                step = asp_steps[idx]
-
-                plan.append({
-                    "order": order,
-                    "action": "aspirate",
-                    "sequence": step.sequence,
-                    "hardware_mode": step.hardware_mode,
-                    "replicate_index": rep_index,
-                    "manual": bool(step.manual),
-                    "autoincrement": False,
-                    "reset_to_first_position": bool(step.manual),
-                    "increment": 0,
-                    "channel_pattern": step.channel_pattern,
-                    "volume_ul": step.volume_ul,
-                    "liquid_class": step.liquid_class,
-                    "transfer_type": step.transfer_type,
-                    "marker": step.marker,
-                })
-                order += 1
-
-            if idx < len(dsp_steps):
-                step = dsp_steps[idx]
-
-                should_increment = rep_index > 1 and not step.manual
-
-                plan.append({
-                    "order": order,
-                    "action": "dispense",
-                    "sequence": step.sequence,
-                    "hardware_mode": step.hardware_mode,
-                    "replicate_index": rep_index,
-                    "manual": bool(step.manual),
-                    "autoincrement": should_increment,
-                    "reset_to_first_position": bool(step.manual),
-                    "increment": 12 if should_increment else 0,
-                    "channel_pattern": step.channel_pattern,
-                    "volume_ul": step.volume_ul,
-                    "liquid_class": step.liquid_class,
-                    "transfer_type": step.transfer_type,
-                    "marker": step.marker,
-                })
-                order += 1
-
-            if idx < len(tip_steps):
-                step = tip_steps[idx]
-
-                plan.append({
-                    "order": order,
-                    "action": "tip_eject",
-                    "sequence": "Waste",
-                    "hardware_mode": step.hardware_mode,
-                    "replicate_index": rep_index,
-                    "manual": False,
-                    "autoincrement": False,
-                    "reset_to_first_position": False,
-                    "increment": 0,
-                    "channel_pattern": step.channel_pattern,
-                    "volume_ul": "",
-                    "liquid_class": "",
-                    "transfer_type": step.transfer_type,
-                    "marker": step.marker,
-                })
-                order += 1
-
-    return plan
-
-
-
-
-
-
-
-
-
-
-
-if item.get("autoincrement"):
-    ph_inc_sequence(ham_int, sequence=seq, increment=int(item.get("increment", 12)))
-else:
-    if item.get("manual"):
-        print(f"MANUAL SEQUENCE MODE: {seq} will not auto-increment; using first/reset position.")
-
-
-
-
-
+def render_sequences(self):
+    for child in self.scroll_frame.winfo_children():
+        child.destroy()
+
+    self.sequence_vars.clear()
+    self.role_vars.clear()
+    self.channel_vars.clear()
+    self.manual_vars.clear()
+
+    for idx, name in enumerate(self.sequence_names):
+        use_var = tk.IntVar(value=0)
+        role_var = tk.StringVar(value="aspirate")
+        channel_var = tk.StringVar(value="")
+        manual_var = tk.IntVar(value=0)
+
+        hardware = detect_hardware_mode(name, role_var.get())
+
+        use_checkbox = tk.Checkbutton(
+            self.scroll_frame,
+            variable=use_var,
+        )
+        use_checkbox.grid(row=idx, column=0, padx=2, pady=1)
+
+        sequence_label = tk.Label(
+            self.scroll_frame,
+            text=name,
+            anchor="w",
+            width=65,
+        )
+        sequence_label.grid(row=idx, column=1, sticky="w", padx=2, pady=1)
+
+        role_combo = ttk.Combobox(
+            self.scroll_frame,
+            textvariable=role_var,
+            values=ROLE_OPTIONS,
+            state="readonly",
+            width=13,
+        )
+        role_combo.grid(row=idx, column=2, padx=2, pady=1)
+
+        manual_checkbox = tk.Checkbutton(
+            self.scroll_frame,
+            variable=manual_var,
+        )
+        manual_checkbox.grid(row=idx, column=3, padx=2, pady=1)
+
+        channel_entry = tk.Entry(
+            self.scroll_frame,
+            textvariable=channel_var,
+            width=18,
+        )
+        channel_entry.grid(row=idx, column=4, padx=2, pady=1)
+
+        hardware_label = tk.Label(
+            self.scroll_frame,
+            text=hardware,
+            width=12,
+        )
+        hardware_label.grid(row=idx, column=5, padx=2, pady=1)
+
+        def sync_row(*_args, rv=role_var, hv_label=hardware_label, seq_name=name, cb=manual_checkbox, mv=manual_var):
+            role = rv.get().strip()
+            detected_hardware = detect_hardware_mode(seq_name, role)
+            hv_label.config(text=detected_hardware)
+
+            if role in ("aspirate", "dispense"):
+                cb.grid()
+            else:
+                mv.set(0)
+                cb.grid_remove()
+
+        role_var.trace_add("write", sync_row)
+        sync_row()
+
+        self.sequence_vars.append((name, use_var))
+        self.role_vars[name] = role_var
+        self.channel_vars[name] = channel_var
+        self.manual_vars[name] = manual_var
