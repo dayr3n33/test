@@ -1,6 +1,4 @@
-Replace your entire `render_sequences()` with this:
 
-```python
 def render_sequences(self):
     parent = None
 
