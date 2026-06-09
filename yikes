@@ -1,312 +1,61 @@
-def infer_plate_format_from_dimensions(row_count: int, col_count: int) -> str:
-    if row_count <= 4 and col_count <= 6:
-        return "24-well"
-    if row_count <= 8 and col_count <= 12:
-        return "96-well"
-    if row_count <= 16 and col_count <= 24:
-        return "384-well"
-    return f"unknown-{row_count}x{col_count}"
-
-
-def infer_plate_format_from_position(position: str) -> str:
-    pos = normalize_position_text(position)
-    match = re.match(r"^([A-P])(\d{1,2})$", pos)
-    if not match:
-        return "unknown"
-
-    row = match.group(1)
-    col = int(match.group(2))
-
-    if row <= "D" and col <= 6:
-        return "24-well"
-    if row <= "H" and col <= 12:
-        return "96-well"
-    if row <= "P" and col <= 24:
-        return "384-well"
-
-    return "unknown"
-
-
-def infer_labware_format_from_name(labware_name: str) -> str:
-    text = str(labware_name).lower()
-
-    if "384" in text:
-        return "384-well"
-    if "96" in text or "plate96" in text or "96well" in text:
-        return "96-well"
-    if "24" in text or "24well" in text:
-        return "24-well"
-
-    return "unknown"
-
-
-def summarize_layout_format(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
-    max_row = 0
-    max_col = 0
-    positions = []
-
-    for entries in layout_matches.values():
-        for entry in entries:
-            row_index = int(entry.get("row_index") or 0)
-            col_index = int(entry.get("column_index") or 0)
-            max_row = max(max_row, row_index)
-            max_col = max(max_col, col_index)
-
-            dest = entry.get("dest_value")
-            if dest:
-                positions.append(normalize_position_text(dest))
+def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
+    func = _get_optional_pyhamilton_function("tip_pick_up_seq", "tip_pickup_seq")
+    if func:
+        return _call_best_effort(func, ham_int, tipseq=tipseq, tip_seq=tipseq, sequence=tipseq, channel=channel)
+    return _send_command_best_effort(ham_int, "tip_pick_up_seq", tipseq=tipseq, tip_seq=tipseq, sequence=tipseq, channel=channel)
 
-    inferred_format = infer_plate_format_from_dimensions(max_row, max_col)
 
-    return {
-        "row_count": max_row,
-        "column_count": max_col,
-        "inferred_plate_format": inferred_format,
-        "positions": positions,
-    }
+def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class: str):
+    func = _get_optional_pyhamilton_function("aspirate_seq", "aspirate_from_seq")
+    if func:
+        return _call_best_effort(func, ham_int, asp_seq=asp_seq, sequence=asp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
+    return _send_command_best_effort(ham_int, "aspirate_seq", asp_seq=asp_seq, sequence=asp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
 
 
-def validate_trace_labware_against_layout_format(
-    aspirate_to_dispense_map: Dict[Any, Any],
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
-    findings = []
-    issues = []
+def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class: str):
+    func = _get_optional_pyhamilton_function("dispense_seq", "dispense_to_seq")
+    if func:
+        return _call_best_effort(func, ham_int, disp_seq=disp_seq, sequence=disp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
+    return _send_command_best_effort(ham_int, "dispense_seq", disp_seq=disp_seq, sequence=disp_seq, vols=vols, volume=vols, channel=channel, liq_class=liq_class)
 
-    layout_summary = summarize_layout_format(layout_matches)
-    expected_format = layout_summary.get("inferred_plate_format", "unknown")
 
-    for aspirate_step, dispenses in aspirate_to_dispense_map.items():
-        for dispense in dispenses:
-            labware = str(dispense[0]).strip()
-            destination = normalize_position_text(dispense[1])
+def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
+    func = _get_optional_pyhamilton_function("tip_eject_seq2", "tip_eject_seq")
+    if func:
+        return _call_best_effort(func, ham_int, waste_seq=waste_seq, sequence=waste_seq, channel=channel)
+    return _send_command_best_effort(ham_int, "tip_eject_seq2", waste_seq=waste_seq, sequence=waste_seq, channel=channel)
 
-            labware_format = infer_labware_format_from_name(labware)
-            destination_format = infer_plate_format_from_position(destination)
 
-            status = "pass"
+def ph_inc_sequence(ham_int, sequence: str, increment: int):
+    func = _get_optional_pyhamilton_function("inc_sequence", "increment_sequence")
+    if func:
+        return _call_best_effort(func, ham_int, sequence=sequence, increment=increment)
+    return _send_command_best_effort(ham_int, "inc_sequence", sequence=sequence, increment=increment)
 
-            if expected_format.startswith("unknown"):
-                status = "warning"
-            elif labware_format != "unknown" and labware_format != expected_format:
-                status = "fail"
-                issues.append(ValidationIssue(
-                    "critical",
-                    "URGENT_LABWARE_MISMATCH",
-                    (
-                        f"URGENT ERROR: Dispense used labware '{labware}', which appears to be "
-                        f"{labware_format}, but the uploaded plate layout appears to be {expected_format}."
-                    ),
-                    {
-                        "labware": labware,
-                        "labware_format": labware_format,
-                        "expected_layout_format": expected_format,
-                        "destination": destination,
-                    },
-                ))
 
-            if expected_format == "24-well" and destination_format in {"96-well", "384-well"}:
-                status = "fail"
-                issues.append(ValidationIssue(
-                    "critical",
-                    "URGENT_DESTINATION_OUTSIDE_LAYOUT_FORMAT",
-                    (
-                        f"URGENT ERROR: Destination {destination} is outside the expected "
-                        f"{expected_format} layout range."
-                    ),
-                    {
-                        "destination": destination,
-                        "destination_format": destination_format,
-                        "expected_layout_format": expected_format,
-                    },
-                ))
+def ph_tip_pick_up_96_seq(ham_int, tip96_seq: str):
+    func = _get_optional_pyhamilton_function("tip_pick_up_96_seq", "tip_pickup_96_seq")
+    if func:
+        return _call_best_effort(func, ham_int, tip96_seq=tip96_seq, sequence=tip96_seq)
+    return _send_command_best_effort(ham_int, "tip_pick_up_96_seq", tip96_seq=tip96_seq, sequence=tip96_seq)
 
-            findings.append({
-                "type": "labware_format_check",
-                "status": status,
-                "labware": labware,
-                "destination": destination,
-                "labware_format": labware_format,
-                "destination_format": destination_format,
-                "expected_layout_format": expected_format,
-            })
 
-    return findings, issues
+def ph_aspirate_96_seq(ham_int, plate96, head_asp_seq: str, vols: float, liq_class: str):
+    func = _get_optional_pyhamilton_function("aspirate_96_seq", "aspirate96_seq")
+    if func:
+        return _call_best_effort(func, ham_int, plate96=plate96, head_asp_seq=head_asp_seq, sequence=head_asp_seq, vols=vols, volume=vols, liq_class=liq_class)
+    return _send_command_best_effort(ham_int, "aspirate_96_seq", head_asp_seq=head_asp_seq, sequence=head_asp_seq, vols=vols, volume=vols, liq_class=liq_class)
 
 
+def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float):
+    func = _get_optional_pyhamilton_function("dispense_96_seq2", "dispense_96_seq", "dispense96_seq")
+    if func:
+        return _call_best_effort(func, ham_int, plate96=plate96, head_disp_seq=head_disp_seq, sequence=head_disp_seq, vols=vols, volume=vols)
+    return _send_command_best_effort(ham_int, "dispense_96_seq2", head_disp_seq=head_disp_seq, sequence=head_disp_seq, vols=vols, volume=vols)
 
 
-
-
-
-
-
-
-labware_findings, labware_issues = validate_trace_labware_against_layout_format(
-        aspirate_to_dispense_map,
-        layout_matches,
-    )
-    findings.extend(labware_findings)
-    issues.extend(labware_issues)
-
-
-
-
-
-
-
-
-def humanize_key(key: str) -> str:
-    return str(key).replace("_", " ").replace("-", " ").title()
-
-
-def write_human_section_docx(doc, title: str, data: Any) -> None:
-    doc.add_heading(title, level=1)
-
-    if not data:
-        doc.add_paragraph("None found.")
-        return
-
-    if isinstance(data, dict):
-        for key, value in data.items():
-            doc.add_paragraph(f"{humanize_key(key)}: {value}")
-        return
-
-    if isinstance(data, list):
-        for index, item in enumerate(data, start=1):
-            if isinstance(item, dict):
-                doc.add_paragraph(f"Item {index}", style=None)
-                for key, value in item.items():
-                    doc.add_paragraph(f"{humanize_key(key)}: {value}")
-            else:
-                doc.add_paragraph(str(item))
-        return
-
-    doc.add_paragraph(str(data))
-
-
-def write_human_text_section(handle, title: str, data: Any) -> None:
-    handle.write(f"\n{title}\n")
-    handle.write("-" * len(title) + "\n")
-
-    if not data:
-        handle.write("None found.\n")
-        return
-
-    if isinstance(data, dict):
-        for key, value in data.items():
-            handle.write(f"{humanize_key(key)}: {value}\n")
-        return
-
-    if isinstance(data, list):
-        for index, item in enumerate(data, start=1):
-            handle.write(f"\nItem {index}\n")
-            if isinstance(item, dict):
-                for key, value in item.items():
-                    handle.write(f"{humanize_key(key)}: {value}\n")
-            else:
-                handle.write(f"{item}\n")
-        return
-
-    handle.write(f"{data}\n")
-
-
-
-
-
-
-def write_docx_report(output: DevPalLiteOutput, output_dir: str) -> str:
-    if Document is None:
-        return write_text_report(output, output_dir)
-
-    path = os.path.join(output_dir, f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.docx")
-
-    doc = Document()
-    doc.add_heading("DevPal Lite Validation Report", 0)
-
-    doc.add_paragraph(f"Generated: {datetime.now().isoformat()}")
-    doc.add_paragraph(f"LAY File: {output.lay_file or 'Not provided'}")
-    doc.add_paragraph(f"Layout File: {output.layout_file or 'Not provided'}")
-    doc.add_paragraph(f"Trace File: {output.trace_file or 'Not found'}")
-    doc.add_paragraph(f"Generated Review Script: {output.generated_review_script or 'Not generated'}")
-
-    sections = [
-        ("Selected Sequences", output.selected_sequences),
-        ("Source Positions", output.source_positions),
-        ("Destination Positions", output.destination_positions),
-        ("Transfer Pairs", output.transfer_pairs),
-        ("Execution Plan", output.execution_plan),
-        ("Marker Matches", output.marker_matches),
-        ("Layout Findings", output.layout_findings),
-        ("Trace Findings", output.trace_findings),
-        ("Validation Findings", output.validation_findings),
-        ("Issues", output.issues),
-        ("Limitations", output.limitations),
-    ]
-
-    for title, data in sections:
-        write_human_section_docx(doc, title, data)
-
-    doc.save(path)
-    return path
-
-
-
-
-
-
-
-
-
-def write_text_report(output: DevPalLiteOutput, output_dir: str) -> str:
-    path = os.path.join(output_dir, f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.txt")
-
-    with open(path, "w", encoding="utf-8") as handle:
-        handle.write("DevPal Lite Validation Report\n")
-        handle.write("=" * 80 + "\n")
-        handle.write(f"Generated: {datetime.now().isoformat()}\n")
-        handle.write(f"LAY File: {output.lay_file or 'Not provided'}\n")
-        handle.write(f"Layout File: {output.layout_file or 'Not provided'}\n")
-        handle.write(f"Trace File: {output.trace_file or 'Not found'}\n")
-        handle.write(f"Generated Review Script: {output.generated_review_script or 'Not generated'}\n")
-
-        sections = [
-            ("Selected Sequences", output.selected_sequences),
-            ("Source Positions", output.source_positions),
-            ("Destination Positions", output.destination_positions),
-            ("Transfer Pairs", output.transfer_pairs),
-            ("Execution Plan", output.execution_plan),
-            ("Marker Matches", output.marker_matches),
-            ("Layout Findings", output.layout_findings),
-            ("Trace Findings", output.trace_findings),
-            ("Validation Findings", output.validation_findings),
-            ("Issues", output.issues),
-            ("Limitations", output.limitations),
-        ]
-
-        for title, data in sections:
-            write_human_text_section(handle, title, data)
-
-    return path
-
-
-
-
-
-
-
-if not data:
-            story.append(Paragraph("None found.", styles["BodyText"]))
-        elif isinstance(data, list):
-            for index, item in enumerate(data[:100], start=1):
-                story.append(Paragraph(f"Item {index}", styles["Heading3"]))
-                if isinstance(item, dict):
-                    for key, value in item.items():
-                        story.append(Paragraph(f"{humanize_key(key)}: {value}", styles["BodyText"]))
-                else:
-                    story.append(Paragraph(str(item), styles["BodyText"]))
-        elif isinstance(data, dict):
-            for key, value in data.items():
-                story.append(Paragraph(f"{humanize_key(key)}: {value}", styles["BodyText"]))
-        else:
-            story.append(Paragraph(str(data), styles["BodyText"]))
+def ph_tip_eject_96(ham_int):
+    func = _get_optional_pyhamilton_function("tip_eject_96", "tip_eject_96_seq")
+    if func:
+        return _call_best_effort(func, ham_int)
+    return _send_command_best_effort(ham_int, "tip_eject_96")
