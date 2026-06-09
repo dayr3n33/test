@@ -1,1 +1,97 @@
+try:
+    import pyhamilton
+    import pyhamilton.interface as phi
 
+    from pyhamilton import (
+        HamiltonError,
+        HamiltonStepError,
+        HamiltonTimeoutError,
+        LayoutManager,
+        Plate96,
+        ResourceType,
+        OEM_HSL_PATH,
+        OEM_RUN_EXE_PATH,
+        normal_logging,
+        initialize,
+    )
+
+    def _get_pyhamilton_function(*names):
+        for module in (pyhamilton, phi):
+            for name in names:
+                if hasattr(module, name):
+                    return getattr(module, name)
+        raise ImportError(f"Could not find any PyHamilton function aliases: {names}")
+
+    tip_pick_up_seq = _get_pyhamilton_function(
+        "tip_pick_up_seq",
+        "tip_pickup_seq",
+        "tip_pick_up",
+        "tip_pickup",
+    )
+
+    aspirate_seq = _get_pyhamilton_function(
+        "aspirate_seq",
+        "aspirate",
+    )
+
+    dispense_seq = _get_pyhamilton_function(
+        "dispense_seq",
+        "dispense",
+    )
+
+    tip_eject_seq2 = _get_pyhamilton_function(
+        "tip_eject_seq2",
+        "tip_eject_seq",
+        "tip_eject",
+    )
+
+    try:
+        inc_sequence = _get_pyhamilton_function(
+            "inc_sequence",
+            "increment_sequence",
+        )
+    except ImportError:
+        def inc_sequence(ham_int, sequence, increment):
+            return ham_int.send_command(
+                command="INCSEQ",
+                sequence=sequence,
+                increment=increment,
+            )
+
+    tip_pick_up_96_seq = _get_pyhamilton_function(
+        "tip_pick_up_96_seq",
+        "tip_pickup_96_seq",
+        "tip_pick_up_96",
+    )
+
+    aspirate_96_seq = _get_pyhamilton_function(
+        "aspirate_96_seq",
+        "aspirate96_seq",
+        "aspirate_96",
+    )
+
+    dispense_96_seq2 = _get_pyhamilton_function(
+        "dispense_96_seq2",
+        "dispense_96_seq",
+        "dispense96_seq",
+        "dispense_96",
+    )
+
+    tip_eject_96 = _get_pyhamilton_function(
+        "tip_eject_96",
+        "tip_eject_96_seq",
+    )
+
+except Exception as exc:
+    PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+
+    pyhamilton = None
+    phi = None
+    HamiltonStepError = Exception
+    HamiltonError = Exception
+    HamiltonTimeoutError = Exception
+    LayoutManager = None
+    Plate96 = None
+    ResourceType = None
+    OEM_RUN_EXE_PATH = ""
+    OEM_HSL_PATH = ""
