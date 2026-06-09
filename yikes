@@ -1,31 +1,13 @@
-def get_sequence_batch_size(config: SequenceStepConfig) -> int:
-    if str(config.hardware_mode).lower() == "stamp":
-        return 96
+def normalize_assigned_channel_pattern(channel_pattern: str, hardware_mode: str = "channels") -> str:
+    pattern = str(channel_pattern or "").strip()
 
-    active = sum(1 for char in str(config.channel_pattern or "") if char == "1")
-    return max(active, 1)
+    if str(hardware_mode).lower() == "stamp":
+        return "1" * 96
 
+    if not re.match(r"^[01]+$", pattern):
+        raise ValueError(f"Invalid channel pattern: {pattern}")
 
-def get_required_dispense_iterations(configs: List[SequenceStepConfig]) -> int:
-    dispense_steps = [config for config in configs if config.role == "dispense"]
-
-    if not dispense_steps:
-        return 1
-
-    required = 1
-
-    for config in dispense_steps:
-        position_count = int(config.sequence_count or 0)
-        batch_size = get_sequence_batch_size(config)
-
-        if position_count <= 0:
-            iterations = 1
-        else:
-            iterations = (position_count + batch_size - 1) // batch_size
-
-        required = max(required, iterations)
-
-    return max(required, 1)
+    return pattern
 
 
 
@@ -36,129 +18,25 @@ def get_required_dispense_iterations(configs: List[SequenceStepConfig]) -> int:
 
 
 
+def _call_best_effort(func, *args, **kwargs):
+    if func is None:
+        raise RuntimeError("PyHamilton wrapper function is unavailable.")
 
+    try:
+        signature = inspect.signature(func)
+    except Exception:
+        signature = None
 
+    if signature is None:
+        return func(*args, **kwargs)
 
+    allowed_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if key in signature.parameters
+    }
 
-def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, Any]]:
-    replicate = configs[0].replicate if configs else "single"
-    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
-
-    tip_steps = [config for config in configs if config.role == "tip_pick"]
-    asp_steps = [config for config in configs if config.role == "aspirate"]
-    dsp_steps = [config for config in configs if config.role == "dispense"]
-
-    max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
-    dispense_iterations = get_required_dispense_iterations(configs)
-
-    plan = []
-    order = 1
-
-    for rep_index in range(1, replicate_count + 1):
-        for dispense_iteration in range(1, dispense_iterations + 1):
-            for idx in range(max_len):
-                tip = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None
-                asp = asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None
-                dsp = dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None
-
-                if tip:
-                    plan.append({
-                        "order": order,
-                        "action": "tip_pick",
-                        "sequence": tip.sequence,
-                        "hardware_mode": tip.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": False,
-                        "autoincrement": False,
-                        "reset_to_first_position": False,
-                        "increment": 0,
-                        "channel_pattern": tip.channel_pattern,
-                        "volume_ul": "",
-                        "liquid_class": "",
-                        "transfer_type": tip.transfer_type,
-                        "marker": tip.marker,
-                        "sequence_count": tip.sequence_count,
-                        "batch_size": get_sequence_batch_size(tip),
-                    })
-                    order += 1
-
-                if asp:
-                    plan.append({
-                        "order": order,
-                        "action": "aspirate",
-                        "sequence": asp.sequence,
-                        "hardware_mode": asp.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": bool(asp.manual),
-                        "autoincrement": False,
-                        "reset_to_first_position": bool(asp.manual),
-                        "increment": 0,
-                        "channel_pattern": asp.channel_pattern,
-                        "volume_ul": asp.volume_ul,
-                        "liquid_class": asp.liquid_class,
-                        "transfer_type": asp.transfer_type,
-                        "marker": asp.marker,
-                        "sequence_count": asp.sequence_count,
-                        "batch_size": get_sequence_batch_size(asp),
-                    })
-                    order += 1
-
-                if dsp:
-                    batch_size = get_sequence_batch_size(dsp)
-                    start_position = ((dispense_iteration - 1) * batch_size) + 1
-                    end_position = min(dispense_iteration * batch_size, int(dsp.sequence_count or start_position))
-
-                    if dsp.sequence_count and start_position > dsp.sequence_count:
-                        continue
-
-                    plan.append({
-                        "order": order,
-                        "action": "dispense",
-                        "sequence": dsp.sequence,
-                        "hardware_mode": dsp.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": bool(dsp.manual),
-                        "autoincrement": False,
-                        "reset_to_first_position": bool(dsp.manual),
-                        "increment": 0,
-                        "channel_pattern": dsp.channel_pattern,
-                        "volume_ul": dsp.volume_ul,
-                        "liquid_class": dsp.liquid_class,
-                        "transfer_type": dsp.transfer_type,
-                        "marker": dsp.marker,
-                        "sequence_count": dsp.sequence_count,
-                        "batch_size": batch_size,
-                        "planned_dispense_position_start": start_position,
-                        "planned_dispense_position_end": end_position,
-                    })
-                    order += 1
-
-                if tip:
-                    plan.append({
-                        "order": order,
-                        "action": "tip_eject",
-                        "sequence": "Waste",
-                        "hardware_mode": tip.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": False,
-                        "autoincrement": False,
-                        "reset_to_first_position": False,
-                        "increment": 0,
-                        "channel_pattern": tip.channel_pattern,
-                        "volume_ul": "",
-                        "liquid_class": "",
-                        "transfer_type": tip.transfer_type,
-                        "marker": tip.marker,
-                        "sequence_count": tip.sequence_count,
-                        "batch_size": get_sequence_batch_size(tip),
-                    })
-                    order += 1
-
-    return plan
+    return func(*args, **allowed_kwargs)
 
 
 
@@ -166,62 +44,172 @@ def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, An
 
 
 
+def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
+    channel = normalize_assigned_channel_pattern(channel, "channels")
+
+    func = _get_optional_pyhamilton_function(
+        "tip_pick_up_seq",
+        "tip_pickup_seq",
+        "tip_pick_up",
+        "tip_pickup",
+    )
+
+    if func:
+        return _call_best_effort(
+            func,
+            ham_int,
+            tipseq=tipseq,
+            tip_seq=tipseq,
+            sequence=tipseq,
+            channel=channel,
+            channels=channel,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "tip_pick_up_seq",
+        tipseq=tipseq,
+        tip_seq=tipseq,
+        sequence=tipseq,
+        channel=channel,
+        channels=channel,
+    )
+
+
+
+def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class: str):
+    channel = normalize_assigned_channel_pattern(channel, "channels")
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING CHANNEL ASPIRATE PATTERN: {channel}")
+    print(f"USING CHANNEL ASPIRATE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "aspirate_seq",
+        "aspirate_from_seq",
+        "aspirate",
+    )
+
+    if func:
+        return _call_best_effort(
+            func,
+            ham_int,
+            asp_seq=asp_seq,
+            sequence=asp_seq,
+            vols=vols,
+            volume=vols,
+            channel=channel,
+            channels=channel,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "aspirate_seq",
+        asp_seq=asp_seq,
+        sequence=asp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        channels=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
+
+def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class: str):
+    channel = normalize_assigned_channel_pattern(channel, "channels")
+    liq_class = _clean_liquid_class(liq_class)
+    print(f"USING CHANNEL DISPENSE PATTERN: {channel}")
+    print(f"USING CHANNEL DISPENSE LIQUID CLASS: {liq_class}")
+
+    func = _get_optional_pyhamilton_function(
+        "dispense_seq",
+        "dispense_to_seq",
+        "dispense",
+    )
+
+    if func:
+        return _call_best_effort(
+            func,
+            ham_int,
+            disp_seq=disp_seq,
+            sequence=disp_seq,
+            vols=vols,
+            volume=vols,
+            channel=channel,
+            channels=channel,
+            liq_class=liq_class,
+            liquid_class=liq_class,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "dispense_seq",
+        disp_seq=disp_seq,
+        sequence=disp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        channels=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
+    )
+
+
+def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
+    channel = normalize_assigned_channel_pattern(channel, "channels")
+
+    func = _get_optional_pyhamilton_function(
+        "tip_eject_seq2",
+        "tip_eject_seq",
+        "tip_eject",
+    )
+
+    if func:
+        return _call_best_effort(
+            func,
+            ham_int,
+            waste_seq=waste_seq,
+            sequence=waste_seq,
+            channel=channel,
+            channels=channel,
+        )
+
+    return _send_command_best_effort(
+        ham_int,
+        "tip_eject_seq2",
+        waste_seq=waste_seq,
+        sequence=waste_seq,
+        channel=channel,
+        channels=channel,
+    )
 
 
 
 
-def generate_deterministic_transfer_pairs(configs: List[SequenceStepConfig], layout_matches: Dict[str, List[Dict[str, Any]]]) -> List[TransferPair]:
-    replicate = configs[0].replicate if configs else "single"
-    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
 
-    tip_steps = [c for c in configs if c.role == "tip_pick"]
-    asp_steps = [c for c in configs if c.role == "aspirate"]
-    dsp_steps = [c for c in configs if c.role == "dispense"]
 
-    if not dsp_steps:
-        return []
 
-    marker = configs[0].marker.upper().strip() if configs and configs[0].marker else ""
-    pairs = []
-    pair_counter = 1
 
-    max_dispense_positions = max(int(dsp.sequence_count or 0) for dsp in dsp_steps)
-    if max_dispense_positions <= 0:
-        max_dispense_positions = 1
 
-    for rep_index in range(1, replicate_count + 1):
-        for dest_index in range(1, max_dispense_positions + 1):
-            asp = asp_steps[(dest_index - 1) % len(asp_steps)] if asp_steps else None
-            dsp = dsp_steps[(dest_index - 1) % len(dsp_steps)] if dsp_steps else None
-            tip = tip_steps[(dest_index - 1) % len(tip_steps)] if tip_steps else None
+channel = normalize_assigned_channel_pattern(
+    item.get("channel_pattern") or "111111111111",
+    item.get("hardware_mode", "channels"),
+)
+print(f"RUNNING {action} WITH CHANNEL PATTERN: {channel}")
 
-            source_num = dest_index
-            source_position = str(source_num)
-            marker_label = f"{marker}{source_num}" if marker else ""
 
-            dest_position = ""
-            if marker_label and marker_label in layout_matches:
-                entries = layout_matches.get(marker_label, [])
-                if entries:
-                    dest_entry_index = min(rep_index - 1, len(entries) - 1)
-                    dest_position = entries[dest_entry_index].get("dest_value", "")
 
-            pairs.append(TransferPair(
-                pair_id=f"pair_{pair_counter:05d}",
-                tip_sequence=tip.sequence if tip else "",
-                source_sequence=asp.sequence if asp else "",
-                destination_sequence=dsp.sequence if dsp else "",
-                source_position=source_position,
-                destination_position=dest_position,
-                source_sample_number=source_num,
-                destination_sample_number=extract_position_number(dest_position),
-                replicate_index=rep_index,
-                volume_ul=asp.volume_ul if asp else dsp.volume_ul if dsp else 0.0,
-                liquid_class=asp.liquid_class if asp else dsp.liquid_class if dsp else "",
-                transfer_type=asp.transfer_type if asp else dsp.transfer_type if dsp else "",
-                marker_label=marker_label,
-            ))
 
-            pair_counter += 1
 
-    return pairs
+
+
+ph_dispense_96_seq2(ham_int, plate96=plate1, head_disp_seq=seq, vols=volume, liq_class=liquid_class)
+
+
+
+
+channel = normalize_assigned_channel_pattern(
+    item.get("channel_pattern") or "111111111111",
+    item.get("hardware_mode", "channels"),
+)
