@@ -1,85 +1,17 @@
-PYHAMILTON_IMPORT_ERROR = ""
-
-try:
-    import pyhamilton
-    import pyhamilton.interface as phi
-
-    from pyhamilton import (
-        HamiltonError,
-        HamiltonStepError,
-        HamiltonTimeoutError,
-        LayoutManager,
-        Plate96,
-        ResourceType,
-        OEM_HSL_PATH,
-        OEM_RUN_EXE_PATH,
-        normal_logging,
-        initialize,
-    )
-
-    def _get_required_seq_wrapper(name):
-        candidates = [
-            "pyhamilton.liquid_handling_wrappers",
-            "pyhamilton.liquid_handling_wrappers.sequence_wrappers",
-            "pyhamilton.interface",
-            "pyhamilton",
-        ]
-
-        for module_name in candidates:
-            try:
-                module = __import__(module_name, fromlist=[name])
-                if hasattr(module, name):
-                    return getattr(module, name)
-            except Exception:
-                continue
-
-        raise ImportError(f"Missing required sequence wrapper: {name}")
-
-    tip_pick_up_seq = _get_required_seq_wrapper("tip_pick_up_seq")
-    aspirate_seq = _get_required_seq_wrapper("aspirate_seq")
-    dispense_seq = _get_required_seq_wrapper("dispense_seq")
-
-    try:
-        tip_eject_seq2 = _get_required_seq_wrapper("tip_eject_seq2")
-    except ImportError:
-        tip_eject_seq2 = _get_required_seq_wrapper("tip_eject_seq")
-
-    try:
-        inc_sequence = _get_required_seq_wrapper("inc_sequence")
-    except ImportError:
-        try:
-            inc_sequence = _get_required_seq_wrapper("increment_sequence")
-        except ImportError:
-            def inc_sequence(ham_int, sequence, increment):
-                return ham_int.send_command(
-                    command="INCSEQ",
-                    sequence=sequence,
-                    increment=increment,
-                )
-
-    tip_pick_up_96_seq = _get_required_seq_wrapper("tip_pick_up_96_seq")
-    aspirate_96_seq = _get_required_seq_wrapper("aspirate_96_seq")
-
-    try:
-        dispense_96_seq2 = _get_required_seq_wrapper("dispense_96_seq2")
-    except ImportError:
-        dispense_96_seq2 = _get_required_seq_wrapper("dispense_96_seq")
-
-    try:
-        tip_eject_96 = _get_required_seq_wrapper("tip_eject_96")
-    except ImportError:
-        tip_eject_96 = _get_required_seq_wrapper("tip_eject_96_seq")
-
-except Exception as exc:
-    PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
-
-    pyhamilton = None
-    phi = None
-    HamiltonStepError = Exception
-    HamiltonError = Exception
-    HamiltonTimeoutError = Exception
-    LayoutManager = None
-    Plate96 = None
-    ResourceType = None
-    OEM_RUN_EXE_PATH = ""
-    OEM_HSL_PATH = ""
+2026-06-09 12:13:49.867 Venus software version: 6.2.2.4006
+2026-06-09 12:13:49.872 SYSTEM : Analyze method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-09 12:13:51.614 Microlab STAR : Communication - progress; Connection to instrument is created.
+2026-06-09 12:13:52.660 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_toolkit.hsi(11) : error 1312: cannot open include file: 'HSL_LiquidClassLib.hsl'
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_toolkit.hsi(995) : error 1302: 'LiquidClassLib::Initialize' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_toolkit.hsi(998) : error 1302: 'LiquidClassLib::SelectLiquidClass' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_toolkit.hsi(1001) : error 1302: 'LiquidClassLib::LIQUIDCLASS_PARAMS::TipType' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_toolkit.hsi(1001) : error 1302: 'LiquidClassLib::GetLiquidClassParameter' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(21) : error 1312: cannot open include file: 'HSL_LiquidClassLib.hsl'
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(474) : error 1302: 'LiquidClassLib::Initialize' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(2174) : error 1302: 'LiquidClassLib::SelectLiquidClass' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(2177) : error 1302: 'LiquidClassLib::SetLiquidClassAspirateParameter' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(2218) : error 1302: 'LiquidClassLib::SelectLiquidClass' undeclared identifier
+2026-06-09 12:13:52.664 SYSTEM : Analyze method - progress; C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl(2221) : error 1302: 'LiquidClassLib::SetLiquidClassDispenseParameter' undeclared identifier
+2026-06-09 12:13:52.665 SYSTEM : Analyze method - error; An error occurred while running Vector.  The error description is: Method contains syntax errors (0x23 - 0x2 - 0x35) , 
+2026-06-09 12:13:52.665 SYSTEM : Analyze method - complete with error; 
+2026-06-09 12:13:59.057 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-06-09 12:13$$checksum=03328df0$$length=140$$
