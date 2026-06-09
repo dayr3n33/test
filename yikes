@@ -1,154 +1,1620 @@
-def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
-    text = read_text_file_best_effort(lay_path)
-    metadata = {}
-
-    if not text:
-        return metadata
-
-    seq_ids = sorted(set(re.findall(r"Seq\.(\d+)\.", text)), key=lambda x: int(x))
-
-    for seq_id in seq_ids:
-        name_match = re.search(
-            rf"Seq\.{seq_id}\.Name[\x00-\x1f]*([A-Za-z][A-Za-z0-9_ .\-]*)",
-            text,
-        )
-
-        if not name_match:
-            continue
-
-        seq_name = name_match.group(1).strip()
-
-        cnt_match = re.search(
-            rf"Seq\.{seq_id}\.Cnt[\x00-\x1f]*(\d+)",
-            text,
-        )
-
-        count = int(cnt_match.group(1)) if cnt_match else 0
-
-        objids = re.findall(
-            rf"Seq\.{seq_id}\.Item\.\d+\.ObjId[\x00-\x1f]*([A-Za-z0-9_ .\-]+)",
-            text,
-        )
-
-        positions = re.findall(
-            rf"Seq\.{seq_id}\.Item\.\d+\.PosId[\x00-\x1f]*([A-Z]?\d{{1,3}})",
-            text,
-        )
-
-        labware_name = ""
-        if objids:
-            clean_objids = [x.strip() for x in objids if x.strip()]
-            if clean_objids:
-                labware_name = max(set(clean_objids), key=clean_objids.count)
-
-        labware_format = infer_plate_format_from_labware_name(labware_name)
-
-        if labware_format == "unknown":
-            labware_format = infer_plate_format_from_position_count(count or len(positions))
-
-        metadata[seq_name] = {
-            "sequence_id": seq_id,
-            "sequence_name": seq_name,
-            "position_count": count or len(positions),
-            "positions": [normalize_position_text(p) for p in positions],
-            "labware_name": labware_name or seq_name,
-            "labware_format": labware_format,
-        }
-
-    return metadata
-
-
-
-
-
-
-
-def infer_plate_format_from_position_count(count: int) -> str:
-    count = int(count or 0)
-
-    if count == 24:
-        return "24-well"
-    if count == 96:
-        return "96-well"
-    if count == 384:
-        return "384-well"
-    if count == 48:
-        return "48-position rack"
-    if count == 16:
-        return "16-position rack/waste"
-    if count == 12:
-        return "12-position rack/waste"
-    if count == 8:
-        return "8-position rack/waste"
-    if count == 4:
-        return "4-position rack/waste"
-    if count > 0:
-        return f"{count}-position labware"
-
-    return "unknown"
-
-
-
-
-
-
-
-
-def build_labware_validation_summary(
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-    trace_findings: List[Dict[str, Any]],
-    configs: List[SequenceStepConfig],
-    lay_metadata: Dict[str, Dict[str, Any]],
-) -> List[Dict[str, Any]]:
-    summary = []
-
-    layout_summary = summarize_layout_format(layout_matches)
-    expected_format = layout_summary.get("inferred_plate_format", "unknown")
-
-    for config in configs:
-        if config.role not in ("aspirate", "dispense"):
-            continue
-
-        seq_meta = get_sequence_labware_metadata(config.sequence, lay_metadata)
-
-        sequence_format = seq_meta.get("labware_format", "unknown")
-        labware_name = seq_meta.get("labware_name", "unknown")
-        position_count = seq_meta.get("position_count", 0)
-
-        status = "pass"
-
-        if config.role == "dispense":
-            if expected_format != "unknown" and sequence_format != "unknown" and sequence_format != expected_format:
-                status = "fail"
-
-        message = (
-            f"Sequence '{config.sequence}' uses labware '{labware_name}' "
-            f"with detected format {sequence_format} and {position_count} position(s)."
-        )
-
-        if status == "fail":
-            message = (
-                f"URGENT ERROR: Wrong destination labware detected. "
-                f"Dispense sequence '{config.sequence}' uses labware '{labware_name}' "
-                f"detected as {sequence_format}, but uploaded layout requires {expected_format}."
-            )
-
-        summary.append({
-            "type": "labware_validation_summary",
-            "status": status,
-            "step_role": config.role,
-            "sequence": config.sequence,
-            "trace_or_method_labware": labware_name,
-            "detected_labware_format": sequence_format,
-            "position_count": position_count,
-            "expected_layout_format": expected_format if config.role == "dispense" else "not applicable to source",
-            "message": message,
-        })
-
-    return summary
-
-
-
-
-
-
+DevPal Lite Validation Report
+Run Summary
+Generated: 2026-06-09T15:53:46.490082
+LAY File: C:/Users/lynchd27/Documents/DevPal/new-project/sample_inputs/Demo.lay
+Layout File: C:/Users/lynchd27/Documents/DevPal/new-project/sample_inputs/layout.csv
+Trace File: C:\Program Files (x86)\HAMILTON\LogFiles\STAR_OEM_noFan_5c7fcadf19e941b9934b7d93f7750c1c_Trace.trc
+Generated Review Script: C:\Users\lynchd27\AppData\Local\Temp\2\devpal_lite_pyhamilton_ua33aqer\devpal_lite_review_required_pyhamilton_script.py
+Report Path: Pending
+Urgent / Critical Issues Found
+Issue 1
+Severity: critical
+Category: URGENT_LABWARE_MISMATCH
+Message: URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well.
+Evidence: {'type': 'labware_validation_summary', 'status': 'fail', 'step_role': 'dispense', 'sequence': 'P', 'trace_or_method_labware': 'P1', 'detected_labware_format': '24-well', 'position_count': 24, 'expected_layout_format': '96-well', 'message': "URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well."}
+Issue 2
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 3
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Issue 4
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 5
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 6
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Issue 7
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 8
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 9
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Issue 10
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 11
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 12
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Issue 13
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 14
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 15
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Issue 16
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 17
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 18
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Issue 19
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 20
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 21
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Issue 22
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 23
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 24
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Issue 25
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 26
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Issue 27
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Issue 28
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Issue 29
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Issue 30
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Issue 31
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Issue 32
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Selected Sequences
+Item 1
+Sequence: P
+Role: dispense
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 111111111111
+Hardware Mode: channels
+Selected Index: 6
+Sequence Count: 24
+Manual: False
+Item 2
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Role: aspirate
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 11111111
+Hardware Mode: channels
+Selected Index: 9
+Sequence Count: 48
+Manual: False
+Item 3
+Sequence: TP
+Role: tip_pick
+Liquid Class: 
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 111111111111
+Hardware Mode: channels
+Selected Index: 10
+Sequence Count: 96
+Manual: False
+Source Positions
+Item 1
+1
+Destination Positions
+Item 1
+J2
+Transfer Pairs
+Item 1
+Pair Id: pair_00001
+Tip Sequence: TP
+Source Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Destination Sequence: P
+Source Position: 1
+Destination Position: J2
+Source Sample Number: 1
+Destination Sample Number: 2
+Replicate Index: 1
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker Label: X1
+Execution Plan
+Item 1
+Order: 1
+Action: tip_pick
+Sequence: TP
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 
+Liquid Class: 
+Transfer Type: samples
+Marker: X
+Item 2
+Order: 2
+Action: aspirate
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 11111111
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker: X
+Item 3
+Order: 3
+Action: dispense
+Sequence: P
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker: X
+Item 4
+Order: 4
+Action: tip_eject
+Sequence: Waste
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 
+Liquid Class: 
+Transfer Type: samples
+Marker: X
+Marker Matches
+X3: [{'dest_value': 'D2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 6, 'column_name': 'F'}]
+X2: [{'dest_value': 'G2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 9, 'column_name': 'I'}]
+X1: [{'dest_value': 'J2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 12, 'column_name': 'L'}]
+X6: [{'dest_value': 'D3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 6, 'column_name': 'F'}]
+X5: [{'dest_value': 'G3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 9, 'column_name': 'I'}]
+X4: [{'dest_value': 'J3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 12, 'column_name': 'L'}]
+X9: [{'dest_value': 'D7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 6, 'column_name': 'F'}]
+X8: [{'dest_value': 'G7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 9, 'column_name': 'I'}]
+X7: [{'dest_value': 'J7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 12, 'column_name': 'L'}]
+X12: [{'dest_value': 'D8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 6, 'column_name': 'F'}]
+X11: [{'dest_value': 'G8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 9, 'column_name': 'I'}]
+X10: [{'dest_value': 'J8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 12, 'column_name': 'L'}]
+Layout Findings
+Item 1
+Type: extra_layout_marker
+Marker: X10
+Message: Layout marker exists but was not selected in transfer pairs: X10
+Item 2
+Type: extra_layout_marker
+Marker: X11
+Message: Layout marker exists but was not selected in transfer pairs: X11
+Item 3
+Type: extra_layout_marker
+Marker: X12
+Message: Layout marker exists but was not selected in transfer pairs: X12
+Item 4
+Type: extra_layout_marker
+Marker: X2
+Message: Layout marker exists but was not selected in transfer pairs: X2
+Item 5
+Type: extra_layout_marker
+Marker: X3
+Message: Layout marker exists but was not selected in transfer pairs: X3
+Item 6
+Type: extra_layout_marker
+Marker: X4
+Message: Layout marker exists but was not selected in transfer pairs: X4
+Item 7
+Type: extra_layout_marker
+Marker: X5
+Message: Layout marker exists but was not selected in transfer pairs: X5
+Item 8
+Type: extra_layout_marker
+Marker: X6
+Message: Layout marker exists but was not selected in transfer pairs: X6
+Item 9
+Type: extra_layout_marker
+Marker: X7
+Message: Layout marker exists but was not selected in transfer pairs: X7
+Item 10
+Type: extra_layout_marker
+Marker: X8
+Message: Layout marker exists but was not selected in transfer pairs: X8
+Item 11
+Type: extra_layout_marker
+Marker: X9
+Message: Layout marker exists but was not selected in transfer pairs: X9
+Item 12
+Type: layout_summary
+Marker: X
+Marker Count: 12
+Layout Position Count: 36
+Unique Layout Position Count: 36
+Missing Positions From Pairs: ['D2', 'D3', 'D7', 'D8', 'E2', 'E3', 'E7', 'E8', 'F2', 'F3', 'F7', 'F8', 'G2', 'G3', 'G7', 'G8', 'H2', 'H3', 'H7', 'H8', 'I2', 'I3', 'I7', 'I8', 'J3', 'J7', 'J8', 'K2', 'K3', 'K7', 'K8', 'L2', 'L3', 'L7', 'L8']
+Duplicate Layout Positions: []
+Trace Findings
+Item 1
+Type: labware_validation_summary
+Status: fail
+Step Role: dispense
+Sequence: P
+Trace Or Method Labware: P1
+Detected Labware Format: 24-well
+Position Count: 24
+Expected Layout Format: 96-well
+Message: URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well.
+Item 2
+Type: labware_validation_summary
+Status: pass
+Step Role: aspirate
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Trace Or Method Labware: unknown
+Detected Labware Format: unknown
+Position Count: 0
+Expected Layout Format: not applicable to source
+Message: Sequence 'Thermo_48_Tube_Honeycomb_Rack_0001' uses labware 'unknown' with detected format unknown and 0 position(s).
+Item 3
+Type: trace_summary
+Trace File: C:\Program Files (x86)\HAMILTON\LogFiles\STAR_OEM_noFan_5c7fcadf19e941b9934b7d93f7750c1c_Trace.trc
+Ordered Steps: [{'order': 1, 'type': 'aspirate', 'raw': '> channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, B1 100µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, D1 100µL > channel 3: Thermo_48_Tube_Honeycomb_Rack_0001, F1 100µL > channel 4: Thermo_48_Tube_Honeycomb_Rack_0001, H1 100µL > channel 5: Thermo_48_Tube_Honeycomb_Rack_0001, A1 100µL > channel 6: Thermo_48_Tube_Honeycomb_Rack_0001, C1 100µL > channel 7: Thermo_48_Tube_Honeycomb_Rack_0001, E1 100µL > channel 8: Thermo_48_Tube_Honeycomb_Rack_0001, G1 100µL'}, {'order': 2, 'type': 'dispense', 'raw': '> channel 1: P1, A1 100µL > channel 2: P1, B1 100µL > channel 3: P1, C1 100µL > channel 4: P1, D1 100µL > channel 5: P1, A2 100µL > channel 6: P1, B2 100µL > channel 7: P1, C2 100µL > channel 8: P1, D2 100µL'}]
+Aspirate Step Count: 1
+Dispense Step Count: 1
+Cross Match Status: pass
+Cross Match: {('1', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'B1', '100'): [('P1', 'A1', '100')], ('2', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'D1', '100'): [('P1', 'B1', '100')], ('3', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'F1', '100'): [('P1', 'C1', '100')], ('4', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'H1', '100'): [('P1', 'D1', '100')], ('5', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'A1', '100'): [('P1', 'A2', '100')], ('6', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'C1', '100'): [('P1', 'B2', '100')], ('7', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'E1', '100'): [('P1', 'C2', '100')], ('8', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'G1', '100'): [('P1', 'D2', '100')]}
+Item 4
+Type: trace_layout_match
+Marker: X1
+Source Position: B1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['A1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['A1']
+Status: fail
+Item 5
+Type: trace_layout_match
+Marker: X1
+Source Position: D1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['B1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['B1']
+Status: fail
+Item 6
+Type: trace_layout_match
+Marker: X1
+Source Position: F1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['C1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['C1']
+Status: fail
+Item 7
+Type: trace_layout_match
+Marker: X1
+Source Position: H1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['D1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['D1']
+Status: fail
+Item 8
+Type: trace_layout_match
+Marker: X1
+Source Position: A1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['A2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['A2']
+Status: fail
+Item 9
+Type: trace_layout_match
+Marker: X1
+Source Position: C1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['B2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['B2']
+Status: fail
+Item 10
+Type: trace_layout_match
+Marker: X1
+Source Position: E1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['C2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['C2']
+Status: fail
+Item 11
+Type: trace_layout_match
+Marker: X1
+Source Position: G1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['D2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['D2']
+Status: fail
+Item 12
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: A1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 13
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: B1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 14
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: C1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 15
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: D1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 16
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: A2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 17
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: B2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 18
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: C2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 19
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: D2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 20
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 1
+Actual Source Number: 1
+Source Position: B1
+Dispense Count: 1
+Status: pass
+Item 21
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 2
+Actual Source Number: 1
+Source Position: D1
+Dispense Count: 1
+Status: fail
+Item 22
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 3
+Actual Source Number: 1
+Source Position: F1
+Dispense Count: 1
+Status: fail
+Item 23
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 4
+Actual Source Number: 1
+Source Position: H1
+Dispense Count: 1
+Status: fail
+Item 24
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 5
+Actual Source Number: 1
+Source Position: A1
+Dispense Count: 1
+Status: fail
+Item 25
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 6
+Actual Source Number: 1
+Source Position: C1
+Dispense Count: 1
+Status: fail
+Item 26
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 7
+Actual Source Number: 1
+Source Position: E1
+Dispense Count: 1
+Status: fail
+Item 27
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 8
+Actual Source Number: 1
+Source Position: G1
+Dispense Count: 1
+Status: fail
+Validation Findings
+Item 1
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D2
+Evidence: {}
+Item 2
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D3
+Evidence: {}
+Item 3
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D7
+Evidence: {}
+Item 4
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D8
+Evidence: {}
+Item 5
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E2
+Evidence: {}
+Item 6
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E3
+Evidence: {}
+Item 7
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E7
+Evidence: {}
+Item 8
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E8
+Evidence: {}
+Item 9
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F2
+Evidence: {}
+Item 10
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F3
+Evidence: {}
+Item 11
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F7
+Evidence: {}
+Item 12
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F8
+Evidence: {}
+Item 13
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G2
+Evidence: {}
+Item 14
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G3
+Evidence: {}
+Item 15
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G7
+Evidence: {}
+Item 16
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G8
+Evidence: {}
+Item 17
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H2
+Evidence: {}
+Item 18
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H3
+Evidence: {}
+Item 19
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H7
+Evidence: {}
+Item 20
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H8
+Evidence: {}
+Item 21
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I2
+Evidence: {}
+Item 22
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I3
+Evidence: {}
+Item 23
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I7
+Evidence: {}
+Item 24
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I8
+Evidence: {}
+Item 25
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J3
+Evidence: {}
+Item 26
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J7
+Evidence: {}
+Item 27
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J8
+Evidence: {}
+Item 28
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K2
+Evidence: {}
+Item 29
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K3
+Evidence: {}
+Item 30
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K7
+Evidence: {}
+Item 31
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K8
+Evidence: {}
+Item 32
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L2
+Evidence: {}
+Item 33
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L3
+Evidence: {}
+Item 34
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L7
+Evidence: {}
+Item 35
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L8
+Evidence: {}
+Item 36
+Severity: critical
+Category: URGENT_LABWARE_MISMATCH
+Message: URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well.
+Evidence: {'type': 'labware_validation_summary', 'status': 'fail', 'step_role': 'dispense', 'sequence': 'P', 'trace_or_method_labware': 'P1', 'detected_labware_format': '24-well', 'position_count': 24, 'expected_layout_format': '96-well', 'message': "URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well."}
+Item 37
+Severity: info
+Category: trace
+Message: Using latest STAR_OEM_noFan trace generated/found after PyHamilton simulation.
+Evidence: {'trace_path': 'C:\\Program Files (x86)\\HAMILTON\\LogFiles\\STAR_OEM_noFan_5c7fcadf19e941b9934b7d93f7750c1c_Trace.trc', 'run_start_time': 1781034804.782795, 'trace_modified_time': 1781034820.7165956}
+Item 38
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 39
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Item 40
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 41
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 42
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Item 43
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 44
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 45
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Item 46
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 47
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 48
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Item 49
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 50
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 51
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Item 52
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 53
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 54
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Item 55
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 56
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 57
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Item 58
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 59
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 60
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Item 61
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 62
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D3
+Evidence: {}
+Item 63
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D7
+Evidence: {}
+Item 64
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D8
+Evidence: {}
+Item 65
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E2
+Evidence: {}
+Item 66
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E3
+Evidence: {}
+Item 67
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E7
+Evidence: {}
+Item 68
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E8
+Evidence: {}
+Item 69
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F2
+Evidence: {}
+Item 70
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F3
+Evidence: {}
+Item 71
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F7
+Evidence: {}
+Item 72
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F8
+Evidence: {}
+Item 73
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G2
+Evidence: {}
+Item 74
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G3
+Evidence: {}
+Item 75
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G7
+Evidence: {}
+Item 76
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G8
+Evidence: {}
+Item 77
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H2
+Evidence: {}
+Item 78
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H3
+Evidence: {}
+Item 79
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H7
+Evidence: {}
+Item 80
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H8
+Evidence: {}
+Item 81
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I2
+Evidence: {}
+Item 82
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I3
+Evidence: {}
+Item 83
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I7
+Evidence: {}
+Item 84
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I8
+Evidence: {}
+Item 85
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J2
+Evidence: {}
+Item 86
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J3
+Evidence: {}
+Item 87
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J7
+Evidence: {}
+Item 88
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J8
+Evidence: {}
+Item 89
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K2
+Evidence: {}
+Item 90
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K3
+Evidence: {}
+Item 91
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K7
+Evidence: {}
+Item 92
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K8
+Evidence: {}
+Item 93
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L2
+Evidence: {}
+Item 94
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L3
+Evidence: {}
+Item 95
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L7
+Evidence: {}
+Item 96
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L8
+Evidence: {}
+Item 97
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Item 98
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Item 99
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Item 100
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Item 101
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Item 102
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Item 103
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Issues
+Item 1
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D2
+Evidence: {}
+Item 2
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D3
+Evidence: {}
+Item 3
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D7
+Evidence: {}
+Item 4
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D8
+Evidence: {}
+Item 5
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E2
+Evidence: {}
+Item 6
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E3
+Evidence: {}
+Item 7
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E7
+Evidence: {}
+Item 8
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E8
+Evidence: {}
+Item 9
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F2
+Evidence: {}
+Item 10
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F3
+Evidence: {}
+Item 11
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F7
+Evidence: {}
+Item 12
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F8
+Evidence: {}
+Item 13
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G2
+Evidence: {}
+Item 14
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G3
+Evidence: {}
+Item 15
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G7
+Evidence: {}
+Item 16
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G8
+Evidence: {}
+Item 17
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H2
+Evidence: {}
+Item 18
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H3
+Evidence: {}
+Item 19
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H7
+Evidence: {}
+Item 20
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H8
+Evidence: {}
+Item 21
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I2
+Evidence: {}
+Item 22
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I3
+Evidence: {}
+Item 23
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I7
+Evidence: {}
+Item 24
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I8
+Evidence: {}
+Item 25
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J3
+Evidence: {}
+Item 26
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J7
+Evidence: {}
+Item 27
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J8
+Evidence: {}
+Item 28
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K2
+Evidence: {}
+Item 29
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K3
+Evidence: {}
+Item 30
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K7
+Evidence: {}
+Item 31
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K8
+Evidence: {}
+Item 32
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L2
+Evidence: {}
+Item 33
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L3
+Evidence: {}
+Item 34
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L7
+Evidence: {}
+Item 35
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L8
+Evidence: {}
+Item 36
+Severity: critical
+Category: URGENT_LABWARE_MISMATCH
+Message: URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well.
+Evidence: {'type': 'labware_validation_summary', 'status': 'fail', 'step_role': 'dispense', 'sequence': 'P', 'trace_or_method_labware': 'P1', 'detected_labware_format': '24-well', 'position_count': 24, 'expected_layout_format': '96-well', 'message': "URGENT ERROR: Wrong destination labware detected. Dispense sequence 'P' uses labware 'P1' detected as 24-well, but uploaded layout requires 96-well."}
+Item 37
+Severity: info
+Category: trace
+Message: Using latest STAR_OEM_noFan trace generated/found after PyHamilton simulation.
+Evidence: {'trace_path': 'C:\\Program Files (x86)\\HAMILTON\\LogFiles\\STAR_OEM_noFan_5c7fcadf19e941b9934b7d93f7750c1c_Trace.trc', 'run_start_time': 1781034804.782795, 'trace_modified_time': 1781034820.7165956}
+Item 38
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 39
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Item 40
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 41
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 42
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Item 43
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 44
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 45
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Item 46
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 47
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 48
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Item 49
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 50
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 51
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Item 52
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 53
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 54
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Item 55
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 56
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 57
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Item 58
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 59
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 60
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Item 61
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 62
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D3
+Evidence: {}
+Item 63
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D7
+Evidence: {}
+Item 64
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D8
+Evidence: {}
+Item 65
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E2
+Evidence: {}
+Item 66
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E3
+Evidence: {}
+Item 67
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E7
+Evidence: {}
+Item 68
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E8
+Evidence: {}
+Item 69
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F2
+Evidence: {}
+Item 70
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F3
+Evidence: {}
+Item 71
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F7
+Evidence: {}
+Item 72
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F8
+Evidence: {}
+Item 73
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G2
+Evidence: {}
+Item 74
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G3
+Evidence: {}
+Item 75
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G7
+Evidence: {}
+Item 76
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G8
+Evidence: {}
+Item 77
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H2
+Evidence: {}
+Item 78
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H3
+Evidence: {}
+Item 79
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H7
+Evidence: {}
+Item 80
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H8
+Evidence: {}
+Item 81
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I2
+Evidence: {}
+Item 82
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I3
+Evidence: {}
+Item 83
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I7
+Evidence: {}
+Item 84
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I8
+Evidence: {}
+Item 85
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J2
+Evidence: {}
+Item 86
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J3
+Evidence: {}
+Item 87
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J7
+Evidence: {}
+Item 88
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J8
+Evidence: {}
+Item 89
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K2
+Evidence: {}
+Item 90
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K3
+Evidence: {}
+Item 91
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K7
+Evidence: {}
+Item 92
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K8
+Evidence: {}
+Item 93
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L2
+Evidence: {}
+Item 94
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L3
+Evidence: {}
+Item 95
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L7
+Evidence: {}
+Item 96
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L8
+Evidence: {}
+Item 97
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Item 98
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Item 99
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Item 100
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Item 101
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Item 102
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Item 103
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Limitations
+None found.
