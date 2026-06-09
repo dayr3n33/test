@@ -1,1 +1,121 @@
 
+def get_latest_trc_file(
+    run_start_time: Optional[float] = None,
+    wait_seconds: int = 45,
+    trace_dir: str = DEFAULT_TRACE_DIR,
+    require_after_start: bool = False,
+) -> Optional[str]:
+    pattern = os.path.join(trace_dir, "STAR_OEM_noFan_*_Trace.trc")
+    end_time = time.time() + wait_seconds
+    latest_any = None
+
+    while time.time() < end_time:
+        trc_files = glob.glob(pattern)
+
+        if trc_files:
+            trc_files.sort(key=os.path.getmtime, reverse=True)
+            latest_any = trc_files[0]
+
+            if run_start_time is None:
+                return latest_any
+
+            after_start = [
+                f for f in trc_files
+                if os.path.getmtime(f) >= (run_start_time - 10)
+            ]
+
+            if after_start:
+                after_start.sort(key=os.path.getmtime, reverse=True)
+                return after_start[0]
+
+            if not require_after_start:
+                return latest_any
+
+        time.sleep(1)
+
+    return latest_any if not require_after_start else None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+trace_path = get_latest_trc_file(
+    run_start_time=run_start_time,
+    wait_seconds=45,
+    trace_dir=DEFAULT_TRACE_DIR,
+    require_after_start=False,
+)
+
+if not trace_path:
+    issues.append(ValidationIssue(
+        "major",
+        "trace",
+        "No STAR_OEM_noFan trace file found after PyHamilton simulation.",
+        {"trace_dir": DEFAULT_TRACE_DIR},
+    ))
+else:
+    issues.append(ValidationIssue(
+        "info",
+        "trace",
+        "Using latest STAR_OEM_noFan trace generated/found after PyHamilton simulation.",
+        {
+            "trace_path": trace_path,
+            "run_start_time": run_start_time,
+            "trace_modified_time": os.path.getmtime(trace_path),
+        },
+    ))
+
+return trace_path, issues
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+uploaded_trace_before_run = self.trace_path
+
+runtime_trace, runtime_issues = run_pyhamilton_simulation(
+    self.lay_path,
+    configs,
+    execution_plan,
+)
+issues.extend(runtime_issues)
+
+if runtime_trace:
+    self.trace_path = runtime_trace
+elif uploaded_trace_before_run:
+    self.trace_path = uploaded_trace_before_run
+    issues.append(ValidationIssue(
+        "major",
+        "trace",
+        "No new simulation trace was found, so DevPal Lite used the manually uploaded trace as fallback.",
+        {"uploaded_trace": uploaded_trace_before_run},
+    ))
+else:
+    self.trace_path = ""
