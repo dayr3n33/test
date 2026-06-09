@@ -1,116 +1,189 @@
-def write_pdf_report(output: DevPalLiteOutput, output_dir: str) -> str:
-    if SimpleDocTemplate is None:
-        return write_text_report(output, output_dir)
+tk.Label(header, text="Step Role", width=14).grid(row=0, column=2)
+tk.Label(header, text="Manual", width=8).grid(row=0, column=3)
+tk.Label(header, text="Channel Pattern", width=18).grid(row=0, column=4)
+tk.Label(header, text="Hardware", width=12).grid(row=0, column=5)
 
-    path = os.path.join(
-        output_dir,
-        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.pdf",
+
+
+
+
+channel_var = tk.StringVar(value="")
+manual_var = tk.IntVar(value=0)
+hardware = detect_hardware_mode(name, role_var.get())
+
+
+
+
+
+
+manual_checkbox = tk.Checkbutton(self.scroll_frame, variable=manual_var)
+
+def sync_manual_visibility(*_args, cb=manual_checkbox, rv=role_var, row=idx):
+    if rv.get() in ("aspirate", "dispense"):
+        cb.grid(row=row, column=3, padx=2, pady=1)
+    else:
+        manual_var.set(0)
+        cb.grid_remove()
+
+tk.Checkbutton(self.scroll_frame, variable=use_var).grid(row=idx, column=0, padx=2, pady=1)
+tk.Label(self.scroll_frame, text=name, anchor="w", width=65).grid(row=idx, column=1, sticky="w", padx=2, pady=1)
+ttk.Combobox(self.scroll_frame, textvariable=role_var, values=ROLE_OPTIONS, state="readonly", width=13).grid(row=idx, column=2, padx=2, pady=1)
+
+manual_checkbox.grid(row=idx, column=3, padx=2, pady=1)
+
+tk.Entry(self.scroll_frame, textvariable=channel_var, width=18).grid(row=idx, column=4, padx=2, pady=1)
+tk.Label(self.scroll_frame, text=hardware, width=12).grid(row=idx, column=5, padx=2, pady=1)
+
+role_var.trace_add("write", sync_manual_visibility)
+sync_manual_visibility()
+
+
+
+
+
+
+
+
+
+
+
+manual=bool(self.manual_vars[name].get()) if role in ("aspirate", "dispense") else False,
+
+
+
+
+
+
+
+
+
+
+def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, Any]]:
+    replicate = configs[0].replicate if configs else "single"
+    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
+
+    tip_steps = [config for config in configs if config.role == "tip_pick"]
+    asp_steps = [config for config in configs if config.role == "aspirate"]
+    dsp_steps = [config for config in configs if config.role == "dispense"]
+
+    max_len = max(
+        len(tip_steps),
+        len(asp_steps),
+        len(dsp_steps),
+        0,
     )
 
-    styles = getSampleStyleSheet()
-    story = []
+    plan = []
+    order = 1
 
-    def pdf_line(text: Any, style_name: str = "BodyText"):
-        line = safe_text(text)
+    for rep_index in range(1, replicate_count + 1):
+        for idx in range(max_len):
 
-        if is_error_record(line):
-            line = f'<font color="red">{line}</font>'
+            if idx < len(tip_steps):
+                step = tip_steps[idx]
 
-        story.append(Paragraph(line, styles[style_name]))
+                plan.append({
+                    "order": order,
+                    "action": "tip_pick",
+                    "sequence": step.sequence,
+                    "hardware_mode": step.hardware_mode,
+                    "replicate_index": rep_index,
+                    "manual": False,
+                    "autoincrement": False,
+                    "reset_to_first_position": False,
+                    "increment": 0,
+                    "channel_pattern": step.channel_pattern,
+                    "volume_ul": "",
+                    "liquid_class": "",
+                    "transfer_type": step.transfer_type,
+                    "marker": step.marker,
+                })
+                order += 1
 
-    def pdf_section(title: str, data: Any):
-        story.append(Spacer(1, 10))
-        story.append(Paragraph(title, styles["Heading1"]))
-        story.append(Spacer(1, 4))
+            if idx < len(asp_steps):
+                step = asp_steps[idx]
 
-        if not data:
-            pdf_line("None found.")
-            return
+                plan.append({
+                    "order": order,
+                    "action": "aspirate",
+                    "sequence": step.sequence,
+                    "hardware_mode": step.hardware_mode,
+                    "replicate_index": rep_index,
+                    "manual": bool(step.manual),
+                    "autoincrement": False,
+                    "reset_to_first_position": bool(step.manual),
+                    "increment": 0,
+                    "channel_pattern": step.channel_pattern,
+                    "volume_ul": step.volume_ul,
+                    "liquid_class": step.liquid_class,
+                    "transfer_type": step.transfer_type,
+                    "marker": step.marker,
+                })
+                order += 1
 
-        if isinstance(data, dict):
-            for key, value in data.items():
-                pdf_line(f"{humanize_key(key)}: {safe_text(value)}")
-            return
+            if idx < len(dsp_steps):
+                step = dsp_steps[idx]
 
-        if isinstance(data, list):
-            for index, item in enumerate(data[:200], start=1):
-                item_is_error = is_error_record(item)
-                item_title = f"Item {index}"
+                should_increment = rep_index > 1 and not step.manual
 
-                if item_is_error:
-                    item_title = f'<font color="red">{item_title}</font>'
+                plan.append({
+                    "order": order,
+                    "action": "dispense",
+                    "sequence": step.sequence,
+                    "hardware_mode": step.hardware_mode,
+                    "replicate_index": rep_index,
+                    "manual": bool(step.manual),
+                    "autoincrement": should_increment,
+                    "reset_to_first_position": bool(step.manual),
+                    "increment": 12 if should_increment else 0,
+                    "channel_pattern": step.channel_pattern,
+                    "volume_ul": step.volume_ul,
+                    "liquid_class": step.liquid_class,
+                    "transfer_type": step.transfer_type,
+                    "marker": step.marker,
+                })
+                order += 1
 
-                story.append(Paragraph(item_title, styles["Heading3"]))
+            if idx < len(tip_steps):
+                step = tip_steps[idx]
 
-                if isinstance(item, dict):
-                    for key, value in item.items():
-                        pdf_line(f"{humanize_key(key)}: {safe_text(value)}")
-                else:
-                    pdf_line(item)
+                plan.append({
+                    "order": order,
+                    "action": "tip_eject",
+                    "sequence": "Waste",
+                    "hardware_mode": step.hardware_mode,
+                    "replicate_index": rep_index,
+                    "manual": False,
+                    "autoincrement": False,
+                    "reset_to_first_position": False,
+                    "increment": 0,
+                    "channel_pattern": step.channel_pattern,
+                    "volume_ul": "",
+                    "liquid_class": "",
+                    "transfer_type": step.transfer_type,
+                    "marker": step.marker,
+                })
+                order += 1
 
-            if len(data) > 200:
-                pdf_line(f"Report truncated in PDF view after 200 items. Full output model contains {len(data)} items.")
+    return plan
 
-            return
 
-        pdf_line(data)
 
-    story.append(Paragraph("DevPal Lite Validation Report", styles["Title"]))
-    story.append(Spacer(1, 12))
 
-    summary_rows = [
-        ["Generated", datetime.now().isoformat()],
-        ["LAY File", output.lay_file or "Not provided"],
-        ["Layout File", output.layout_file or "Not provided"],
-        ["Trace File", output.trace_file or "Not found"],
-        ["Generated Review Script", output.generated_review_script or "Not generated"],
-    ]
 
-    summary_table = Table(summary_rows, colWidths=[130, 380])
-    summary_table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-    ]))
 
-    story.append(summary_table)
-    story.append(Spacer(1, 12))
 
-    urgent_issues = [
-        issue for issue in output.issues
-        if is_error_record(issue)
-    ]
 
-    if urgent_issues:
-        story.append(Paragraph('<font color="red">Urgent / Critical Issues Found</font>', styles["Heading1"]))
-        for index, issue in enumerate(urgent_issues, start=1):
-            story.append(Paragraph(f'<font color="red">Issue {index}</font>', styles["Heading3"]))
 
-            if isinstance(issue, dict):
-                for key, value in issue.items():
-                    line = f"{humanize_key(key)}: {safe_text(value)}"
-                    story.append(Paragraph(f'<font color="red">{line}</font>', styles["BodyText"]))
-            else:
-                story.append(Paragraph(f'<font color="red">{safe_text(issue)}</font>', styles["BodyText"]))
 
-        story.append(Spacer(1, 10))
 
-    sections = [
-        ("Selected Sequences", output.selected_sequences),
-        ("Source Positions", output.source_positions),
-        ("Destination Positions", output.destination_positions),
-        ("Transfer Pairs", output.transfer_pairs),
-        ("Execution Plan", output.execution_plan),
-        ("Marker Matches", output.marker_matches),
-        ("Layout Findings", output.layout_findings),
-        ("Trace Findings", output.trace_findings),
-        ("Validation Findings", output.validation_findings),
-        ("Issues", output.issues),
-        ("Limitations", output.limitations),
-    ]
+if item.get("autoincrement"):
+    ph_inc_sequence(ham_int, sequence=seq, increment=int(item.get("increment", 12)))
+else:
+    if item.get("manual"):
+        print(f"MANUAL SEQUENCE MODE: {seq} will not auto-increment; using first/reset position.")
 
-    for title, data in sections:
-        pdf_section(title, data)
 
-    SimpleDocTemplate(path, pagesize=letter).build(story)
-    return path
+
+
+
