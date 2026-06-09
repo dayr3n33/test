@@ -1,18 +1,274 @@
-C:\Windows\System32>net start MSSQL$HAMILTON
-The SQL Server (HAMILTON) service is starting.
-The SQL Server (HAMILTON) service was started successfully.
-
-
-C:\Windows\System32>sqlcmd -S .\HAMILTON -E
-1> SELECT name FROM sys.databases;
-2> GO
-name                                                                                                                    
---------------------------------------------------------------------------------------------------------------------------------
-master                                                                                                                  
-tempdb                                                                                                                  
-model                                                                                                                   
-msdb                                                                                                                    
-HamiltonVectorDB                                                                                                        
-
-(5 rows affected)
-1>
+2026-06-09 11:36:37.542 Venus software version: 6.2.2.4006
+2026-06-09 11:36:37.545 SYSTEM : Analyze method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-09 11:36:39.302 Microlab STAR : Communication - progress; Connection to instrument is created.
+2026-06-09 11:36:40.324 SYSTEM : Analyze method - complete; 
+2026-06-09 11:36:41.216 SYSTEM : Start method - start; 
+2026-06-09 11:36:41.217 SYSTEM : Start method - progress; User name: LYNCHD27
+2026-06-09 11:36:41.220 SYSTEM : Start method - progress; Phoenix software version: 6.2.2.50003
+2026-06-09 11:36:41.225 SYSTEM : Start method - progress; Database version: Standard
+2026-06-09 11:36:41.226 SYSTEM : Start method - progress; Sample tracking: On
+2026-06-09 11:36:41.226 SYSTEM : Start method - progress; Vector Database: On
+2026-06-09 11:36:41.228 SYSTEM : Start method - progress; Vector Database connection: Database 'HamiltonVectorDB' on Microsoft SQL Server 'LOCALHOST\HAMILTON' with user 'Hamilton'
+2026-06-09 11:36:41.604 Microlab STAR : Start method command - start;
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Microlab STAR software version: 6.2.2.50003
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Serial number of Instrument: 0000
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of main module: 0.0X 2002-05-08
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of 1000µl channels: 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of 5ml channels: not installed
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of labware handling channels: not installed
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of X drive: 0.0X 2002-05-08
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of auto load: 0.0X 2002-05-08
+2026-06-09 11:36:41.605 Microlab STAR : Start method command - progress; Firmware version of iSWAP: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of washer 1: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of washer 2: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 1: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 2: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of CO-RE 96 Head: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of pump station 1: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of pump station 2: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of pump station 3: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of CO-RE 384 Head: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of tube gripper: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of camera channel: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of gel card gripper: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of punch card gripper: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of puncher module: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 1: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 2: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 1: not installed
+2026-06-09 11:36:41.606 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 2: not installed
+2026-06-09 11:36:42.873 Microlab STAR : Start method command - complete;
+2026-06-09 11:36:42.936 SYSTEM : Start method - complete; 
+2026-06-09 11:36:42.936 SYSTEM : Execute method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-09 11:36:43.015 HSLHttp : Initialize - progress;  Creating Hamilton HTTP object: Hamilton.HSLHttp
+2026-06-09 11:36:43.048 HSLHttp : Initialize - progress;  Hamilton HTTP object Created.
+2026-06-09 11:36:43.051 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(108) : Class not registered (0x23 - 0x2 - 0x39) , 
+2026-06-09 11:36:43.066 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:43.066 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:43.066 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:43.066 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:43.081 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 11:36:43.081 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1455) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:43.086 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 11:36:43.086 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 11:36:43.087 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:45.156 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 11:36:45.157 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 11:36:45.160 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(108) : Unknown error 0x80131040 (0x23 - 0x2 - 0x39) , 
+2026-06-09 11:36:45.165 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:45.165 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:45.171 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:45.171 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:45.177 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 11:36:45.177 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1455) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:45.183 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 11:36:45.183 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 11:36:45.184 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:45.192 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 11:36:45.192 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 11:36:45.192 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 11:36:46.258 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:46.264 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:46.264 HSLHttp : HttpGET - progress;  Response Content: {"command": "initialize", "id": "0xf7aa30f9dad", "initializeAlways": 0}
+2026-06-09 11:36:46.264 USER : Trace - complete; JSON received from Server:{"command": "initialize", "id": "0xf7aa30f9dad", "initializeAlways": 0}
+2026-06-09 11:36:46.265 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(108) : Unknown error 0x80131040 (0x23 - 0x2 - 0x39) , 
+2026-06-09 11:36:46.271 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 11:36:46.272 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1572) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.277 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 11:36:46.277 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1081) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.282 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 11:36:46.282 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1081) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.313 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 11:36:46.313 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 11:36:46.316 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(108) : Unknown error 0x80131040 (0x23 - 0x2 - 0x39) , 
+2026-06-09 11:36:46.320 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:46.320 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.325 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 11:36:46.326 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(163) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.331 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 11:36:46.331 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\HSLJson\HSLJson.hsl(1455) : bad argument (0x23 - 0x1 - 0x34) , 
+2026-06-09 11:36:46.339 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 11:36:46.339 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 11:36:46.340 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:46.348 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 11:36:46.349 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 11:36:46.349 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 11:36:46.458 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:46.463 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:46.464 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:47.475 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:47.479 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:47.479 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:48.503 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:48.509 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:48.510 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:49.533 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:49.539 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:49.539 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:50.551 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:50.560 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:50.560 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:51.581 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:51.734 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:51.734 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:52.770 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:52.780 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:52.780 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:53.804 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:53.811 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:53.811 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:54.830 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:54.830 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:54.830 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:55.847 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:55.847 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:55.847 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:56.861 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:56.861 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:56.861 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:57.879 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:57.879 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:57.879 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:58.903 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:58.903 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:58.903 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:36:59.939 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:36:59.939 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:36:59.939 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:00.972 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:00.972 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:00.972 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:01.998 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:01.998 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:01.998 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:03.030 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:03.030 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:03.030 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:04.049 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:04.049 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:04.049 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:05.067 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:05.077 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:05.077 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:06.093 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:06.093 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:06.093 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:07.110 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:07.110 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:07.110 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:08.139 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:08.149 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:08.149 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:09.174 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:09.174 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:09.174 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:10.217 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:10.217 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:10.217 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:11.233 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:11.233 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:11.233 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:12.248 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:12.248 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:12.248 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:13.275 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:13.307 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:13.307 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:14.339 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:14.339 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:14.339 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:15.358 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:15.358 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:15.358 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:16.376 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:16.376 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:16.376 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:17.397 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:17.397 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:17.397 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:18.423 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:18.423 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:18.423 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:19.445 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:19.451 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:19.451 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:20.469 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:20.474 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:20.474 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:21.484 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:21.484 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:21.484 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:22.508 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:22.509 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:22.509 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:23.530 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:23.530 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:23.530 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:24.550 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:24.550 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:24.550 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:25.567 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:25.572 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:25.572 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:26.596 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:26.600 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:26.601 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:27.621 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:27.626 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:27.627 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:28.652 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:28.660 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:28.660 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:29.682 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:29.687 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:29.687 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:30.713 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:30.723 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:30.724 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:31.744 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:31.750 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:31.750 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:32.766 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:32.771 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:32.772 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:33.788 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:33.793 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:33.793 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:34.822 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:34.832 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:34.832 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:35.857 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:35.857 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:35.857 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:36.899 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:36.901 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:36.901 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:37.930 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:37.930 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:37.930 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:38.940 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 11:37:38.940 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 11:37:38.940 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 11:37:39.107 SYSTEM : Method has been aborted by the user - complete; 
+2026-06-09 11:37:39.107 SYSTEM : Abort method - start; 
+2026-06-09 11:37:39.118 Microlab STAR : Abort requested command - start;
+2026-06-09 11:37:39.118 Microlab STAR : Abort requested command - complete;
+2026-06-09 11:37:39.118 Microlab STAR : Start Method Abort Handler command - start;
+2026-06-09 11:37:39.134 Microlab STAR : Start Method Abort Handler command - complete;
+2026-06-09 11:37:39.138 HSLHttp : Release - progress;  Releasing Hamilton HTTP object.
+2026-06-09 11:37:39.138 HSLHttp : Release - progress;  Hamilton HTTP object Released.
+2026-06-09 11:37:39.138 Microlab STAR : Abort command - start;
+2026-06-09 11:37:39.150 Microlab STAR : Abort command - complete;
+2026-06-09 11:37:39.248 SYSTEM : Abort method - complete; 
+2026-06-09 11:37:39.248 SYSTEM : Execute method - complete; 
+2026-06-09 11:37:39.248 SYSTEM : End method - start; 
+2026-06-09 11:37:39.310 Microlab STAR : End method command - start;
+2026-06-09 11:37:39.389 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
+2026-06-09 11:37:39.406 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
+2026-06-09 11:37:39.420 Microlab STAR : Clean up instrument - progress; Spreading channels
+2026-06-09 11:37:39.436 Microlab STAR : Clean up instrument - progress; Switch off loading lights
+2026-06-09 11:37:39.663 Microlab STAR : End method command - complete;
+2026-06-09 11:37:39.777 SYSTEM : End method - complete; 
+2026-06-09 11:37:39.950 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-06-09 11:37$$checksum=6064acfb$$length=140$$
