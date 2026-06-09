@@ -1,239 +1,2129 @@
-def generate_plan_run_and_validate(self):
-    if not self.lay_path:
-        messagebox.showerror("Missing LAY", "Upload a .lay file first.")
-        return
+DevPal Lite Validation Report
+Run Summary
+Generated: 2026-06-09T15:41:56.742510
+LAY File: C:/Users/lynchd27/Documents/DevPal/new-project/sample_inputs/Demo.lay
+Layout File: C:/Users/lynchd27/Documents/DevPal/new-project/sample_inputs/layout.csv
+Trace File: C:\Program Files (x86)\HAMILTON\LogFiles\STAR_OEM_noFan_4a6d66a0aab14310b21077e810ea587e_Trace.trc
+Generated Review Script: C:\Users\lynchd27\AppData\Local\Temp\2\devpal_lite_pyhamilton_4z6xblcn\devpal_lite_review_required_pyhamilton_script.py
+Report Path: Pending
+Urgent / Critical Issues Found
+Issue 1
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 2
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Issue 3
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 4
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 5
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Issue 6
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 7
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 8
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Issue 9
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 10
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 11
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Issue 12
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 13
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 14
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Issue 15
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 16
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 17
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Issue 18
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 19
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 20
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Issue 21
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 22
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Issue 23
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Issue 24
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Issue 25
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Issue 26
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Issue 27
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Issue 28
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Issue 29
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Issue 30
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Issue 31
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Selected Sequences
+Item 1
+Sequence: P
+Role: dispense
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 111111111111
+Hardware Mode: channels
+Selected Index: 6
+Sequence Count: 24
+Manual: False
+Item 2
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Role: aspirate
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 11111111
+Hardware Mode: channels
+Selected Index: 9
+Sequence Count: 48
+Manual: False
+Item 3
+Sequence: TP
+Role: tip_pick
+Liquid Class: 
+Transfer Type: samples
+Replicate: single
+Volume Ul: 100.0
+Marker: X
+Channel Pattern: 111111111111
+Hardware Mode: channels
+Selected Index: 10
+Sequence Count: 96
+Manual: False
+Source Positions
+Item 1
+1
+Destination Positions
+Item 1
+J2
+Transfer Pairs
+Item 1
+Pair Id: pair_00001
+Tip Sequence: TP
+Source Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Destination Sequence: P
+Source Position: 1
+Destination Position: J2
+Source Sample Number: 1
+Destination Sample Number: 2
+Replicate Index: 1
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker Label: X1
+Execution Plan
+Item 1
+Order: 1
+Action: tip_pick
+Sequence: TP
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 
+Liquid Class: 
+Transfer Type: samples
+Marker: X
+Item 2
+Order: 2
+Action: aspirate
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 11111111
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker: X
+Item 3
+Order: 3
+Action: dispense
+Sequence: P
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 100.0
+Liquid Class: HighVolumeFilter_Water_DispenseSurface_Empty
+Transfer Type: samples
+Marker: X
+Item 4
+Order: 4
+Action: tip_eject
+Sequence: Waste
+Hardware Mode: channels
+Replicate Index: 1
+Manual: False
+Autoincrement: False
+Reset To First Position: False
+Increment: 0
+Channel Pattern: 111111111111
+Volume Ul: 
+Liquid Class: 
+Transfer Type: samples
+Marker: X
+Marker Matches
+X3: [{'dest_value': 'D2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F2', 'cell_value': 'X3', 'row_index': 2, 'column_index': 6, 'column_name': 'F'}]
+X2: [{'dest_value': 'G2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I2', 'cell_value': 'X2', 'row_index': 2, 'column_index': 9, 'column_name': 'I'}]
+X1: [{'dest_value': 'J2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L2', 'cell_value': 'X1', 'row_index': 2, 'column_index': 12, 'column_name': 'L'}]
+X6: [{'dest_value': 'D3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F3', 'cell_value': 'X6', 'row_index': 3, 'column_index': 6, 'column_name': 'F'}]
+X5: [{'dest_value': 'G3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I3', 'cell_value': 'X5', 'row_index': 3, 'column_index': 9, 'column_name': 'I'}]
+X4: [{'dest_value': 'J3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L3', 'cell_value': 'X4', 'row_index': 3, 'column_index': 12, 'column_name': 'L'}]
+X9: [{'dest_value': 'D7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F7', 'cell_value': 'X9', 'row_index': 7, 'column_index': 6, 'column_name': 'F'}]
+X8: [{'dest_value': 'G7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I7', 'cell_value': 'X8', 'row_index': 7, 'column_index': 9, 'column_name': 'I'}]
+X7: [{'dest_value': 'J7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L7', 'cell_value': 'X7', 'row_index': 7, 'column_index': 12, 'column_name': 'L'}]
+X12: [{'dest_value': 'D8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 4, 'column_name': 'D'}, {'dest_value': 'E8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 5, 'column_name': 'E'}, {'dest_value': 'F8', 'cell_value': 'X12', 'row_index': 8, 'column_index': 6, 'column_name': 'F'}]
+X11: [{'dest_value': 'G8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 7, 'column_name': 'G'}, {'dest_value': 'H8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 8, 'column_name': 'H'}, {'dest_value': 'I8', 'cell_value': 'X11', 'row_index': 8, 'column_index': 9, 'column_name': 'I'}]
+X10: [{'dest_value': 'J8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 10, 'column_name': 'J'}, {'dest_value': 'K8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 11, 'column_name': 'K'}, {'dest_value': 'L8', 'cell_value': 'X10', 'row_index': 8, 'column_index': 12, 'column_name': 'L'}]
+Layout Findings
+Item 1
+Type: extra_layout_marker
+Marker: X10
+Message: Layout marker exists but was not selected in transfer pairs: X10
+Item 2
+Type: extra_layout_marker
+Marker: X11
+Message: Layout marker exists but was not selected in transfer pairs: X11
+Item 3
+Type: extra_layout_marker
+Marker: X12
+Message: Layout marker exists but was not selected in transfer pairs: X12
+Item 4
+Type: extra_layout_marker
+Marker: X2
+Message: Layout marker exists but was not selected in transfer pairs: X2
+Item 5
+Type: extra_layout_marker
+Marker: X3
+Message: Layout marker exists but was not selected in transfer pairs: X3
+Item 6
+Type: extra_layout_marker
+Marker: X4
+Message: Layout marker exists but was not selected in transfer pairs: X4
+Item 7
+Type: extra_layout_marker
+Marker: X5
+Message: Layout marker exists but was not selected in transfer pairs: X5
+Item 8
+Type: extra_layout_marker
+Marker: X6
+Message: Layout marker exists but was not selected in transfer pairs: X6
+Item 9
+Type: extra_layout_marker
+Marker: X7
+Message: Layout marker exists but was not selected in transfer pairs: X7
+Item 10
+Type: extra_layout_marker
+Marker: X8
+Message: Layout marker exists but was not selected in transfer pairs: X8
+Item 11
+Type: extra_layout_marker
+Marker: X9
+Message: Layout marker exists but was not selected in transfer pairs: X9
+Item 12
+Type: layout_summary
+Marker: X
+Marker Count: 12
+Layout Position Count: 36
+Unique Layout Position Count: 36
+Missing Positions From Pairs: ['D2', 'D3', 'D7', 'D8', 'E2', 'E3', 'E7', 'E8', 'F2', 'F3', 'F7', 'F8', 'G2', 'G3', 'G7', 'G8', 'H2', 'H3', 'H7', 'H8', 'I2', 'I3', 'I7', 'I8', 'J3', 'J7', 'J8', 'K2', 'K3', 'K7', 'K8', 'L2', 'L3', 'L7', 'L8']
+Duplicate Layout Positions: []
+Trace Findings
+Item 1
+Type: labware_validation_summary
+Status: pass
+Step Role: aspirate
+Sequence: Thermo_48_Tube_Honeycomb_Rack_0001
+Trace Or Method Labware: Thermo_48_Tube_Honeycomb_Rack_0001
+Detected Labware Format: 48-position rack
+Position Count: 0
+Expected Layout Format: not applicable to source
+Message: Sequence 'Thermo_48_Tube_Honeycomb_Rack_0001' uses labware 'Thermo_48_Tube_Honeycomb_Rack_0001' with detected format 48-position rack and 0 position(s).
+Item 2
+Type: labware_validation_summary
+Status: pass
+Step Role: dispense
+Sequence: P
+Trace Or Method Labware: unknown
+Detected Labware Format: unknown
+Position Count: 0
+Expected Layout Format: 96-well
+Message: Sequence 'P' uses labware 'unknown' with detected format unknown and 0 position(s).
+Item 3
+Type: trace_summary
+Trace File: C:\Program Files (x86)\HAMILTON\LogFiles\STAR_OEM_noFan_4a6d66a0aab14310b21077e810ea587e_Trace.trc
+Ordered Steps: [{'order': 1, 'type': 'aspirate', 'raw': '> channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, B1 100µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, D1 100µL > channel 3: Thermo_48_Tube_Honeycomb_Rack_0001, F1 100µL > channel 4: Thermo_48_Tube_Honeycomb_Rack_0001, H1 100µL > channel 5: Thermo_48_Tube_Honeycomb_Rack_0001, A1 100µL > channel 6: Thermo_48_Tube_Honeycomb_Rack_0001, C1 100µL > channel 7: Thermo_48_Tube_Honeycomb_Rack_0001, E1 100µL > channel 8: Thermo_48_Tube_Honeycomb_Rack_0001, G1 100µL'}, {'order': 2, 'type': 'dispense', 'raw': '> channel 1: P1, A1 100µL > channel 2: P1, B1 100µL > channel 3: P1, C1 100µL > channel 4: P1, D1 100µL > channel 5: P1, A2 100µL > channel 6: P1, B2 100µL > channel 7: P1, C2 100µL > channel 8: P1, D2 100µL'}]
+Aspirate Step Count: 1
+Dispense Step Count: 1
+Cross Match Status: pass
+Cross Match: {('1', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'B1', '100'): [('P1', 'A1', '100')], ('2', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'D1', '100'): [('P1', 'B1', '100')], ('3', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'F1', '100'): [('P1', 'C1', '100')], ('4', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'H1', '100'): [('P1', 'D1', '100')], ('5', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'A1', '100'): [('P1', 'A2', '100')], ('6', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'C1', '100'): [('P1', 'B2', '100')], ('7', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'E1', '100'): [('P1', 'C2', '100')], ('8', 'Thermo_48_Tube_Honeycomb_Rack_0001', 'G1', '100'): [('P1', 'D2', '100')]}
+Item 4
+Type: trace_layout_match
+Marker: X1
+Source Position: B1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['A1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['A1']
+Status: fail
+Item 5
+Type: trace_layout_match
+Marker: X1
+Source Position: D1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['B1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['B1']
+Status: fail
+Item 6
+Type: trace_layout_match
+Marker: X1
+Source Position: F1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['C1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['C1']
+Status: fail
+Item 7
+Type: trace_layout_match
+Marker: X1
+Source Position: H1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['D1']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['D1']
+Status: fail
+Item 8
+Type: trace_layout_match
+Marker: X1
+Source Position: A1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['A2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['A2']
+Status: fail
+Item 9
+Type: trace_layout_match
+Marker: X1
+Source Position: C1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['B2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['B2']
+Status: fail
+Item 10
+Type: trace_layout_match
+Marker: X1
+Source Position: E1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['C2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['C2']
+Status: fail
+Item 11
+Type: trace_layout_match
+Marker: X1
+Source Position: G1
+Expected Destinations: ['J2', 'K2', 'L2']
+Actual Destinations: ['D2']
+Missing Destinations: ['J2', 'K2', 'L2']
+Unexpected Destinations: ['D2']
+Status: fail
+Item 12
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: A1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 13
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: B1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 14
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: C1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 15
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: D1
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 16
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: A2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 17
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: B2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 18
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: C2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 19
+Type: labware_format_check
+Status: pass
+Labware: P1
+Destination: D2
+Labware Format: unknown
+Destination Format: 24-well
+Expected Layout Format: 96-well
+Item 20
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 1
+Actual Source Number: 1
+Source Position: B1
+Dispense Count: 1
+Status: pass
+Item 21
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 2
+Actual Source Number: 1
+Source Position: D1
+Dispense Count: 1
+Status: fail
+Item 22
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 3
+Actual Source Number: 1
+Source Position: F1
+Dispense Count: 1
+Status: fail
+Item 23
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 4
+Actual Source Number: 1
+Source Position: H1
+Dispense Count: 1
+Status: fail
+Item 24
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 5
+Actual Source Number: 1
+Source Position: A1
+Dispense Count: 1
+Status: fail
+Item 25
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 6
+Actual Source Number: 1
+Source Position: C1
+Dispense Count: 1
+Status: fail
+Item 26
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 7
+Actual Source Number: 1
+Source Position: E1
+Dispense Count: 1
+Status: fail
+Item 27
+Type: tracking_source_order
+Marker: X1
+Expected Source Number: 8
+Actual Source Number: 1
+Source Position: G1
+Dispense Count: 1
+Status: fail
+Validation Findings
+Item 1
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D2
+Evidence: {}
+Item 2
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D3
+Evidence: {}
+Item 3
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D7
+Evidence: {}
+Item 4
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D8
+Evidence: {}
+Item 5
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E2
+Evidence: {}
+Item 6
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E3
+Evidence: {}
+Item 7
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E7
+Evidence: {}
+Item 8
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E8
+Evidence: {}
+Item 9
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F2
+Evidence: {}
+Item 10
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F3
+Evidence: {}
+Item 11
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F7
+Evidence: {}
+Item 12
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F8
+Evidence: {}
+Item 13
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G2
+Evidence: {}
+Item 14
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G3
+Evidence: {}
+Item 15
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G7
+Evidence: {}
+Item 16
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G8
+Evidence: {}
+Item 17
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H2
+Evidence: {}
+Item 18
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H3
+Evidence: {}
+Item 19
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H7
+Evidence: {}
+Item 20
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H8
+Evidence: {}
+Item 21
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I2
+Evidence: {}
+Item 22
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I3
+Evidence: {}
+Item 23
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I7
+Evidence: {}
+Item 24
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I8
+Evidence: {}
+Item 25
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J3
+Evidence: {}
+Item 26
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J7
+Evidence: {}
+Item 27
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J8
+Evidence: {}
+Item 28
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K2
+Evidence: {}
+Item 29
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K3
+Evidence: {}
+Item 30
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K7
+Evidence: {}
+Item 31
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K8
+Evidence: {}
+Item 32
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L2
+Evidence: {}
+Item 33
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L3
+Evidence: {}
+Item 34
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L7
+Evidence: {}
+Item 35
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L8
+Evidence: {}
+Item 36
+Severity: info
+Category: trace
+Message: Using latest STAR_OEM_noFan trace generated/found after PyHamilton simulation.
+Evidence: {'trace_path': 'C:\\Program Files (x86)\\HAMILTON\\LogFiles\\STAR_OEM_noFan_4a6d66a0aab14310b21077e810ea587e_Trace.trc', 'run_start_time': 1781034093.0309086, 'trace_modified_time': 1781034111.48918}
+Item 37
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 38
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Item 39
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 40
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 41
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Item 42
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 43
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 44
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Item 45
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 46
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 47
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Item 48
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 49
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 50
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Item 51
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 52
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 53
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Item 54
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 55
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 56
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Item 57
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 58
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 59
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Item 60
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 61
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D3
+Evidence: {}
+Item 62
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D7
+Evidence: {}
+Item 63
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D8
+Evidence: {}
+Item 64
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E2
+Evidence: {}
+Item 65
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E3
+Evidence: {}
+Item 66
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E7
+Evidence: {}
+Item 67
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E8
+Evidence: {}
+Item 68
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F2
+Evidence: {}
+Item 69
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F3
+Evidence: {}
+Item 70
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F7
+Evidence: {}
+Item 71
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F8
+Evidence: {}
+Item 72
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G2
+Evidence: {}
+Item 73
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G3
+Evidence: {}
+Item 74
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G7
+Evidence: {}
+Item 75
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G8
+Evidence: {}
+Item 76
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H2
+Evidence: {}
+Item 77
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H3
+Evidence: {}
+Item 78
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H7
+Evidence: {}
+Item 79
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H8
+Evidence: {}
+Item 80
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I2
+Evidence: {}
+Item 81
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I3
+Evidence: {}
+Item 82
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I7
+Evidence: {}
+Item 83
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I8
+Evidence: {}
+Item 84
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J2
+Evidence: {}
+Item 85
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J3
+Evidence: {}
+Item 86
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J7
+Evidence: {}
+Item 87
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J8
+Evidence: {}
+Item 88
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K2
+Evidence: {}
+Item 89
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K3
+Evidence: {}
+Item 90
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K7
+Evidence: {}
+Item 91
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K8
+Evidence: {}
+Item 92
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L2
+Evidence: {}
+Item 93
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L3
+Evidence: {}
+Item 94
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L7
+Evidence: {}
+Item 95
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L8
+Evidence: {}
+Item 96
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Item 97
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Item 98
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Item 99
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Item 100
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Item 101
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Item 102
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Issues
+Item 1
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D2
+Evidence: {}
+Item 2
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D3
+Evidence: {}
+Item 3
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D7
+Evidence: {}
+Item 4
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: D8
+Evidence: {}
+Item 5
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E2
+Evidence: {}
+Item 6
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E3
+Evidence: {}
+Item 7
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E7
+Evidence: {}
+Item 8
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: E8
+Evidence: {}
+Item 9
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F2
+Evidence: {}
+Item 10
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F3
+Evidence: {}
+Item 11
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F7
+Evidence: {}
+Item 12
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: F8
+Evidence: {}
+Item 13
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G2
+Evidence: {}
+Item 14
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G3
+Evidence: {}
+Item 15
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G7
+Evidence: {}
+Item 16
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: G8
+Evidence: {}
+Item 17
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H2
+Evidence: {}
+Item 18
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H3
+Evidence: {}
+Item 19
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H7
+Evidence: {}
+Item 20
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: H8
+Evidence: {}
+Item 21
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I2
+Evidence: {}
+Item 22
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I3
+Evidence: {}
+Item 23
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I7
+Evidence: {}
+Item 24
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: I8
+Evidence: {}
+Item 25
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J3
+Evidence: {}
+Item 26
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J7
+Evidence: {}
+Item 27
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: J8
+Evidence: {}
+Item 28
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K2
+Evidence: {}
+Item 29
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K3
+Evidence: {}
+Item 30
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K7
+Evidence: {}
+Item 31
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: K8
+Evidence: {}
+Item 32
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L2
+Evidence: {}
+Item 33
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L3
+Evidence: {}
+Item 34
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L7
+Evidence: {}
+Item 35
+Severity: major
+Category: layout
+Message: Layout position is not represented in deterministic transfer pairs: L8
+Evidence: {}
+Item 36
+Severity: info
+Category: trace
+Message: Using latest STAR_OEM_noFan trace generated/found after PyHamilton simulation.
+Evidence: {'trace_path': 'C:\\Program Files (x86)\\HAMILTON\\LogFiles\\STAR_OEM_noFan_4a6d66a0aab14310b21077e810ea587e_Trace.trc', 'run_start_time': 1781034093.0309086, 'trace_modified_time': 1781034111.48918}
+Item 37
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 38
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A1']
+Evidence: {}
+Item 39
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 40
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 41
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B1']
+Evidence: {}
+Item 42
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 43
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 44
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C1']
+Evidence: {}
+Item 45
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 46
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 47
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D1']
+Evidence: {}
+Item 48
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 49
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 50
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['A2']
+Evidence: {}
+Item 51
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 52
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 53
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['B2']
+Evidence: {}
+Item 54
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 55
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 56
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['C2']
+Evidence: {}
+Item 57
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 58
+Severity: critical
+Category: trace_layout
+Message: X1 missing expected destination wells: ['J2', 'K2', 'L2']
+Evidence: {}
+Item 59
+Severity: critical
+Category: trace_layout
+Message: X1 has unexpected destination wells: ['D2']
+Evidence: {}
+Item 60
+Severity: major
+Category: trace_layout
+Message: X1 source/destination count mismatch
+Evidence: {'expected_count': 3, 'actual_count': 1}
+Item 61
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D3
+Evidence: {}
+Item 62
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D7
+Evidence: {}
+Item 63
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: D8
+Evidence: {}
+Item 64
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E2
+Evidence: {}
+Item 65
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E3
+Evidence: {}
+Item 66
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E7
+Evidence: {}
+Item 67
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: E8
+Evidence: {}
+Item 68
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F2
+Evidence: {}
+Item 69
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F3
+Evidence: {}
+Item 70
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F7
+Evidence: {}
+Item 71
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: F8
+Evidence: {}
+Item 72
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G2
+Evidence: {}
+Item 73
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G3
+Evidence: {}
+Item 74
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G7
+Evidence: {}
+Item 75
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: G8
+Evidence: {}
+Item 76
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H2
+Evidence: {}
+Item 77
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H3
+Evidence: {}
+Item 78
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H7
+Evidence: {}
+Item 79
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: H8
+Evidence: {}
+Item 80
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I2
+Evidence: {}
+Item 81
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I3
+Evidence: {}
+Item 82
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I7
+Evidence: {}
+Item 83
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: I8
+Evidence: {}
+Item 84
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J2
+Evidence: {}
+Item 85
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J3
+Evidence: {}
+Item 86
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J7
+Evidence: {}
+Item 87
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: J8
+Evidence: {}
+Item 88
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K2
+Evidence: {}
+Item 89
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K3
+Evidence: {}
+Item 90
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K7
+Evidence: {}
+Item 91
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: K8
+Evidence: {}
+Item 92
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L2
+Evidence: {}
+Item 93
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L3
+Evidence: {}
+Item 94
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L7
+Evidence: {}
+Item 95
+Severity: major
+Category: trace_layout
+Message: Layout destination not represented in trace: L8
+Evidence: {}
+Item 96
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 2, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'D1'}
+Item 97
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 3, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'F1'}
+Item 98
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 4, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'H1'}
+Item 99
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 5, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'A1'}
+Item 100
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 6, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'C1'}
+Item 101
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 7, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'E1'}
+Item 102
+Severity: major
+Category: tracking
+Message: Tracking order mismatch. Expected sample/source 8, found 1.
+Evidence: {'marker': 'X1', 'source_position': 'G1'}
+Limitations
+None found.
 
-    if not self.layout_path:
-        messagebox.showerror("Missing Plate Layout", "Upload a plate layout file first.")
-        return
 
-    configs = self.collect_configs()
 
-    if not configs:
-        messagebox.showerror("Missing Sequences", "Select sequences first.")
-        return
 
-    issues = validate_step_configs(configs)
-    critical = [issue for issue in issues if issue.severity == "critical"]
 
-    if critical:
-        messagebox.showerror(
-            "Configuration Error",
-            "\n".join(issue.message for issue in critical[:10]),
-        )
-        return
 
-    today_folder = datetime.now().strftime("%d%b%Y")
-    output_dir = os.path.join(DEFAULT_RESULTS_DIR, today_folder)
-    os.makedirs(output_dir, exist_ok=True)
-
-    execution_plan = build_execution_plan(configs)
-    marker = configs[0].marker if configs else ""
-
-    marker_matches = {}
-    layout_findings = []
-    trace_findings = []
-    limitations = []
-
-    try:
-        marker_matches = parse_plate_layout_file(self.layout_path, marker)
-    except Exception as exc:
-        issues.append(ValidationIssue(
-            "critical",
-            "layout",
-            f"Could not parse plate layout: {exc}",
-        ))
-
-    pairs = generate_deterministic_transfer_pairs(configs, marker_matches)
-
-    if marker_matches:
-        layout_findings, layout_issues = validate_layout_matches(
-            marker_matches,
-            pairs,
-            marker,
-        )
-        issues.extend(layout_issues)
-    else:
-        limitations.append("No marker matches were found in the plate layout.")
-
-    # Always parse method/deck labware metadata from the uploaded .lay file.
-    lay_metadata = parse_lay_sequence_metadata(self.lay_path)
-
-    # Always add labware validation to report, even if trace fails or is missing.
-    labware_summary = build_labware_validation_summary(
-        marker_matches,
-        trace_findings,
-        configs,
-        lay_metadata,
-    )
-
-    trace_findings.extend(labware_summary)
-
-    for labware_item in labware_summary:
-        if labware_item.get("status") == "fail":
-            issues.append(ValidationIssue(
-                "critical",
-                "URGENT_LABWARE_MISMATCH",
-                labware_item.get("message", "Wrong labware detected."),
-                labware_item,
-            ))
-
-    review_script = generate_pyhamilton_review_script(
-        configs,
-        execution_plan,
-        output_dir,
-    )
-
-    self.status.config(text="Running PyHamilton simulation...")
-    self.root.update_idletasks()
-
-    uploaded_trace_before_run = self.trace_path
-
-    runtime_trace, runtime_issues = run_pyhamilton_simulation(
-        self.lay_path,
-        configs,
-        execution_plan,
-    )
-
-    issues.extend(runtime_issues)
-
-    if runtime_trace:
-        self.trace_path = runtime_trace
-    elif uploaded_trace_before_run:
-        self.trace_path = uploaded_trace_before_run
-        issues.append(ValidationIssue(
-            "major",
-            "trace",
-            "No new simulation trace was found, so DevPal Lite used the manually uploaded trace as fallback.",
-            {"uploaded_trace": uploaded_trace_before_run},
-        ))
-    else:
-        self.trace_path = ""
-        issues.append(ValidationIssue(
-            "major",
-            "trace",
-            "No new STAR_OEM_noFan trace was found after PyHamilton simulation.",
-            {"trace_directory": DEFAULT_TRACE_DIR},
-        ))
-
-    if self.trace_path:
-        try:
-            aspirate_steps, dispense_steps, ordered_steps = parse_trc_file(
-                self.trace_path
-            )
-
-            ok, cross_match = cross_match_positions(
-                aspirate_steps,
-                dispense_steps,
-                configs[0].replicate,
-            )
-
-            trace_findings.append({
-                "type": "trace_summary",
-                "trace_file": self.trace_path,
-                "ordered_steps": ordered_steps,
-                "aspirate_step_count": len(aspirate_steps),
-                "dispense_step_count": len(dispense_steps),
-                "cross_match_status": "pass" if ok else "fail",
-                "cross_match": str(cross_match),
-            })
-
-            if ok and isinstance(cross_match, dict):
-                if marker_matches:
-                    t_findings, t_issues = validate_trace_against_layout(
-                        cross_match,
-                        marker_matches,
-                        marker,
-                    )
-
-                    trace_findings.extend(t_findings)
-                    issues.extend(t_issues)
-                else:
-                    limitations.append(
-                        "Trace was parsed, but marker-based layout validation was skipped because no marker matches were found."
-                    )
-
-                if self.tracking_var.get():
-                    tracking_findings, tracking_issues = validate_tracking_source_order(
-                        cross_match,
-                        marker,
-                    )
-                    trace_findings.extend(tracking_findings)
-                    issues.extend(tracking_issues)
-
-            else:
-                issues.append(ValidationIssue(
-                    "critical",
-                    "trace",
-                    f"Trace cross-match failed: {cross_match}",
-                ))
-
-        except Exception as exc:
-            issues.append(ValidationIssue(
-                "critical",
-                "trace",
-                f"Trace analysis failed: {exc}",
-            ))
-    else:
-        limitations.append(
-            "No trace file was selected or found; trace validation was not completed."
-        )
-
-    output = create_output_model(
-        lay_file=self.lay_path,
-        layout_file=self.layout_path,
-        trace_file=self.trace_path,
-        configs=configs,
-        pairs=pairs,
-        execution_plan=execution_plan,
-        marker_matches=marker_matches,
-        layout_findings=layout_findings,
-        trace_findings=trace_findings,
-        issues=issues,
-        limitations=limitations,
-        review_script_path=review_script,
-    )
-
-    json_path = os.path.join(
-        output_dir,
-        f"DevPal_Lite_Output_Model_{datetime.now().strftime('%H%M%S')}.json",
-    )
-
-    Path(json_path).write_text(
-        json.dumps(asdict(output), indent=2, default=str),
-        encoding="utf-8",
-    )
-
-    report_format = self.report_format_var.get()
-
-    if report_format == "pdf":
-        report_path = write_pdf_report(output, output_dir)
-    elif report_format == "txt":
-        report_path = write_text_report(output, output_dir)
-    else:
-        report_path = write_docx_report(output, output_dir)
-
-    output.report_path = report_path
-
-    Path(json_path).write_text(
-        json.dumps(asdict(output), indent=2, default=str),
-        encoding="utf-8",
-    )
-
-    issue_count = len([
-        issue for issue in issues
-        if issue.severity in ("critical", "major")
-    ])
-
-    messagebox.showinfo(
-        "DevPal Lite Complete",
-        (
-            f"Validation complete.\n\n"
-            f"Major/Critical issues: {issue_count}\n"
-            f"Report: {report_path}\n"
-            f"Output Model: {json_path}\n"
-            f"Trace: {self.trace_path or 'None'}"
-        ),
-    )
-
-    self.status.config(text=f"Complete. Report saved: {report_path}")
+2026-06-09 15:41:34.587 Venus software version: 6.2.2.4006
+2026-06-09 15:41:34.587 SYSTEM : Analyze method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-09 15:41:36.376 Microlab STAR : Communication - progress; Connection to instrument is created.
+2026-06-09 15:41:37.389 SYSTEM : Analyze method - complete; 
+2026-06-09 15:41:38.151 SYSTEM : Start method - start; 
+2026-06-09 15:41:38.152 SYSTEM : Start method - progress; User name: LYNCHD27
+2026-06-09 15:41:38.155 SYSTEM : Start method - progress; Phoenix software version: 6.2.2.50003
+2026-06-09 15:41:38.160 SYSTEM : Start method - progress; Database version: Standard
+2026-06-09 15:41:38.161 SYSTEM : Start method - progress; Sample tracking: On
+2026-06-09 15:41:38.161 SYSTEM : Start method - progress; Vector Database: On
+2026-06-09 15:41:38.163 SYSTEM : Start method - progress; Vector Database connection: Database 'HamiltonVectorDB' on Microsoft SQL Server 'LOCALHOST\HAMILTON' with user 'Hamilton'
+2026-06-09 15:41:38.490 Microlab STAR : Start method command - start;
+2026-06-09 15:41:38.491 Microlab STAR : Start method command - progress; Microlab STAR software version: 6.2.2.50003
+2026-06-09 15:41:38.491 Microlab STAR : Start method command - progress; Serial number of Instrument: 0000
+2026-06-09 15:41:38.491 Microlab STAR : Start method command - progress; Firmware version of main module: 0.0X 2002-05-08
+2026-06-09 15:41:38.491 Microlab STAR : Start method command - progress; Firmware version of 1000µl channels: 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08
+2026-06-09 15:41:38.491 Microlab STAR : Start method command - progress; Firmware version of 5ml channels: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of labware handling channels: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of X drive: 0.0X 2002-05-08
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of auto load: 0.0X 2002-05-08
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of iSWAP: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of washer 1: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of washer 2: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 1: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 2: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of CO-RE 96 Head: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of pump station 1: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of pump station 2: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of pump station 3: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed
+2026-06-09 15:41:38.492 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of CO-RE 384 Head: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of tube gripper: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of camera channel: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of gel card gripper: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of punch card gripper: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of puncher module: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 1: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 2: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 1: not installed
+2026-06-09 15:41:38.493 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 2: not installed
+2026-06-09 15:41:40.135 Microlab STAR : Start method command - complete;
+2026-06-09 15:41:40.150 SYSTEM : Start method - complete; 
+2026-06-09 15:41:40.150 SYSTEM : Execute method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-09 15:41:40.203 HSLHttp : Initialize - progress;  Creating Hamilton HTTP object: Hamilton.HSLHttp
+2026-06-09 15:41:40.228 HSLHttp : Initialize - progress;  Hamilton HTTP object Created.
+2026-06-09 15:41:40.244 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:40.244 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Hi, I´m a VENUS method.
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:40.260 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:40.260 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:42.713 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:42.713 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:42.713 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:42.713 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:42.713 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:42.713 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:42.713 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:42.821 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:42.821 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:42.821 HSLHttp : HttpGET - progress;  Response Content: {"command": "initialize", "id": "0xf7e0f207760", "initializeAlways": 0}
+2026-06-09 15:41:42.821 USER : Trace - complete; JSON received from Server:{"command": "initialize", "id": "0xf7e0f207760", "initializeAlways": 0}
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  initialize
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xf7e0f207760
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:42.821 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:42.821 Microlab STAR : Initialize (Single Step) - start;
+2026-06-09 15:41:42.899 Microlab STAR : Initialize (Single Step) - complete;  > channel 1: Waste,  > channel 2: Waste,  > channel 3: Waste,  > channel 4: Waste,  > channel 5: Waste,  > channel 6: Waste,  > channel 7: Waste,  > channel 8: Waste, 
+2026-06-09 15:41:42.915 USER : Trace - complete; Init step return:0[01,00,00,0,,Waste,[02,00,00,0,,Waste,[03,00,00,0,,Waste,[04,00,00,0,,Waste,[05,00,00,0,,Waste,[06,00,00,0,,Waste,[07,00,00,0,,Waste,[08,00,00,0,,Waste,
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  initialize
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,,Waste,[02,00,00,0,,Waste,[03,00,00,0,,Waste,[04,00,00,0,,Waste,[05,00,00,0,,Waste,[06,00,00,0,,Waste,[07,00,00,0,,Waste,[08,00,00,0,,Waste,
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xf7e0f207760
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:42.915 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:42.915 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:42.915 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:43.024 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:43.024 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:43.024 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 15:41:44.047 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:44.047 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:44.047 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipPickUp", "id": "0xf7e0fa9ff36", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-09 15:41:44.047 USER : Trace - complete; JSON received from Server:{"command": "channelTipPickUp", "id": "0xf7e0fa9ff36", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipPickUp
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xf7e0fa9ff36
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  TP
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:44.047 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-09 15:41:44.047 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;
+2026-06-09 15:41:44.299 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete;  > channel 1: HTF_L_0001, 1 > channel 2: HTF_L_0001, 2 > channel 3: HTF_L_0001, 3 > channel 4: HTF_L_0001, 4 > channel 5: HTF_L_0001, 5 > channel 6: HTF_L_0001, 6 > channel 7: HTF_L_0001, 7 > channel 8: HTF_L_0001, 8
+2026-06-09 15:41:44.299 USER : Trace - complete; Tip pick up step return:0[01,00,00,0,0.0,HTF_L_0001,1[02,00,00,0,0.0,HTF_L_0001,2[03,00,00,0,0.0,HTF_L_0001,3[04,00,00,0,0.0,HTF_L_0001,4[05,00,00,0,0.0,HTF_L_0001,5[06,00,00,0,0.0,HTF_L_0001,6[07,00,00,0,0.0,HTF_L_0001,7[08,00,00,0,0.0,HTF_L_0001,8
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipPickUp
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,HTF_L_0001,1[02,00,00,0,0.0,HTF_L_0001,2[03,00,00,0,0.0,HTF_L_0001,3[04,00,00,0,0.0,HTF_L_0001,4[05,00,00,0,0.0,HTF_L_0001,5[06,00,00,0,0.0,HTF_L_0001,6[07,00,00,0,0.0,HTF_L_0001,7[08,00,00,0,0.0,HTF_L_0001,8
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xf7e0fa9ff36
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:44.299 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:44.299 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:44.299 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:44.409 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:44.409 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:44.409 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 15:41:45.420 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:45.423 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:45.423 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelAspirate", "id": "0xf7e0fc8994a", "aspirateSequence": "Thermo_48_Tube_Honeycomb_Rack_0001", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-09 15:41:45.423 USER : Trace - complete; JSON received from Server:{"command": "channelAspirate", "id": "0xf7e0fc8994a", "aspirateSequence": "Thermo_48_Tube_Honeycomb_Rack_0001", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelAspirate
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xf7e0fc8994a
+2026-06-09 15:41:45.424 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  Thermo_48_Tube_Honeycomb_Rack_0001
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-09 15:41:45.425 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
+2026-06-09 15:41:45.426 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
+2026-06-09 15:41:45.426 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.426 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.426 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  2
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.427 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.428 USER : Trace - complete; Bookstart
+2026-06-09 15:41:45.428 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
+2026-06-09 15:41:45.428 USER : Trace - complete; Bookend
+2026-06-09 15:41:45.428 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
+2026-06-09 15:41:45.428 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.428 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.429 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.429 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.429 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.429 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
+2026-06-09 15:41:45.430 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.430 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.430 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.430 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:45.430 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:45.431 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:45.450 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start;
+2026-06-09 15:41:45.574 Microlab STAR : 1000ul Channel Aspirate (Single Step) - complete;  > channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, B1 100µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, D1 100µL > channel 3: Thermo_48_Tube_Honeycomb_Rack_0001, F1 100µL > channel 4: Thermo_48_Tube_Honeycomb_Rack_0001, H1 100µL > channel 5: Thermo_48_Tube_Honeycomb_Rack_0001, A1 100µL > channel 6: Thermo_48_Tube_Honeycomb_Rack_0001, C1 100µL > channel 7: Thermo_48_Tube_Honeycomb_Rack_0001, E1 100µL > channel 8: Thermo_48_Tube_Honeycomb_Rack_0001, G1 100µL
+2026-06-09 15:41:45.574 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - start;
+2026-06-09 15:41:45.583 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - complete;  > channel 1: 111.1 mm > channel 2: 111.2 mm > channel 3: 111.3 mm > channel 4: 111.4 mm > channel 5: 111.5 mm > channel 6: 111.6 mm > channel 7: 111.7 mm > channel 8: 111.8 mm
+2026-06-09 15:41:45.614 USER : Trace - complete; Aspirate step return 1:0[01,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B1[02,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D1[03,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F1[04,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H1[05,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,A1[06,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,C1[07,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,E1[08,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,G1
+2026-06-09 15:41:45.621 USER : Trace - complete; Aspirate step return 2:111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000
+2026-06-09 15:41:45.621 USER : Trace - complete; Aspirate step return 3:-99.11680;-98.70074;-98.28585;-97.87212;-97.45956;-97.04816;-96.63791;-96.22883
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelAspirate
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B1[02,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D1[03,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F1[04,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H1[05,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,A1[06,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,C1[07,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,E1[08,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,G1
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  -99.11680;-98.70074;-98.28585;-97.87212;-97.45956;-97.04816;-96.63791;-96.22883
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xf7e0fc8994a
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:45.621 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:45.621 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:45.621 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:45.621 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:45.621 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:45.621 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:45.630 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:45.630 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:45.740 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:45.740 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:45.740 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 15:41:46.762 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:46.762 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:46.762 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelDispense", "id": "0xf7e0fd7e281", "dispenseSequence": "P", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "dispenseMode": 8, "capacitiveLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "dispPositionAboveTouch": 0.0, "zMoveAfterStep": 0, "sideTouch": 0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-09 15:41:46.762 USER : Trace - complete; JSON received from Server:{"command": "channelDispense", "id": "0xf7e0fd7e281", "dispenseSequence": "P", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "dispenseMode": 8, "capacitiveLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "dispPositionAboveTouch": 0.0, "zMoveAfterStep": 0, "sideTouch": 0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-09 15:41:46.762 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:46.762 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:46.762 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:46.762 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:46.809 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelDispense
+2026-06-09 15:41:46.841 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:46.872 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xf7e0fd7e281
+2026-06-09 15:41:46.904 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:46.935 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  P
+2026-06-09 15:41:46.967 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:46.998 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-09 15:41:47.030 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.061 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:47.092 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.124 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-09 15:41:47.155 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
+2026-06-09 15:41:47.187 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
+2026-06-09 15:41:47.218 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:47.249 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:47.281 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
+2026-06-09 15:41:47.313 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:47.344 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
+2026-06-09 15:41:47.375 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.412 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  8
+2026-06-09 15:41:47.444 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.475 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:47.506 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.538 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:47.569 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:47.617 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:47.648 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
+2026-06-09 15:41:47.680 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:47.711 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:47.743 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
+2026-06-09 15:41:47.774 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:47.805 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:47.837 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:47.869 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:47.900 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:47.932 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:47.978 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.010 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:48.041 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:48.072 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.104 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
+2026-06-09 15:41:48.135 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:48.167 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.198 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:48.230 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:48.261 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.293 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:48.324 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:48.356 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.387 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:48.419 USER : Trace - complete; getfloatvalue
+2026-06-09 15:41:48.450 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-09 15:41:48.481 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-09 15:41:48.513 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:48.545 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:48.576 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:48.608 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:48.639 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:48.671 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:48.717 Microlab STAR : 1000ul Channel Dispense (Single Step) - start;
+2026-06-09 15:41:48.780 Microlab STAR : 1000ul Channel Dispense (Single Step) - complete;  > channel 1: P1, A1 100µL > channel 2: P1, B1 100µL > channel 3: P1, C1 100µL > channel 4: P1, D1 100µL > channel 5: P1, A2 100µL > channel 6: P1, B2 100µL > channel 7: P1, C2 100µL > channel 8: P1, D2 100µL
+2026-06-09 15:41:48.828 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - start;
+2026-06-09 15:41:48.891 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - complete;  > channel 1: 111.1 mm > channel 2: 111.2 mm > channel 3: 111.3 mm > channel 4: 111.4 mm > channel 5: 111.5 mm > channel 6: 111.6 mm > channel 7: 111.7 mm > channel 8: 111.8 mm
+2026-06-09 15:41:48.954 USER : Trace - complete; Aspirate step return 1:0[01,00,00,0,100.0,P1,A1[02,00,00,0,100.0,P1,B1[03,00,00,0,100.0,P1,C1[04,00,00,0,100.0,P1,D1[05,00,00,0,100.0,P1,A2[06,00,00,0,100.0,P1,B2[07,00,00,0,100.0,P1,C2[08,00,00,0,100.0,P1,D2
+2026-06-09 15:41:49.000 USER : Trace - complete; Aspirate step return 2:111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000
+2026-06-09 15:41:49.000 USER : Trace - complete; Aspirate step return 3:-4.291219;-4.285329;-4.279438;-4.273548;-4.267657;-4.261767;-4.255876;-4.249986
+2026-06-09 15:41:49.000 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:49.000 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.000 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-09 15:41:49.000 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.000 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelDispense
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,100.0,P1,A1[02,00,00,0,100.0,P1,B1[03,00,00,0,100.0,P1,C1[04,00,00,0,100.0,P1,D1[05,00,00,0,100.0,P1,A2[06,00,00,0,100.0,P1,B2[07,00,00,0,100.0,P1,C2[08,00,00,0,100.0,P1,D2
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  -4.291219;-4.285329;-4.279438;-4.273548;-4.267657;-4.261767;-4.255876;-4.249986
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:49.048 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xf7e0fd7e281
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.095 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.095 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:49.095 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:49.095 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.142 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:49.143 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:49.189 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.189 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.189 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.189 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:49.189 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:49.189 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:49.299 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.299 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:49.299 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipEject", "id": "0xf7e1005b233", "wasteSequence": "Waste", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "useDefaultWaste": 0}
+2026-06-09 15:41:49.299 USER : Trace - complete; JSON received from Server:{"command": "channelTipEject", "id": "0xf7e1005b233", "wasteSequence": "Waste", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "useDefaultWaste": 0}
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipEject
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xf7e1005b233
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  Waste
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-09 15:41:49.299 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-09 15:41:49.299 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start;
+2026-06-09 15:41:49.362 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - complete;  > channel 1: Waste, 1 > channel 2: Waste, 2 > channel 3: Waste, 3 > channel 4: Waste, 4 > channel 5: Waste, 5 > channel 6: Waste, 6 > channel 7: Waste, 7 > channel 8: Waste, 8
+2026-06-09 15:41:49.362 USER : Trace - complete; Tip eject step return:0[01,00,00,0,0.0,Waste,1[02,00,00,0,0.0,Waste,2[03,00,00,0,0.0,Waste,3[04,00,00,0,0.0,Waste,4[05,00,00,0,0.0,Waste,5[06,00,00,0,0.0,Waste,6[07,00,00,0,0.0,Waste,7[08,00,00,0,0.0,Waste,8
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipEject
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.362 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,Waste,1[02,00,00,0,0.0,Waste,2[03,00,00,0,0.0,Waste,3[04,00,00,0,0.0,Waste,4[05,00,00,0,0.0,Waste,5[06,00,00,0,0.0,Waste,6[07,00,00,0,0.0,Waste,7[08,00,00,0,0.0,Waste,8
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xf7e1005b233
+2026-06-09 15:41:49.409 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:49.440 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:49.440 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.440 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.440 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.440 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:49.440 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:49.440 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.440 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:49.487 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:49.487 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.534 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:49.534 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:49.534 USER : Trace - complete; Waiting for server instructions....
+2026-06-09 15:41:49.645 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:49.645 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:49.645 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-09 15:41:50.656 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:50.656 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-09 15:41:50.656 HSLHttp : HttpGET - progress;  Response Content: {"command": "end", "id": "0x0"}
+2026-06-09 15:41:50.656 USER : Trace - complete; JSON received from Server:{"command": "end", "id": "0x0"}
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  end
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0x0
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Good Bye!
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-09 15:41:50.656 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-09 15:41:50.656 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-09 15:41:50.656 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-09 15:41:50.656 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-09 15:41:50.656 HSLHttp : Release - progress;  Releasing Hamilton HTTP object.
+2026-06-09 15:41:50.656 HSLHttp : Release - progress;  Hamilton HTTP object Released.
+2026-06-09 15:41:50.672 SYSTEM : Execute method - complete; 
+2026-06-09 15:41:50.672 SYSTEM : End method - start; 
+2026-06-09 15:41:50.750 Microlab STAR : End method command - start;
+2026-06-09 15:41:50.831 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
+2026-06-09 15:41:50.844 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
+2026-06-09 15:41:50.860 Microlab STAR : Clean up instrument - progress; Spreading channels
+2026-06-09 15:41:50.877 Microlab STAR : Clean up instrument - progress; Switch off loading lights
+2026-06-09 15:41:51.099 Microlab STAR : End method command - complete;
+2026-06-09 15:41:51.195 SYSTEM : End method - complete; 
+2026-06-09 15:41:51.489 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-06-09 15:41$$checksum=cbc0b209$$length=140$$
