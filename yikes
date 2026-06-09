@@ -1,92 +1,145 @@
-    def generate_plan_run_and_validate(self):
-        if not self.lay_path:
-            messagebox.showerror("Missing LAY", "Upload a .lay file first.")
-            return
+def generate_plan_run_and_validate(self):
+    if not self.lay_path:
+        messagebox.showerror("Missing LAY", "Upload a .lay file first.")
+        return
 
-        if not self.layout_path:
-            messagebox.showerror("Missing Plate Layout", "Upload a plate layout file first.")
-            return
+    if not self.layout_path:
+        messagebox.showerror("Missing Plate Layout", "Upload a plate layout file first.")
+        return
 
-        configs = self.collect_configs()
+    configs = self.collect_configs()
 
-        if not configs:
-            messagebox.showerror("Missing Sequences", "Select sequences first.")
-            return
+    if not configs:
+        messagebox.showerror("Missing Sequences", "Select sequences first.")
+        return
 
-        issues = validate_step_configs(configs)
-        critical = [issue for issue in issues if issue.severity == "critical"]
+    issues = validate_step_configs(configs)
+    critical = [issue for issue in issues if issue.severity == "critical"]
 
-        if critical:
-            messagebox.showerror("Configuration Error", "\n".join(issue.message for issue in critical[:10]))
-            return
-
-        today_folder = datetime.now().strftime("%d%b%Y")
-        output_dir = os.path.join(DEFAULT_RESULTS_DIR, today_folder)
-        os.makedirs(output_dir, exist_ok=True)
-
-        execution_plan = build_execution_plan(configs)
-        marker = configs[0].marker if configs else ""
-
-        marker_matches = {}
-        layout_findings = []
-        trace_findings = []
-        limitations = []
-
-        try:
-            marker_matches = parse_plate_layout_file(self.layout_path, marker)
-        except Exception as exc:
-            issues.append(ValidationIssue("critical", "layout", f"Could not parse plate layout: {exc}"))
-
-        pairs = generate_deterministic_transfer_pairs(configs, marker_matches)
-
-        if marker_matches:
-            layout_findings, layout_issues = validate_layout_matches(marker_matches, pairs, marker)
-            issues.extend(layout_issues)
-        else:
-            limitations.append("No marker matches were found in the plate layout.")
-
-        review_script = generate_pyhamilton_review_script(configs, execution_plan, output_dir)
-
-        self.status.config(text="Running PyHamilton simulation...")
-        self.root.update_idletasks()
-
-        uploaded_trace_before_run = self.trace_path
-
-        runtime_trace, runtime_issues = run_pyhamilton_simulation(
-            self.lay_path,
-            configs,
-            execution_plan,
+    if critical:
+        messagebox.showerror(
+            "Configuration Error",
+            "\n".join(issue.message for issue in critical[:10]),
         )
-        issues.extend(runtime_issues)
+        return
 
-        if runtime_trace:
-            self.trace_path = runtime_trace
-        elif uploaded_trace_before_run:
-            self.trace_path = uploaded_trace_before_run
+    today_folder = datetime.now().strftime("%d%b%Y")
+    output_dir = os.path.join(DEFAULT_RESULTS_DIR, today_folder)
+    os.makedirs(output_dir, exist_ok=True)
+
+    execution_plan = build_execution_plan(configs)
+    marker = configs[0].marker if configs else ""
+
+    marker_matches = {}
+    layout_findings = []
+    trace_findings = []
+    limitations = []
+
+    try:
+        marker_matches = parse_plate_layout_file(self.layout_path, marker)
+    except Exception as exc:
+        issues.append(ValidationIssue(
+            "critical",
+            "layout",
+            f"Could not parse plate layout: {exc}",
+        ))
+
+    pairs = generate_deterministic_transfer_pairs(configs, marker_matches)
+
+    if marker_matches:
+        layout_findings, layout_issues = validate_layout_matches(
+            marker_matches,
+            pairs,
+            marker,
+        )
+        issues.extend(layout_issues)
+    else:
+        limitations.append("No marker matches were found in the plate layout.")
+
+    # Always parse method/deck labware metadata from the uploaded .lay file.
+    lay_metadata = parse_lay_sequence_metadata(self.lay_path)
+
+    # Always add labware validation to report, even if trace fails or is missing.
+    labware_summary = build_labware_validation_summary(
+        marker_matches,
+        trace_findings,
+        configs,
+        lay_metadata,
+    )
+
+    trace_findings.extend(labware_summary)
+
+    for labware_item in labware_summary:
+        if labware_item.get("status") == "fail":
             issues.append(ValidationIssue(
-                "major",
-                "trace",
-                "No new simulation trace was found, so DevPal Lite used the manually uploaded trace as fallback.",
-                {"uploaded_trace": uploaded_trace_before_run},
+                "critical",
+                "URGENT_LABWARE_MISMATCH",
+                labware_item.get("message", "Wrong labware detected."),
+                labware_item,
             ))
-        else:
-            self.trace_path = ""
 
-        if self.trace_path:
-            try:
-                aspirate_steps, dispense_steps, ordered_steps = parse_trc_file(self.trace_path)
-                ok, cross_match = cross_match_positions(aspirate_steps, dispense_steps, configs[0].replicate)
+    review_script = generate_pyhamilton_review_script(
+        configs,
+        execution_plan,
+        output_dir,
+    )
 
-                trace_findings.append({
-                    "type": "trace_summary",
-                    "ordered_steps": ordered_steps,
-                    "aspirate_step_count": len(aspirate_steps),
-                    "dispense_step_count": len(dispense_steps),
-                    "cross_match_status": "pass" if ok else "fail",
-                    "cross_match": str(cross_match),
-                })
+    self.status.config(text="Running PyHamilton simulation...")
+    self.root.update_idletasks()
 
-                if ok and isinstance(cross_match, dict) and marker_matches:
+    uploaded_trace_before_run = self.trace_path
+
+    runtime_trace, runtime_issues = run_pyhamilton_simulation(
+        self.lay_path,
+        configs,
+        execution_plan,
+    )
+
+    issues.extend(runtime_issues)
+
+    if runtime_trace:
+        self.trace_path = runtime_trace
+    elif uploaded_trace_before_run:
+        self.trace_path = uploaded_trace_before_run
+        issues.append(ValidationIssue(
+            "major",
+            "trace",
+            "No new simulation trace was found, so DevPal Lite used the manually uploaded trace as fallback.",
+            {"uploaded_trace": uploaded_trace_before_run},
+        ))
+    else:
+        self.trace_path = ""
+        issues.append(ValidationIssue(
+            "major",
+            "trace",
+            "No new STAR_OEM_noFan trace was found after PyHamilton simulation.",
+            {"trace_directory": DEFAULT_TRACE_DIR},
+        ))
+
+    if self.trace_path:
+        try:
+            aspirate_steps, dispense_steps, ordered_steps = parse_trc_file(
+                self.trace_path
+            )
+
+            ok, cross_match = cross_match_positions(
+                aspirate_steps,
+                dispense_steps,
+                configs[0].replicate,
+            )
+
+            trace_findings.append({
+                "type": "trace_summary",
+                "trace_file": self.trace_path,
+                "ordered_steps": ordered_steps,
+                "aspirate_step_count": len(aspirate_steps),
+                "dispense_step_count": len(dispense_steps),
+                "cross_match_status": "pass" if ok else "fail",
+                "cross_match": str(cross_match),
+            })
+
+            if ok and isinstance(cross_match, dict):
+                if marker_matches:
                     t_findings, t_issues = validate_trace_against_layout(
                         cross_match,
                         marker_matches,
@@ -95,70 +148,92 @@
 
                     trace_findings.extend(t_findings)
                     issues.extend(t_issues)
-
-                    labware_summary = build_labware_validation_summary(
-                        marker_matches,
-                        trace_findings,
+                else:
+                    limitations.append(
+                        "Trace was parsed, but marker-based layout validation was skipped because no marker matches were found."
                     )
 
-                    trace_findings.extend(labware_summary)
+                if self.tracking_var.get():
+                    tracking_findings, tracking_issues = validate_tracking_source_order(
+                        cross_match,
+                        marker,
+                    )
+                    trace_findings.extend(tracking_findings)
+                    issues.extend(tracking_issues)
 
-                    for labware_item in labware_summary:
-                        if labware_item.get("status") == "fail":
-                            issues.append(ValidationIssue(
-                                "critical",
-                                "URGENT_LABWARE_MISMATCH",
-                                labware_item.get("message", "Wrong labware detected."),
-                                labware_item,
-                            ))
+            else:
+                issues.append(ValidationIssue(
+                    "critical",
+                    "trace",
+                    f"Trace cross-match failed: {cross_match}",
+                ))
 
-                    if self.tracking_var.get():
-                        tracking_findings, tracking_issues = validate_tracking_source_order(cross_match, marker)
-                        trace_findings.extend(tracking_findings)
-                        issues.extend(tracking_issues)
-                else:
-                    issues.append(ValidationIssue("critical", "trace", f"Trace cross-match failed: {cross_match}"))
-
-            except Exception as exc:
-                issues.append(ValidationIssue("critical", "trace", f"Trace analysis failed: {exc}"))
-        else:
-            limitations.append("No trace file was selected or found; trace validation was not completed.")
-
-        output = create_output_model(
-            lay_file=self.lay_path,
-            layout_file=self.layout_path,
-            trace_file=self.trace_path,
-            configs=configs,
-            pairs=pairs,
-            execution_plan=execution_plan,
-            marker_matches=marker_matches,
-            layout_findings=layout_findings,
-            trace_findings=trace_findings,
-            issues=issues,
-            limitations=limitations,
-            review_script_path=review_script,
+        except Exception as exc:
+            issues.append(ValidationIssue(
+                "critical",
+                "trace",
+                f"Trace analysis failed: {exc}",
+            ))
+    else:
+        limitations.append(
+            "No trace file was selected or found; trace validation was not completed."
         )
 
-        json_path = os.path.join(output_dir, f"DevPal_Lite_Output_Model_{datetime.now().strftime('%H%M%S')}.json")
-        Path(json_path).write_text(json.dumps(asdict(output), indent=2, default=str), encoding="utf-8")
+    output = create_output_model(
+        lay_file=self.lay_path,
+        layout_file=self.layout_path,
+        trace_file=self.trace_path,
+        configs=configs,
+        pairs=pairs,
+        execution_plan=execution_plan,
+        marker_matches=marker_matches,
+        layout_findings=layout_findings,
+        trace_findings=trace_findings,
+        issues=issues,
+        limitations=limitations,
+        review_script_path=review_script,
+    )
 
-        report_format = self.report_format_var.get()
+    json_path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Output_Model_{datetime.now().strftime('%H%M%S')}.json",
+    )
 
-        if report_format == "pdf":
-            report_path = write_pdf_report(output, output_dir)
-        elif report_format == "txt":
-            report_path = write_text_report(output, output_dir)
-        else:
-            report_path = write_docx_report(output, output_dir)
+    Path(json_path).write_text(
+        json.dumps(asdict(output), indent=2, default=str),
+        encoding="utf-8",
+    )
 
-        output.report_path = report_path
-        Path(json_path).write_text(json.dumps(asdict(output), indent=2, default=str), encoding="utf-8")
+    report_format = self.report_format_var.get()
 
-        issue_count = len([issue for issue in issues if issue.severity in ("critical", "major")])
+    if report_format == "pdf":
+        report_path = write_pdf_report(output, output_dir)
+    elif report_format == "txt":
+        report_path = write_text_report(output, output_dir)
+    else:
+        report_path = write_docx_report(output, output_dir)
 
-        messagebox.showinfo(
-            "DevPal Lite Complete",
-            f"Validation complete.\n\nMajor/Critical issues: {issue_count}\nReport: {report_path}\nOutput Model: {json_path}\nTrace: {self.trace_path or 'None'}",
-        )
+    output.report_path = report_path
 
-        self.status.config(text=f"Complete. Report saved: {report_path}")
+    Path(json_path).write_text(
+        json.dumps(asdict(output), indent=2, default=str),
+        encoding="utf-8",
+    )
+
+    issue_count = len([
+        issue for issue in issues
+        if issue.severity in ("critical", "major")
+    ])
+
+    messagebox.showinfo(
+        "DevPal Lite Complete",
+        (
+            f"Validation complete.\n\n"
+            f"Major/Critical issues: {issue_count}\n"
+            f"Report: {report_path}\n"
+            f"Output Model: {json_path}\n"
+            f"Trace: {self.trace_path or 'None'}"
+        ),
+    )
+
+    self.status.config(text=f"Complete. Report saved: {report_path}")
