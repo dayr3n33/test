@@ -1,3 +1,5 @@
+PYHAMILTON_IMPORT_ERROR = ""
+
 try:
     import pyhamilton
     import pyhamilton.interface as phi
@@ -15,72 +17,58 @@ try:
         initialize,
     )
 
-    def _get_pyhamilton_function(*names):
-        for module in (pyhamilton, phi):
-            for name in names:
+    def _get_required_seq_wrapper(name):
+        candidates = [
+            "pyhamilton.liquid_handling_wrappers",
+            "pyhamilton.liquid_handling_wrappers.sequence_wrappers",
+            "pyhamilton.interface",
+            "pyhamilton",
+        ]
+
+        for module_name in candidates:
+            try:
+                module = __import__(module_name, fromlist=[name])
                 if hasattr(module, name):
                     return getattr(module, name)
-        raise ImportError(f"Could not find any PyHamilton function aliases: {names}")
+            except Exception:
+                continue
 
-    tip_pick_up_seq = _get_pyhamilton_function(
-        "tip_pick_up_seq",
-        "tip_pickup_seq",
-        "tip_pick_up",
-        "tip_pickup",
-    )
+        raise ImportError(f"Missing required sequence wrapper: {name}")
 
-    aspirate_seq = _get_pyhamilton_function(
-        "aspirate_seq",
-        "aspirate",
-    )
-
-    dispense_seq = _get_pyhamilton_function(
-        "dispense_seq",
-        "dispense",
-    )
-
-    tip_eject_seq2 = _get_pyhamilton_function(
-        "tip_eject_seq2",
-        "tip_eject_seq",
-        "tip_eject",
-    )
+    tip_pick_up_seq = _get_required_seq_wrapper("tip_pick_up_seq")
+    aspirate_seq = _get_required_seq_wrapper("aspirate_seq")
+    dispense_seq = _get_required_seq_wrapper("dispense_seq")
 
     try:
-        inc_sequence = _get_pyhamilton_function(
-            "inc_sequence",
-            "increment_sequence",
-        )
+        tip_eject_seq2 = _get_required_seq_wrapper("tip_eject_seq2")
     except ImportError:
-        def inc_sequence(ham_int, sequence, increment):
-            return ham_int.send_command(
-                command="INCSEQ",
-                sequence=sequence,
-                increment=increment,
-            )
+        tip_eject_seq2 = _get_required_seq_wrapper("tip_eject_seq")
 
-    tip_pick_up_96_seq = _get_pyhamilton_function(
-        "tip_pick_up_96_seq",
-        "tip_pickup_96_seq",
-        "tip_pick_up_96",
-    )
+    try:
+        inc_sequence = _get_required_seq_wrapper("inc_sequence")
+    except ImportError:
+        try:
+            inc_sequence = _get_required_seq_wrapper("increment_sequence")
+        except ImportError:
+            def inc_sequence(ham_int, sequence, increment):
+                return ham_int.send_command(
+                    command="INCSEQ",
+                    sequence=sequence,
+                    increment=increment,
+                )
 
-    aspirate_96_seq = _get_pyhamilton_function(
-        "aspirate_96_seq",
-        "aspirate96_seq",
-        "aspirate_96",
-    )
+    tip_pick_up_96_seq = _get_required_seq_wrapper("tip_pick_up_96_seq")
+    aspirate_96_seq = _get_required_seq_wrapper("aspirate_96_seq")
 
-    dispense_96_seq2 = _get_pyhamilton_function(
-        "dispense_96_seq2",
-        "dispense_96_seq",
-        "dispense96_seq",
-        "dispense_96",
-    )
+    try:
+        dispense_96_seq2 = _get_required_seq_wrapper("dispense_96_seq2")
+    except ImportError:
+        dispense_96_seq2 = _get_required_seq_wrapper("dispense_96_seq")
 
-    tip_eject_96 = _get_pyhamilton_function(
-        "tip_eject_96",
-        "tip_eject_96_seq",
-    )
+    try:
+        tip_eject_96 = _get_required_seq_wrapper("tip_eject_96")
+    except ImportError:
+        tip_eject_96 = _get_required_seq_wrapper("tip_eject_96_seq")
 
 except Exception as exc:
     PYHAMILTON_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
