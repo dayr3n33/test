@@ -1,447 +1,92 @@
-def infer_plate_format_from_position_count(count: int) -> str:
-    if count == 24:
-        return "24-well"
-    if count == 96:
-        return "96-well"
-    if count == 384:
-        return "384-well"
-    if count == 48:
-        return "48-position rack"
-    if count == 16:
-        return "16-position rack/waste"
-    if count == 12:
-        return "12-position rack/waste"
-    if count == 8:
-        return "8-position rack/waste"
-    if count == 4:
-        return "4-position rack/waste"
-    if count > 0:
-        return f"{count}-position labware"
-    return "unknown"
+    def generate_plan_run_and_validate(self):
+        if not self.lay_path:
+            messagebox.showerror("Missing LAY", "Upload a .lay file first.")
+            return
 
+        if not self.layout_path:
+            messagebox.showerror("Missing Plate Layout", "Upload a plate layout file first.")
+            return
 
-def infer_plate_format_from_labware_name(name: str) -> str:
-    upper = str(name or "").upper()
+        configs = self.collect_configs()
 
-    if "384" in upper:
-        return "384-well"
-    if "96" in upper or "PLATE96" in upper or "PCR96" in upper:
-        return "96-well"
-    if "24" in upper:
-        return "24-well"
-    if "48" in upper or "HONEYCOMB" in upper:
-        return "48-position rack"
-    if "WASTE" in upper:
-        return "waste"
-    if "TIP" in upper or "TIPRACK" in upper or "SLIM" in upper:
-        return "tip rack"
+        if not configs:
+            messagebox.showerror("Missing Sequences", "Select sequences first.")
+            return
 
-    return "unknown"
+        issues = validate_step_configs(configs)
+        critical = [issue for issue in issues if issue.severity == "critical"]
 
+        if critical:
+            messagebox.showerror("Configuration Error", "\n".join(issue.message for issue in critical[:10]))
+            return
 
-def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
-    text = read_text_file_best_effort(lay_path)
-    metadata = {}
+        today_folder = datetime.now().strftime("%d%b%Y")
+        output_dir = os.path.join(DEFAULT_RESULTS_DIR, today_folder)
+        os.makedirs(output_dir, exist_ok=True)
 
-    if not text:
-        return metadata
+        execution_plan = build_execution_plan(configs)
+        marker = configs[0].marker if configs else ""
 
-    seq_name_pattern = re.compile(r"Seq\.(\d+)\.Name\s*([^\x00-\x1fA-Za-z0-9_#]*)?([A-Za-z][A-Za-z0-9_ .\-]*)", re.IGNORECASE)
-    seq_cnt_pattern = re.compile(r"Seq\.(\d+)\.Cnt\s*([^\x00-\x1fA-Za-z0-9]*)?(\d+)", re.IGNORECASE)
-    obj_pattern = re.compile(r"Seq\.(\d+)\.Item\.\d+\.ObjId\s*([^\x00-\x1fA-Za-z0-9_]*)?([A-Za-z0-9_ .\-]+)", re.IGNORECASE)
-    pos_pattern = re.compile(r"Seq\.(\d+)\.Item\.\d+\.PosId\s*([^\x00-\x1fA-Za-z0-9]*)?([A-Ha-pA-P]?\d{1,3})", re.IGNORECASE)
+        marker_matches = {}
+        layout_findings = []
+        trace_findings = []
+        limitations = []
 
-    seq_names = {}
-    seq_counts = {}
-    seq_objids = defaultdict(list)
-    seq_positions = defaultdict(list)
-
-    for seq_id, _prefix, name in seq_name_pattern.findall(text):
-        clean_name = str(name).strip()
-        if clean_name and clean_name[0].isalpha():
-            seq_names[seq_id] = clean_name
-
-    for seq_id, _prefix, count in seq_cnt_pattern.findall(text):
         try:
-            seq_counts[seq_id] = int(count)
-        except ValueError:
-            continue
+            marker_matches = parse_plate_layout_file(self.layout_path, marker)
+        except Exception as exc:
+            issues.append(ValidationIssue("critical", "layout", f"Could not parse plate layout: {exc}"))
 
-    for seq_id, _prefix, obj_id in obj_pattern.findall(text):
-        clean_obj = str(obj_id).strip()
-        if clean_obj:
-            seq_objids[seq_id].append(clean_obj)
+        pairs = generate_deterministic_transfer_pairs(configs, marker_matches)
 
-    for seq_id, _prefix, pos in pos_pattern.findall(text):
-        clean_pos = normalize_position_text(pos)
-        if clean_pos:
-            seq_positions[seq_id].append(clean_pos)
+        if marker_matches:
+            layout_findings, layout_issues = validate_layout_matches(marker_matches, pairs, marker)
+            issues.extend(layout_issues)
+        else:
+            limitations.append("No marker matches were found in the plate layout.")
 
-    for seq_id, seq_name in seq_names.items():
-        positions = seq_positions.get(seq_id, [])
-        count = seq_counts.get(seq_id, len(positions))
-        objids = seq_objids.get(seq_id, [])
+        review_script = generate_pyhamilton_review_script(configs, execution_plan, output_dir)
 
-        labware_name = ""
-        if objids:
-            labware_name = max(set(objids), key=objids.count)
+        self.status.config(text="Running PyHamilton simulation...")
+        self.root.update_idletasks()
 
-        format_from_count = infer_plate_format_from_position_count(count)
-        format_from_name = infer_plate_format_from_labware_name(labware_name)
+        uploaded_trace_before_run = self.trace_path
 
-        labware_format = format_from_name if format_from_name != "unknown" else format_from_count
-
-        metadata[seq_name] = {
-            "sequence_id": seq_id,
-            "sequence_name": seq_name,
-            "position_count": count,
-            "positions": positions,
-            "labware_name": labware_name,
-            "labware_format": labware_format,
-        }
-
-    return metadata
-
-
-def get_sequence_labware_metadata(sequence_name: str, lay_metadata: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
-    if sequence_name in lay_metadata:
-        return lay_metadata[sequence_name]
-
-    normalized_target = str(sequence_name).strip().lower()
-
-    for name, metadata in lay_metadata.items():
-        if name.strip().lower() == normalized_target:
-            return metadata
-
-    return {
-        "sequence_name": sequence_name,
-        "labware_name": "unknown",
-        "labware_format": "unknown",
-        "position_count": 0,
-        "positions": [],
-    }
-
-
-
-
-
-
-
-
-
-
-def build_labware_validation_summary(
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-    trace_findings: List[Dict[str, Any]],
-    configs: List[SequenceStepConfig],
-    lay_metadata: Dict[str, Dict[str, Any]],
-) -> List[Dict[str, Any]]:
-    summary = []
-
-    layout_summary = summarize_layout_format(layout_matches)
-    expected_format = layout_summary.get("inferred_plate_format", "unknown")
-
-    dispense_configs = [config for config in configs if config.role == "dispense"]
-    aspirate_configs = [config for config in configs if config.role == "aspirate"]
-
-    for config in aspirate_configs + dispense_configs:
-        seq_meta = get_sequence_labware_metadata(config.sequence, lay_metadata)
-        sequence_format = seq_meta.get("labware_format", "unknown")
-        labware_name = seq_meta.get("labware_name", "unknown")
-        position_count = seq_meta.get("position_count", 0)
-
-        status = "pass"
-        message = (
-            f"Sequence '{config.sequence}' uses labware '{labware_name}' "
-            f"with detected format {sequence_format} and {position_count} position(s)."
-        )
-
-        if config.role == "dispense" and expected_format != "unknown":
-            if sequence_format != "unknown" and sequence_format != expected_format:
-                status = "fail"
-                message = (
-                    f"URGENT ERROR: Wrong destination labware detected. "
-                    f"Dispense sequence '{config.sequence}' uses labware '{labware_name}' "
-                    f"detected as {sequence_format}, but uploaded layout requires {expected_format}."
-                )
-
-        summary.append({
-            "type": "labware_validation_summary",
-            "status": status,
-            "step_role": config.role,
-            "sequence": config.sequence,
-            "trace_or_method_labware": labware_name,
-            "detected_labware_format": sequence_format,
-            "position_count": position_count,
-            "expected_layout_format": expected_format if config.role == "dispense" else "not applicable to source",
-            "message": message,
-        })
-
-    if not summary:
-        summary.append({
-            "type": "labware_validation_summary",
-            "status": "not_checked",
-            "expected_layout_format": expected_format,
-            "message": "No aspirate or dispense sequences were selected for labware validation.",
-        })
-
-    return summary
-
-
-
-
-
-
-
-
-
-
-lay_metadata = parse_lay_sequence_metadata(self.lay_path)
-
-labware_summary = build_labware_validation_summary(
-    marker_matches,
-    trace_findings,
-    configs,
-    lay_metadata,
-)
-
-
-
-
-
-
-
-
-
-
-
-def generate_plan_run_and_validate(self):
-    if not self.lay_path:
-        messagebox.showerror("Missing LAY", "Upload a .lay file first.")
-        return
-
-    configs = self.collect_configs()
-
-    if not configs:
-        messagebox.showerror("Missing Sequences", "Select at least one sequence.")
-        return
-
-    issues = validate_step_configs(configs)
-
-    critical_config_issues = [
-        issue for issue in issues
-        if issue.severity == "critical"
-    ]
-
-    if critical_config_issues:
-        messagebox.showerror(
-            "Configuration Error",
-            "\n".join(issue.message for issue in critical_config_issues[:10]),
-        )
-        return
-
-    marker = configs[0].marker.strip().upper() if configs else ""
-
-    if not self.layout_path:
-        messagebox.showerror(
-            "Missing Plate Layout",
-            "Upload a plate layout file before running DevPal Lite validation.",
-        )
-        return
-
-    if not marker:
-        messagebox.showerror(
-            "Missing Marker",
-            "Enter a marker before running DevPal Lite validation.",
-        )
-        return
-
-    today_folder = datetime.now().strftime("%d%b%Y")
-    output_dir = os.path.join(DEFAULT_RESULTS_DIR, today_folder)
-    temp_dir = os.path.join(output_dir, "temp_runtime_scripts")
-
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(temp_dir, exist_ok=True)
-
-    execution_plan = build_execution_plan(configs)
-
-    marker_matches = {}
-    layout_findings = []
-    trace_findings = []
-    limitations = []
-    transfer_pairs = []
-    runtime_trace = ""
-
-    try:
-        marker_matches = parse_plate_layout_file(self.layout_path, marker)
-    except Exception as exc:
-        issues.append(ValidationIssue(
-            "critical",
-            "layout",
-            f"Could not parse plate layout: {exc}",
-        ))
-
-    if not marker_matches:
-        issues.append(ValidationIssue(
-            "major",
-            "layout",
-            f"No layout marker matches found for marker '{marker}'.",
-        ))
-        limitations.append(
-            "Plate layout was provided, but no marker matches were found."
-        )
-
-    transfer_pairs = generate_deterministic_transfer_pairs(
-        configs,
-        marker_matches,
-    )
-
-    if marker_matches:
-        layout_findings, layout_issues = validate_layout_matches(
-            marker_matches,
-            transfer_pairs,
-            marker,
-        )
-        issues.extend(layout_issues)
-
-    # IMPORTANT:
-    # Labware validation is now method/LAY-based first.
-    # This block runs once only, before trace validation, so it does not duplicate.
-    try:
-        lay_metadata = parse_lay_sequence_metadata(self.lay_path)
-
-        labware_summary = build_labware_validation_summary(
-            marker_matches,
-            trace_findings,
+        runtime_trace, runtime_issues = run_pyhamilton_simulation(
+            self.lay_path,
             configs,
-            lay_metadata,
+            execution_plan,
         )
-
-        trace_findings.extend(labware_summary)
-
-        for labware_item in labware_summary:
-            if labware_item.get("status") == "fail":
-                issues.append(ValidationIssue(
-                    "critical",
-                    "URGENT_LABWARE_MISMATCH",
-                    labware_item.get(
-                        "message",
-                        "Wrong labware detected.",
-                    ),
-                    labware_item,
-                ))
-
-    except Exception as exc:
-        issues.append(ValidationIssue(
-            "major",
-            "labware_validation",
-            f"Could not complete method/LAY labware validation: {exc}",
-        ))
-
-    review_script = generate_pyhamilton_review_script(
-        configs,
-        execution_plan,
-        temp_dir,
-    )
-
-    messagebox.showinfo(
-        "PyHamilton Simulation Starting",
-        "DevPal Lite will now start PyHamilton simulation, run the selected "
-        "sequences, locate the newest STAR_OEM_noFan trace, and validate it "
-        "against the uploaded plate layout.",
-    )
-
-    try:
-        runtime_trace, runtime_issues = run_pyhamilton_simulation_required(
-            lay_path=self.lay_path,
-            configs=configs,
-            execution_plan=execution_plan,
-            output_dir=temp_dir,
-        )
-
         issues.extend(runtime_issues)
 
         if runtime_trace:
             self.trace_path = runtime_trace
+        elif uploaded_trace_before_run:
+            self.trace_path = uploaded_trace_before_run
+            issues.append(ValidationIssue(
+                "major",
+                "trace",
+                "No new simulation trace was found, so DevPal Lite used the manually uploaded trace as fallback.",
+                {"uploaded_trace": uploaded_trace_before_run},
+            ))
         else:
-            latest_trace = get_latest_trc_file(
-                run_start_time=None,
-                wait_seconds=3,
-            )
+            self.trace_path = ""
 
-            if latest_trace:
-                self.trace_path = latest_trace
-                runtime_trace = latest_trace
-                issues.append(ValidationIssue(
-                    "minor",
-                    "trace",
-                    "No run-start-filtered trace was found, so DevPal Lite used "
-                    "the latest STAR_OEM_noFan trace from the log folder.",
-                    {"trace_path": latest_trace},
-                ))
-            else:
-                issues.append(ValidationIssue(
-                    "critical",
-                    "trace",
-                    "No STAR_OEM_noFan trace file was found after PyHamilton simulation.",
-                ))
-                limitations.append(
-                    "Trace validation could not be completed because no new or latest trace file was found."
-                )
+        if self.trace_path:
+            try:
+                aspirate_steps, dispense_steps, ordered_steps = parse_trc_file(self.trace_path)
+                ok, cross_match = cross_match_positions(aspirate_steps, dispense_steps, configs[0].replicate)
 
-    except Exception as exc:
-        issues.append(ValidationIssue(
-            "critical",
-            "pyhamilton_simulation",
-            f"PyHamilton simulation failed: {type(exc).__name__}: {exc}",
-        ))
-        limitations.append(
-            "PyHamilton simulation did not complete successfully; trace validation may be incomplete."
-        )
+                trace_findings.append({
+                    "type": "trace_summary",
+                    "ordered_steps": ordered_steps,
+                    "aspirate_step_count": len(aspirate_steps),
+                    "dispense_step_count": len(dispense_steps),
+                    "cross_match_status": "pass" if ok else "fail",
+                    "cross_match": str(cross_match),
+                })
 
-    # Always prefer simulation/latest STAR_OEM_noFan trace over manually selected trace.
-    # Manual trace is only fallback if no simulation/latest trace exists.
-    trace_to_analyze = runtime_trace or self.trace_path
-
-    if not trace_to_analyze:
-        latest_trace = get_latest_trc_file(
-            run_start_time=None,
-            wait_seconds=3,
-        )
-
-        if latest_trace:
-            trace_to_analyze = latest_trace
-            self.trace_path = latest_trace
-
-    if trace_to_analyze:
-        try:
-            aspirate_steps, dispense_steps, ordered_steps = parse_trc_file(
-                trace_to_analyze,
-            )
-
-            ok, cross_match = cross_match_positions(
-                aspirate_steps,
-                dispense_steps,
-                configs[0].replicate,
-            )
-
-            trace_findings.append({
-                "type": "trace_summary",
-                "trace_file": trace_to_analyze,
-                "ordered_step_count": len(ordered_steps),
-                "aspirate_step_count": len(aspirate_steps),
-                "dispense_step_count": len(dispense_steps),
-                "cross_match_status": "pass" if ok else "fail",
-                "cross_match": str(cross_match),
-            })
-
-            trace_findings.append({
-                "type": "ordered_trace_steps",
-                "steps": ordered_steps,
-            })
-
-            if ok and isinstance(cross_match, dict):
-                if marker_matches:
+                if ok and isinstance(cross_match, dict) and marker_matches:
                     t_findings, t_issues = validate_trace_against_layout(
                         cross_match,
                         marker_matches,
@@ -451,116 +96,69 @@ def generate_plan_run_and_validate(self):
                     trace_findings.extend(t_findings)
                     issues.extend(t_issues)
 
-                    tracker_enabled = bool(self.tracking_var.get()) if hasattr(self, "tracking_var") else False
-
-                    if tracker_enabled:
-                        tracking_ok, tracking_result = validate_tracking_source_order(
-                            cross_match,
-                            marker,
-                        )
-
-                        trace_findings.append({
-                            "type": "tracking_validation",
-                            "status": "pass" if tracking_ok else "fail",
-                            "results": tracking_result,
-                        })
-
-                        if not tracking_ok:
-                            issues.append(ValidationIssue(
-                                "critical",
-                                "tracking_validation",
-                                "Tracking validation failed.",
-                                {"results": tracking_result},
-                            ))
-                else:
-                    limitations.append(
-                        "Trace was parsed, but marker layout matching was unavailable."
+                    labware_summary = build_labware_validation_summary(
+                        marker_matches,
+                        trace_findings,
                     )
 
-            else:
-                issues.append(ValidationIssue(
-                    "critical",
-                    "trace_crossmatch",
-                    f"Trace cross-match failed: {cross_match}",
-                ))
+                    trace_findings.extend(labware_summary)
 
-        except Exception as exc:
-            issues.append(ValidationIssue(
-                "critical",
-                "trace_analysis",
-                f"Trace analysis failed: {type(exc).__name__}: {exc}",
-            ))
-    else:
-        limitations.append(
-            "No trace file was available; trace validation was not completed."
+                    for labware_item in labware_summary:
+                        if labware_item.get("status") == "fail":
+                            issues.append(ValidationIssue(
+                                "critical",
+                                "URGENT_LABWARE_MISMATCH",
+                                labware_item.get("message", "Wrong labware detected."),
+                                labware_item,
+                            ))
+
+                    if self.tracking_var.get():
+                        tracking_findings, tracking_issues = validate_tracking_source_order(cross_match, marker)
+                        trace_findings.extend(tracking_findings)
+                        issues.extend(tracking_issues)
+                else:
+                    issues.append(ValidationIssue("critical", "trace", f"Trace cross-match failed: {cross_match}"))
+
+            except Exception as exc:
+                issues.append(ValidationIssue("critical", "trace", f"Trace analysis failed: {exc}"))
+        else:
+            limitations.append("No trace file was selected or found; trace validation was not completed.")
+
+        output = create_output_model(
+            lay_file=self.lay_path,
+            layout_file=self.layout_path,
+            trace_file=self.trace_path,
+            configs=configs,
+            pairs=pairs,
+            execution_plan=execution_plan,
+            marker_matches=marker_matches,
+            layout_findings=layout_findings,
+            trace_findings=trace_findings,
+            issues=issues,
+            limitations=limitations,
+            review_script_path=review_script,
         )
 
-    output = create_output_model(
-        lay_file=self.lay_path,
-        layout_file=self.layout_path,
-        trace_file=trace_to_analyze or "",
-        configs=configs,
-        pairs=transfer_pairs,
-        execution_plan=execution_plan,
-        marker_matches=marker_matches,
-        layout_findings=layout_findings,
-        trace_findings=trace_findings,
-        issues=issues,
-        limitations=limitations,
-        review_script_path=review_script,
-    )
+        json_path = os.path.join(output_dir, f"DevPal_Lite_Output_Model_{datetime.now().strftime('%H%M%S')}.json")
+        Path(json_path).write_text(json.dumps(asdict(output), indent=2, default=str), encoding="utf-8")
 
-    json_path = os.path.join(
-        output_dir,
-        f"DevPal_Lite_Output_Model_{datetime.now().strftime('%H%M%S')}.json",
-    )
+        report_format = self.report_format_var.get()
 
-    Path(json_path).write_text(
-        json.dumps(asdict(output), indent=2, default=str),
-        encoding="utf-8",
-    )
+        if report_format == "pdf":
+            report_path = write_pdf_report(output, output_dir)
+        elif report_format == "txt":
+            report_path = write_text_report(output, output_dir)
+        else:
+            report_path = write_docx_report(output, output_dir)
 
-    report_format = self.report_format_var.get().strip().lower()
+        output.report_path = report_path
+        Path(json_path).write_text(json.dumps(asdict(output), indent=2, default=str), encoding="utf-8")
 
-    if report_format == "pdf":
-        report_path = write_pdf_report(output, output_dir)
-    elif report_format == "txt":
-        report_path = write_text_report(output, output_dir)
-    else:
-        report_path = write_docx_report(output, output_dir)
+        issue_count = len([issue for issue in issues if issue.severity in ("critical", "major")])
 
-    output.report_path = report_path
+        messagebox.showinfo(
+            "DevPal Lite Complete",
+            f"Validation complete.\n\nMajor/Critical issues: {issue_count}\nReport: {report_path}\nOutput Model: {json_path}\nTrace: {self.trace_path or 'None'}",
+        )
 
-    Path(json_path).write_text(
-        json.dumps(asdict(output), indent=2, default=str),
-        encoding="utf-8",
-    )
-
-    major_or_critical_count = len([
-        issue for issue in issues
-        if issue.severity in ("critical", "major")
-    ])
-
-    urgent_labware_count = len([
-        issue for issue in issues
-        if issue.category == "URGENT_LABWARE_MISMATCH"
-    ])
-
-    messagebox.showinfo(
-        "DevPal Lite Complete",
-        "Validation complete.\n\n"
-        f"Major/Critical issues: {major_or_critical_count}\n"
-        f"Urgent labware issues: {urgent_labware_count}\n"
-        f"Trace analyzed: {trace_to_analyze or 'None'}\n\n"
-        f"Report: {report_path}\n"
-        f"Output Model: {json_path}\n"
-        f"Temp Review Script: {review_script}",
-    )
-
-    self.status.config(
-        text=f"Complete. Report saved: {report_path}"
-    )
-
-
-
-
+        self.status.config(text=f"Complete. Report saved: {report_path}")
