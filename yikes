@@ -1,13 +1,171 @@
-def get_sequence_frame(self):
-    if hasattr(self, "sequence_frame") and self.sequence_frame is not None:
-        return self.sequence_frame
+Replace your entire `render_sequences()` with this:
 
-    if hasattr(self, "sequence_table_frame") and self.sequence_table_frame is not None:
-        self.sequence_frame = self.sequence_table_frame
-        return self.sequence_frame
+```python
+def render_sequences(self):
+    parent = None
 
-    if hasattr(self, "scrollable_frame") and self.scrollable_frame is not None:
-        self.sequence_frame = self.scrollable_frame
-        return self.sequence_frame
+    for attr_name in (
+        "sequence_frame",
+        "sequence_table_frame",
+        "sequence_scrollable_frame",
+        "scrollable_frame",
+        "table_frame",
+        "main_frame",
+        "root",
+    ):
+        possible_parent = getattr(self, attr_name, None)
+        if possible_parent is not None and hasattr(possible_parent, "winfo_children"):
+            parent = possible_parent
+            break
 
-    raise AttributeError("No sequence frame exists. Create self.sequence_frame in build_ui() before calling render_sequences().")
+    if parent is None:
+        messagebox.showerror("UI Error", "No valid parent frame exists for sequence rendering.")
+        return
+
+    if not hasattr(self, "sequence_frame") or self.sequence_frame is None:
+        self.sequence_frame = ttk.Frame(parent)
+        self.sequence_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+    sequence_frame = self.sequence_frame
+
+    for widget in sequence_frame.winfo_children():
+        widget.destroy()
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+
+    headers = [
+        ("Use", 0, 6),
+        ("Sequence", 1, 34),
+        ("Step Role", 2, 12),
+        ("Manual", 3, 8),
+        ("Channel Pattern", 4, 18),
+        ("Hardware", 5, 10),
+        ("Seq Count", 6, 10),
+    ]
+
+    for text, col, width in headers:
+        tk.Label(
+            sequence_frame,
+            text=text,
+            width=width,
+            anchor="w",
+            font=("Arial", 9, "bold"),
+        ).grid(row=0, column=col, padx=4, pady=4, sticky="w")
+
+    sequence_names = list(getattr(self, "sequence_names", []) or [])
+    sequence_counts = getattr(self, "sequence_counts", {}) or {}
+
+    for row_index, sequence_name in enumerate(sequence_names, start=1):
+        sequence_count = int(sequence_counts.get(sequence_name, 0) or 0)
+        default_hardware = detect_hardware_mode(sequence_name, "").lower()
+
+        if default_hardware not in ("channels", "stamp"):
+            default_hardware = "channels"
+
+        default_channel_pattern = "1" * 96 if default_hardware == "stamp" else "111111111111"
+
+        use_var = tk.IntVar(value=0)
+        role_var = tk.StringVar(value="aspirate")
+        manual_var = tk.IntVar(value=0)
+        channel_var = tk.StringVar(value=default_channel_pattern)
+        hardware_var = tk.StringVar(value=default_hardware)
+        sequence_count_var = tk.StringVar(value=str(sequence_count))
+
+        self.sequence_vars.append((sequence_name, use_var))
+        self.sequence_role_vars[sequence_name] = role_var
+        self.sequence_manual_vars[sequence_name] = manual_var
+        self.sequence_channel_vars[sequence_name] = channel_var
+        self.sequence_hardware_vars[sequence_name] = hardware_var
+        self.sequence_count_vars[sequence_name] = sequence_count_var
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=use_var,
+        ).grid(row=row_index, column=0, padx=4, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            text=sequence_name,
+            width=34,
+            anchor="w",
+        ).grid(row=row_index, column=1, padx=4, pady=2, sticky="w")
+
+        role_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=role_var,
+            values=["tip_pick", "aspirate", "dispense"],
+            width=12,
+            state="readonly",
+        )
+        role_combo.grid(row=row_index, column=2, padx=4, pady=2, sticky="w")
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=manual_var,
+        ).grid(row=row_index, column=3, padx=4, pady=2, sticky="w")
+
+        tk.Entry(
+            sequence_frame,
+            textvariable=channel_var,
+            width=18,
+        ).grid(row=row_index, column=4, padx=4, pady=2, sticky="w")
+
+        hardware_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=hardware_var,
+            values=["channels", "stamp"],
+            width=10,
+            state="readonly",
+        )
+        hardware_combo.grid(row=row_index, column=5, padx=4, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            textvariable=sequence_count_var,
+            width=10,
+            anchor="w",
+        ).grid(row=row_index, column=6, padx=4, pady=2, sticky="w")
+
+        def on_role_or_hardware_change(event=None, seq=sequence_name):
+            role = self.sequence_role_vars[seq].get().strip()
+            hardware = self.sequence_hardware_vars[seq].get().strip().lower()
+
+            detected = detect_hardware_mode(seq, role).lower()
+
+            if detected in ("channels", "stamp"):
+                hardware = detected
+                self.sequence_hardware_vars[seq].set(hardware)
+
+            current_pattern = self.sequence_channel_vars[seq].get().strip()
+
+            if hardware == "stamp":
+                if not current_pattern or len(current_pattern) != 96:
+                    self.sequence_channel_vars[seq].set("1" * 96)
+            else:
+                if not current_pattern or len(current_pattern) == 96:
+                    self.sequence_channel_vars[seq].set("111111111111")
+
+        role_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+        hardware_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+
+    if not sequence_names:
+        tk.Label(
+            sequence_frame,
+            text="No sequences loaded.",
+            anchor="w",
+        ).grid(row=1, column=0, columnspan=7, padx=4, pady=8, sticky="w")
+
+    try:
+        sequence_frame.update_idletasks()
+        if hasattr(self, "sequence_canvas"):
+            self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all"))
+        elif hasattr(self, "canvas"):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+    except Exception:
+        pass
+```
