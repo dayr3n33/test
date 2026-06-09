@@ -1,272 +1,240 @@
-def _clean_liquid_class(liq_class: str) -> str:
-    return str(liq_class or "").strip()
-
-
-def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
-    func = _get_optional_pyhamilton_function(
-        "tip_pick_up_seq",
-        "tip_pickup_seq",
-        "tip_pick_up",
-        "tip_pickup",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            tipseq=tipseq,
-            tip_seq=tipseq,
-            sequence=tipseq,
-            channel=channel,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "tip_pick_up_seq",
-        tipseq=tipseq,
-        tip_seq=tipseq,
-        sequence=tipseq,
-        channel=channel,
+def is_error_record(value: Any) -> bool:
+    text = str(value).lower()
+    return (
+        "urgent" in text
+        or "critical" in text
+        or "error" in text
+        or "fail" in text
+        or "mismatch" in text
+        or "wrong labware" in text
     )
 
 
-def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class: str):
-    liq_class = _clean_liquid_class(liq_class)
-    print(f"USING CHANNEL ASPIRATE LIQUID CLASS: {liq_class}")
+def docx_add_line(doc, text: str, force_red: bool = False) -> None:
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run(str(text))
+    if force_red or is_error_record(text):
+        run.font.color.rgb = RGBColor(255, 0, 0)
 
-    func = _get_optional_pyhamilton_function(
-        "aspirate_seq",
-        "aspirate_from_seq",
-        "aspirate",
+
+def safe_text(value: Any) -> str:
+    if value is None:
+        return "None"
+    return str(value)
+
+
+
+
+
+
+
+
+try:
+    from docx import Document
+    from docx.shared import RGBColor
+except ImportError:
+    Document = None
+    RGBColor = None
+
+
+
+
+
+
+
+
+
+
+def write_human_section_docx(doc, title: str, data: Any) -> None:
+    doc.add_heading(title, level=1)
+
+    if not data:
+        doc.add_paragraph("None found.")
+        return
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            line = f"{humanize_key(key)}: {safe_text(value)}"
+            docx_add_line(doc, line)
+        return
+
+    if isinstance(data, list):
+        for index, item in enumerate(data, start=1):
+            docx_add_line(doc, f"Item {index}", force_red=is_error_record(item))
+
+            if isinstance(item, dict):
+                for key, value in item.items():
+                    line = f"{humanize_key(key)}: {safe_text(value)}"
+                    docx_add_line(doc, line)
+            else:
+                docx_add_line(doc, safe_text(item))
+        return
+
+    docx_add_line(doc, safe_text(data))
+
+
+
+
+
+
+
+
+
+
+
+def build_labware_validation_summary(
+    layout_matches: Dict[str, List[Dict[str, Any]]],
+    trace_findings: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    summary = []
+
+    layout_summary = summarize_layout_format(layout_matches)
+    expected_format = layout_summary.get("inferred_plate_format", "unknown")
+
+    labware_findings = [
+        finding for finding in trace_findings
+        if finding.get("type") == "labware_format_check"
+    ]
+
+    if not labware_findings:
+        return [{
+            "type": "labware_validation_summary",
+            "status": "not_checked",
+            "expected_layout_format": expected_format,
+            "message": "No trace labware findings were available for labware validation.",
+        }]
+
+    for finding in labware_findings:
+        status = finding.get("status", "unknown")
+        labware = finding.get("labware", "unknown")
+        labware_format = finding.get("labware_format", "unknown")
+        destination = finding.get("destination", "unknown")
+
+        if status == "fail":
+            message = (
+                f"URGENT ERROR: Wrong labware detected. Trace dispensed to labware "
+                f"'{labware}' detected as {labware_format}, but layout requires {expected_format}."
+            )
+        elif status == "pass":
+            message = (
+                f"Correct labware detected. Trace dispensed to labware '{labware}' "
+                f"detected as {labware_format}, matching layout format {expected_format}."
+            )
+        else:
+            message = (
+                f"Labware checked but could not be fully confirmed. Trace labware '{labware}' "
+                f"detected as {labware_format}; layout format is {expected_format}."
+            )
+
+        summary.append({
+            "type": "labware_validation_summary",
+            "status": status,
+            "trace_labware": labware,
+            "trace_labware_format": labware_format,
+            "expected_layout_format": expected_format,
+            "destination": destination,
+            "message": message,
+        })
+
+    return summary
+
+
+
+
+
+
+if ok and isinstance(cross_match, dict) and marker_matches:
+    t_findings, t_issues = validate_trace_against_layout(
+        cross_match,
+        marker_matches,
+        marker,
     )
 
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            asp_seq=asp_seq,
-            sequence=asp_seq,
-            vols=vols,
-            volume=vols,
-            channel=channel,
-            liq_class=liq_class,
-            liquid_class=liq_class,
-        )
+    trace_findings.extend(t_findings)
+    issues.extend(t_issues)
 
-    return _send_command_best_effort(
-        ham_int,
-        "aspirate_seq",
-        asp_seq=asp_seq,
-        sequence=asp_seq,
-        vols=vols,
-        volume=vols,
-        channel=channel,
-        liq_class=liq_class,
-        liquid_class=liq_class,
+    labware_summary = build_labware_validation_summary(
+        marker_matches,
+        trace_findings,
     )
 
+    trace_findings.extend(labware_summary)
 
-def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class: str):
-    liq_class = _clean_liquid_class(liq_class)
-    print(f"USING CHANNEL DISPENSE LIQUID CLASS: {liq_class}")
 
-    func = _get_optional_pyhamilton_function(
-        "dispense_seq",
-        "dispense_to_seq",
-        "dispense",
+
+
+
+
+
+if ok and isinstance(cross_match, dict) and marker_matches:
+    t_findings, t_issues = validate_trace_against_layout(
+        cross_match,
+        marker_matches,
+        marker,
     )
 
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            disp_seq=disp_seq,
-            sequence=disp_seq,
-            vols=vols,
-            volume=vols,
-            channel=channel,
-            liq_class=liq_class,
-            liquid_class=liq_class,
-        )
+    trace_findings.extend(t_findings)
+    issues.extend(t_issues)
 
-    return _send_command_best_effort(
-        ham_int,
-        "dispense_seq",
-        disp_seq=disp_seq,
-        sequence=disp_seq,
-        vols=vols,
-        volume=vols,
-        channel=channel,
-        liq_class=liq_class,
-        liquid_class=liq_class,
+    labware_summary = build_labware_validation_summary(
+        marker_matches,
+        trace_findings,
     )
 
+    trace_findings.extend(labware_summary)
 
-def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
-    func = _get_optional_pyhamilton_function(
-        "tip_eject_seq2",
-        "tip_eject_seq",
-        "tip_eject",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            waste_seq=waste_seq,
-            sequence=waste_seq,
-            channel=channel,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "tip_eject_seq2",
-        waste_seq=waste_seq,
-        sequence=waste_seq,
-        channel=channel,
-    )
+    for labware_item in labware_summary:
+        if labware_item.get("status") == "fail":
+            issues.append(ValidationIssue(
+                "critical",
+                "URGENT_LABWARE_MISMATCH",
+                labware_item.get("message", "Wrong labware detected."),
+                labware_item,
+            ))
 
 
-def ph_inc_sequence(ham_int, sequence: str, increment: int):
-    func = _get_optional_pyhamilton_function(
-        "inc_sequence",
-        "increment_sequence",
-        "increment_seq",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            sequence=sequence,
-            increment=increment,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "inc_sequence",
-        sequence=sequence,
-        increment=increment,
-    )
 
 
-def ph_tip_pick_up_96_seq(ham_int, tip96_seq: str):
-    func = _get_optional_pyhamilton_function(
-        "tip_pick_up_96_seq",
-        "tip_pickup_96_seq",
-        "tip_pick_up_96",
-        "tip_pickup_96",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            tip96_seq=tip96_seq,
-            tip_seq=tip96_seq,
-            sequence=tip96_seq,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "tip_pick_up_96_seq",
-        tip96_seq=tip96_seq,
-        tip_seq=tip96_seq,
-        sequence=tip96_seq,
-    )
 
 
-def ph_aspirate_96_seq(ham_int, plate96, head_asp_seq: str, vols: float, liq_class: str):
-    liq_class = _clean_liquid_class(liq_class)
-    print(f"USING 96-HEAD ASPIRATE LIQUID CLASS: {liq_class}")
-
-    func = _get_optional_pyhamilton_function(
-        "aspirate_96_seq",
-        "aspirate96_seq",
-        "aspirate_96",
-        "aspirate96",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            plate96=plate96,
-            plate=plate96,
-            head_asp_seq=head_asp_seq,
-            asp_seq=head_asp_seq,
-            sequence=head_asp_seq,
-            vols=vols,
-            volume=vols,
-            liq_class=liq_class,
-            liquid_class=liq_class,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "aspirate_96_seq",
-        plate96=plate96,
-        plate=plate96,
-        head_asp_seq=head_asp_seq,
-        asp_seq=head_asp_seq,
-        sequence=head_asp_seq,
-        vols=vols,
-        volume=vols,
-        liq_class=liq_class,
-        liquid_class=liq_class,
-    )
 
 
-def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float, liq_class: str):
-    liq_class = _clean_liquid_class(liq_class)
-    print(f"USING 96-HEAD DISPENSE LIQUID CLASS: {liq_class}")
-
-    func = _get_optional_pyhamilton_function(
-        "dispense_96_seq2",
-        "dispense_96_seq",
-        "dispense96_seq",
-        "dispense_96",
-        "dispense96",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            plate96=plate96,
-            plate=plate96,
-            head_disp_seq=head_disp_seq,
-            disp_seq=head_disp_seq,
-            sequence=head_disp_seq,
-            vols=vols,
-            volume=vols,
-            liq_class=liq_class,
-            liquid_class=liq_class,
-        )
-
-    return _send_command_best_effort(
-        ham_int,
-        "dispense_96_seq2",
-        plate96=plate96,
-        plate=plate96,
-        head_disp_seq=head_disp_seq,
-        disp_seq=head_disp_seq,
-        sequence=head_disp_seq,
-        vols=vols,
-        volume=vols,
-        liq_class=liq_class,
-        liquid_class=liq_class,
-    )
 
 
-def ph_tip_eject_96(ham_int):
-    func = _get_optional_pyhamilton_function(
-        "tip_eject_96",
-        "tip_eject_96_seq",
-        "tip_eject96",
-    )
+line = f"{humanize_key(key)}: {value}"
+style = styles["BodyText"]
 
-    if func:
-        return _call_best_effort(func, ham_int)
+if is_error_record(line):
+    line = f'<font color="red">{line}</font>'
 
-    return _send_command_best_effort(ham_int, "tip_eject_96")
+story.append(Paragraph(line, style))
+
+
+
+
+line = str(item)
+if is_error_record(line):
+    line = f'<font color="red">{line}</font>'
+story.append(Paragraph(line, styles["BodyText"]))
+
+
+
+
+
+
+
+
+line = f"{humanize_key(key)}: {value}"
+if is_error_record(line):
+    line = "URGENT ERROR: " + line
+handle.write(line + "\n")
+
+
+
+
+
+line = str(item)
+if is_error_record(line):
+    line = "URGENT ERROR: " + line
+handle.write(line + "\n")
+
