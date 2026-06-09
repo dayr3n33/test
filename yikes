@@ -1,13 +1,6 @@
-C:\Windows\System32>net start MSSQL$HAMILTON
-System error 1069 has occurred.
-
-The service did not start due to a logon failure.
-
-
-C:\Windows\System32>net start SQLBrowser
-System error 1058 has occurred.
-
-The service cannot be started, either because it is disabled or because it has no enabled devices associated with it.
-
+C:\Windows\System32>sqlcmd -S .\HAMILTON -E
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF]. .
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login timeout expired.
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online..
 
 C:\Windows\System32>
