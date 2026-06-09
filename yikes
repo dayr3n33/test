@@ -1,5 +1,30 @@
+C:\Windows\System32>sc qc MSSQL$HAMILTON
+[SC] QueryServiceConfig SUCCESS
+
+SERVICE_NAME: MSSQL$HAMILTON
+        TYPE               : 10  WIN32_OWN_PROCESS
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : "C:\Program Files\Microsoft SQL Server\MSSQL15.HAMILTON\MSSQL\Binn\sqlservr.exe" -sHAMILTON
+        LOAD_ORDER_GROUP   :
+        TAG                : 0
+        DISPLAY_NAME       : SQL Server (HAMILTON)
+        DEPENDENCIES       : KEYISO
+        SERVICE_START_NAME : NT Service\MSSQL$HAMILTON
+
+C:\Windows\System32>sc config MSSQL$HAMILTON obj=LocalSystem
+[SC] ChangeServiceConfig SUCCESS
+
+C:\Windows\System32>sc config SQLBrowser start= demand
+[SC] ChangeServiceConfig SUCCESS
+
+C:\Windows\System32>net start SQLBrowser
+The SQL Server Browser service is starting.
+The SQL Server Browser service was started successfully.
+
+
 C:\Windows\System32>sqlcmd -S .\HAMILTON -E
-Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF]. .
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Shared Memory Provider: Could not open a connection to SQL Server [2]. .
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login timeout expired.
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online..
 
