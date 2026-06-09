@@ -1,58 +1,45 @@
-def infer_plate_format_from_position_count(count: int) -> str:
-    count = int(count or 0)
+def infer_plate_format_from_labware_name(name: str) -> str:
+    text = str(name or "").upper()
 
-    if count == 24:
-        return "24-well"
-    if count == 96:
-        return "96-well"
-    if count == 384:
-        return "384-well"
+    if "384" in text:
+        return "384-well plate"
+    if "96" in text or "PLATE96" in text or "PCR96" in text:
+        return "96-well plate"
+    if "24" in text:
+        return "24-well plate"
 
-    return "unknown"
+    rack_patterns = [
+        (r"\b48\b|48POS|48_POS|48 POSITION|HONEYCOMB", "48-position tube/sample rack"),
+        (r"\b32\b|32POS|32_POS|32 POSITION", "32-position tube/sample rack"),
+        (r"\b24\b|24POS|24_POS|24 POSITION", "24-position tube/sample rack"),
+        (r"\b16\b|16POS|16_POS|16 POSITION", "16-position rack"),
+        (r"\b12\b|12POS|12_POS|12 POSITION", "12-position rack"),
+        (r"\b8\b|8POS|8_POS|8 POSITION", "8-position rack"),
+    ]
 
+    if "RACK" in text or "TUBE" in text or "SAMPLE" in text or "CARRIER" in text or "HONEYCOMB" in text:
+        for pattern, label in rack_patterns:
+            if re.search(pattern, text):
+                return label
+        return "rack/unknown capacity"
 
-
-
-
-def infer_labware_format_from_method_context(text: str, labware_name: str) -> str:
-    target = str(labware_name or "").strip()
-    if not target:
-        return "unknown"
-
-    direct = infer_plate_format_from_labware_name(target)
-    if direct != "unknown":
-        return direct
-
-    escaped = re.escape(target)
-    context_pattern = re.compile(
-        rf".{{0,300}}{escaped}.{{0,300}}",
-        re.IGNORECASE | re.DOTALL,
-    )
-
-    contexts = context_pattern.findall(text)
-
-    for context in contexts:
-        context_upper = context.upper()
-
-        if any(token in context_upper for token in ("384", "384WELL", "384 WELL", "PLATE384")):
-            return "384-well"
-
-        if any(token in context_upper for token in ("96", "96WELL", "96 WELL", "PLATE96", "PCR96")):
-            return "96-well"
-
-        if any(token in context_upper for token in ("24", "24WELL", "24 WELL", "PLATE24")):
-            return "24-well"
-
-        if "WASTE" in context_upper:
-            return "waste"
-
-        if "TIP" in context_upper or "TIPRACK" in context_upper:
-            return "tip rack"
+    if "WASTE" in text:
+        return "waste"
+    if "TIP" in text or "TIPRACK" in text or "SLIM" in text:
+        return "tip rack"
+    if "PLATE" in text:
+        return "plate/unknown format"
 
     return "unknown"
 
 
 
+
+
+
+
+def infer_labware_format_from_name(labware_name: str) -> str:
+    return infer_plate_format_from_labware_name(labware_name)
 
 
 
@@ -83,11 +70,11 @@ def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
         raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
         raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
 
-        clean_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
-        if not clean_match:
+        seq_name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
+        if not seq_name_match:
             continue
 
-        seq_name = clean_control_chars(clean_match.group(1)).strip()
+        seq_name = clean_control_chars(seq_name_match.group(1)).strip()
         seq_name = re.sub(r"\s+", " ", seq_name)
 
         cnt_match = re.search(
@@ -95,13 +82,24 @@ def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
             text,
             re.IGNORECASE,
         )
-        sequence_count = int(cnt_match.group(1)) if cnt_match else 0
+        selected_position_count = int(cnt_match.group(1)) if cnt_match else 0
 
         objids = re.findall(
-            rf"Seq\.{seq_id}\.Item\.\d+\.ObjId[^A-Za-z0-9_]*([A-Za-z][A-Za-z0-9_ .\-]*)",
+            rf"Seq\.{seq_id}\.Item\.\d+\.ObjId(.*?)(?=Seq\.{seq_id}\.Item\.\d+\.|Seq\.{seq_id}\.|Seq\.\d+\.|$)",
             text,
-            re.IGNORECASE,
+            re.IGNORECASE | re.DOTALL,
         )
+
+        clean_objids = []
+        for raw_objid in objids:
+            raw_objid = raw_objid.replace("\x00", " ")
+            raw_objid = re.sub(r"[\x01-\x1f]+", " ", raw_objid)
+            match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,150})", raw_objid)
+            if match:
+                value = clean_control_chars(match.group(1)).strip()
+                value = re.sub(r"\s+", " ", value)
+                if value:
+                    clean_objids.append(value)
 
         positions = re.findall(
             rf"Seq\.{seq_id}\.Item\.\d+\.PosId[^A-Za-z0-9]*([A-Za-z]?\d{{1,3}})",
@@ -109,34 +107,21 @@ def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
             re.IGNORECASE,
         )
 
-        clean_objids = []
-        for item in objids:
-            cleaned = clean_control_chars(item).strip()
-            cleaned = re.sub(r"\s+", " ", cleaned)
-            if cleaned:
-                clean_objids.append(cleaned)
-
         labware_name = max(set(clean_objids), key=clean_objids.count) if clean_objids else seq_name
-
-        labware_format = infer_labware_format_from_method_context(text, labware_name)
-
-        if labware_format == "unknown":
-            labware_format = infer_labware_format_from_method_context(text, seq_name)
+        labware_format = infer_plate_format_from_labware_name(labware_name)
 
         metadata[seq_name] = {
             "sequence_id": seq_id,
             "sequence_name": seq_name,
-            "sequence_count": sequence_count,
-            "position_count": sequence_count,
+            "selected_position_count": selected_position_count,
+            "position_count": selected_position_count,
             "positions": [normalize_position_text(position) for position in positions],
             "labware_name": labware_name,
             "labware_format": labware_format,
-            "format_source": "method_labware_context" if labware_format != "unknown" else "unknown_not_sequence_count",
+            "labware_format_basis": "method_file_objid_or_labware_name",
         }
 
     return metadata
-
-
 
 
 
@@ -166,9 +151,33 @@ def get_sequence_labware_metadata(
         "sequence_name": target,
         "labware_name": target if target else "unknown",
         "labware_format": inferred_format,
-        "format_source": "sequence_name_only" if inferred_format != "unknown" else "unknown_not_sequence_count",
+        "labware_format_basis": "sequence_name_fallback_only",
+        "selected_position_count": int(sequence_count or 0),
         "position_count": int(sequence_count or 0),
-        "sequence_count": int(sequence_count or 0),
         "positions": [],
     }
+
+
+
+
+
+position_count = seq_meta.get("selected_position_count", seq_meta.get("position_count", 0))
+
+
+
+
+
+
+
+
+message = (
+    f"Sequence '{config.sequence}' uses labware '{labware_name}' "
+    f"with detected labware format {sequence_format}. "
+    f"The sequence contains {position_count} selected position(s); this is not treated as labware capacity."
+)
+
+
+
+
+
 
