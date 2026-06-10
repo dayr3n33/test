@@ -1,135 +1,60 @@
+def parse_dataframe_plate_layout(df, marker_pattern, plate_layout):
+    if df is None or df.empty:
+        return
 
-def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, Any]]:
-    replicate = configs[0].replicate if configs else "single"
-    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
+    header_row_idx = 0
+    row_label_col_idx = 0
 
-    tip_steps = [config for config in configs if config.role == "tip_pick"]
-    asp_steps = [config for config in configs if config.role == "aspirate"]
-    dsp_steps = [config for config in configs if config.role == "dispense"]
+    for row_idx in range(1, df.shape[0]):
+        plate_row_raw = df.iat[row_idx, row_label_col_idx]
 
-    max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
-    dispense_iterations = get_required_dispense_iterations(configs)
+        if pd.isna(plate_row_raw):
+            continue
 
-    plan = []
-    order = 1
+        plate_row = str(plate_row_raw).strip().upper()
 
-    for rep_index in range(1, replicate_count + 1):
-        for dispense_iteration in range(1, dispense_iterations + 1):
-            for idx in range(max_len):
-                tip = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None
-                asp = asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None
-                dsp = dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None
+        if not re.match(r"^[A-P]$", plate_row):
+            continue
 
-                if tip:
-                    plan.append({
-                        "order": order,
-                        "action": "tip_pick",
-                        "sequence": tip.sequence,
-                        "hardware_mode": tip.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": False,
-                        "autoincrement": False,
-                        "reset_to_first_position": False,
-                        "increment": 0,
-                        "channel_pattern": tip.channel_pattern,
-                        "volume_ul": "",
-                        "liquid_class": "",
-                        "transfer_type": tip.transfer_type,
-                        "marker": tip.marker,
-                        "sequence_count": tip.sequence_count,
-                        "batch_size": get_sequence_batch_size(tip),
-                    })
-                    order += 1
+        for col_idx in range(1, df.shape[1]):
+            plate_col_raw = df.iat[header_row_idx, col_idx]
 
-                if asp:
-                    plan.append({
-                        "order": order,
-                        "action": "aspirate",
-                        "sequence": asp.sequence,
-                        "hardware_mode": asp.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": bool(asp.manual),
-                        "autoincrement": False,
-                        "reset_to_first_position": bool(asp.manual),
-                        "increment": 0,
-                        "channel_pattern": asp.channel_pattern,
-                        "volume_ul": asp.volume_ul,
-                        "liquid_class": asp.liquid_class,
-                        "transfer_type": asp.transfer_type,
-                        "marker": asp.marker,
-                        "sequence_count": asp.sequence_count,
-                        "batch_size": get_sequence_batch_size(asp),
-                    })
-                    order += 1
+            if pd.isna(plate_col_raw):
+                continue
 
-                if dsp:
-                    batch_size = get_sequence_batch_size(dsp)
-                    start_position = ((dispense_iteration - 1) * batch_size) + 1
-                    end_position = min(dispense_iteration * batch_size, int(dsp.sequence_count or start_position))
+            plate_col_text = str(plate_col_raw).strip()
 
-                    if dsp.sequence_count and start_position > dsp.sequence_count:
-                        continue
+            plate_col_match = re.search(r"\d+", plate_col_text)
+            if not plate_col_match:
+                continue
 
-                    should_increment = dispense_iteration > 1 and not bool(dsp.manual)
-                    increment_amount = batch_size if should_increment else 0
+            plate_col = int(plate_col_match.group(0))
 
-                    plan.append({
-                        "order": order,
-                        "action": "dispense",
-                        "sequence": dsp.sequence,
-                        "hardware_mode": dsp.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": bool(dsp.manual),
-                        "autoincrement": should_increment,
-                        "reset_to_first_position": bool(dsp.manual),
-                        "increment": increment_amount,
-                        "channel_pattern": dsp.channel_pattern,
-                        "volume_ul": dsp.volume_ul,
-                        "liquid_class": dsp.liquid_class,
-                        "transfer_type": dsp.transfer_type,
-                        "marker": dsp.marker,
-                        "sequence_count": dsp.sequence_count,
-                        "batch_size": batch_size,
-                        "planned_dispense_position_start": start_position,
-                        "planned_dispense_position_end": end_position,
-                    })
-                    order += 1
+            cell_value = df.iat[row_idx, col_idx]
 
-                if tip:
-                    plan.append({
-                        "order": order,
-                        "action": "tip_eject",
-                        "sequence": "Waste",
-                        "hardware_mode": tip.hardware_mode,
-                        "replicate_index": rep_index,
-                        "dispense_iteration": dispense_iteration,
-                        "manual": False,
-                        "autoincrement": False,
-                        "reset_to_first_position": False,
-                        "increment": 0,
-                        "channel_pattern": tip.channel_pattern,
-                        "volume_ul": "",
-                        "liquid_class": "",
-                        "transfer_type": tip.transfer_type,
-                        "marker": tip.marker,
-                        "sequence_count": tip.sequence_count,
-                        "batch_size": get_sequence_batch_size(tip),
-                    })
-                    order += 1
+            if pd.isna(cell_value):
+                continue
 
-    return plan
+            cell_text = str(cell_value).strip().upper()
 
+            if not cell_text:
+                continue
 
+            matches = marker_pattern.findall(cell_text)
 
-if item.get("autoincrement"):
-                    increment_amount = int(item.get("increment") or count_active_channels(channel))
-                    print(f"AUTO-INCREMENTING SEQUENCE {seq} BY {increment_amount}")
-                    ph_inc_sequence(ham_int, sequence=seq, increment=increment_amount)
-                elif item.get("manual"):
-                    print(f"MANUAL SEQUENCE MODE: {seq} will not auto-increment; using first/reset position.")
+            if not matches:
+                continue
 
+            dest_position = f"{plate_row}{plate_col}"
 
-
+            for found_marker in matches:
+                plate_layout[found_marker.upper()].append({
+                    "dest_value": dest_position,
+                    "cell_value": cell_text,
+                    "plate_row": plate_row,
+                    "plate_column": plate_col,
+                    "row_index": row_idx + 1,
+                    "column_index": col_idx + 1,
+                    "excel_position": f"{excel_col_name(col_idx)}{row_idx + 1}",
+                    "column_name": excel_col_name(col_idx),
+                })
