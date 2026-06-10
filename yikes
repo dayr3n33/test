@@ -1,60 +1,173 @@
-def parse_dataframe_plate_layout(df, marker_pattern, plate_layout):
-    if df is None or df.empty:
-        return
+def get_sequence_iterations(config: SequenceStepConfig) -> int:
+    if bool(config.manual):
+        return 1
 
-    header_row_idx = 0
-    row_label_col_idx = 0
+    position_count = int(config.sequence_count or 0)
+    batch_size = get_sequence_batch_size(config)
 
-    for row_idx in range(1, df.shape[0]):
-        plate_row_raw = df.iat[row_idx, row_label_col_idx]
+    if position_count <= 0:
+        return 1
 
-        if pd.isna(plate_row_raw):
-            continue
+    return max((position_count + batch_size - 1) // batch_size, 1)
 
-        plate_row = str(plate_row_raw).strip().upper()
 
-        if not re.match(r"^[A-P]$", plate_row):
-            continue
+def get_required_transfer_iterations(configs: List[SequenceStepConfig]) -> int:
+    asp_steps = [config for config in configs if config.role == "aspirate"]
+    dsp_steps = [config for config in configs if config.role == "dispense"]
 
-        for col_idx in range(1, df.shape[1]):
-            plate_col_raw = df.iat[header_row_idx, col_idx]
+    nonmanual_dispense = [config for config in dsp_steps if not bool(config.manual)]
+    nonmanual_aspirate = [config for config in asp_steps if not bool(config.manual)]
 
-            if pd.isna(plate_col_raw):
-                continue
+    if nonmanual_dispense:
+        return max(get_sequence_iterations(config) for config in nonmanual_dispense)
 
-            plate_col_text = str(plate_col_raw).strip()
+    if nonmanual_aspirate:
+        return max(get_sequence_iterations(config) for config in nonmanual_aspirate)
 
-            plate_col_match = re.search(r"\d+", plate_col_text)
-            if not plate_col_match:
-                continue
+    return 1
 
-            plate_col = int(plate_col_match.group(0))
 
-            cell_value = df.iat[row_idx, col_idx]
 
-            if pd.isna(cell_value):
-                continue
 
-            cell_text = str(cell_value).strip().upper()
 
-            if not cell_text:
-                continue
 
-            matches = marker_pattern.findall(cell_text)
 
-            if not matches:
-                continue
+def build_execution_plan(configs: List[SequenceStepConfig]) -> List[Dict[str, Any]]:
+    replicate = configs[0].replicate if configs else "single"
+    replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
 
-            dest_position = f"{plate_row}{plate_col}"
+    tip_steps = [config for config in configs if config.role == "tip_pick"]
+    asp_steps = [config for config in configs if config.role == "aspirate"]
+    dsp_steps = [config for config in configs if config.role == "dispense"]
 
-            for found_marker in matches:
-                plate_layout[found_marker.upper()].append({
-                    "dest_value": dest_position,
-                    "cell_value": cell_text,
-                    "plate_row": plate_row,
-                    "plate_column": plate_col,
-                    "row_index": row_idx + 1,
-                    "column_index": col_idx + 1,
-                    "excel_position": f"{excel_col_name(col_idx)}{row_idx + 1}",
-                    "column_name": excel_col_name(col_idx),
-                })
+    max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
+    transfer_iterations = get_required_transfer_iterations(configs)
+
+    plan = []
+    order = 1
+
+    for rep_index in range(1, replicate_count + 1):
+        for transfer_iteration in range(1, transfer_iterations + 1):
+            for idx in range(max_len):
+                tip = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None
+                asp = asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None
+                dsp = dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None
+
+                if tip:
+                    tip_batch_size = get_sequence_batch_size(tip)
+                    tip_should_increment = transfer_iteration > 1 and not bool(tip.manual)
+                    plan.append({
+                        "order": order,
+                        "action": "tip_pick",
+                        "sequence": tip.sequence,
+                        "hardware_mode": tip.hardware_mode,
+                        "replicate_index": rep_index,
+                        "transfer_iteration": transfer_iteration,
+                        "dispense_iteration": transfer_iteration,
+                        "manual": bool(tip.manual),
+                        "autoincrement": tip_should_increment,
+                        "reset_to_first_position": bool(tip.manual),
+                        "increment": tip_batch_size if tip_should_increment else 0,
+                        "channel_pattern": tip.channel_pattern,
+                        "volume_ul": "",
+                        "liquid_class": "",
+                        "transfer_type": tip.transfer_type,
+                        "marker": tip.marker,
+                        "sequence_count": tip.sequence_count,
+                        "batch_size": tip_batch_size,
+                    })
+                    order += 1
+
+                if asp:
+                    asp_batch_size = get_sequence_batch_size(asp)
+                    asp_start_position = ((transfer_iteration - 1) * asp_batch_size) + 1
+                    asp_end_position = min(transfer_iteration * asp_batch_size, int(asp.sequence_count or asp_start_position))
+
+                    asp_should_increment = transfer_iteration > 1 and not bool(asp.manual)
+
+                    plan.append({
+                        "order": order,
+                        "action": "aspirate",
+                        "sequence": asp.sequence,
+                        "hardware_mode": asp.hardware_mode,
+                        "replicate_index": rep_index,
+                        "transfer_iteration": transfer_iteration,
+                        "dispense_iteration": transfer_iteration,
+                        "manual": bool(asp.manual),
+                        "autoincrement": asp_should_increment,
+                        "reset_to_first_position": bool(asp.manual),
+                        "increment": asp_batch_size if asp_should_increment else 0,
+                        "channel_pattern": asp.channel_pattern,
+                        "volume_ul": asp.volume_ul,
+                        "liquid_class": asp.liquid_class,
+                        "transfer_type": asp.transfer_type,
+                        "marker": asp.marker,
+                        "sequence_count": asp.sequence_count,
+                        "batch_size": asp_batch_size,
+                        "planned_aspirate_position_start": asp_start_position,
+                        "planned_aspirate_position_end": asp_end_position,
+                    })
+                    order += 1
+
+                if dsp:
+                    dsp_batch_size = get_sequence_batch_size(dsp)
+                    dsp_start_position = ((transfer_iteration - 1) * dsp_batch_size) + 1
+                    dsp_end_position = min(transfer_iteration * dsp_batch_size, int(dsp.sequence_count or dsp_start_position))
+
+                    dsp_should_increment = transfer_iteration > 1 and not bool(dsp.manual)
+
+                    plan.append({
+                        "order": order,
+                        "action": "dispense",
+                        "sequence": dsp.sequence,
+                        "hardware_mode": dsp.hardware_mode,
+                        "replicate_index": rep_index,
+                        "transfer_iteration": transfer_iteration,
+                        "dispense_iteration": transfer_iteration,
+                        "manual": bool(dsp.manual),
+                        "autoincrement": dsp_should_increment,
+                        "reset_to_first_position": bool(dsp.manual),
+                        "increment": dsp_batch_size if dsp_should_increment else 0,
+                        "channel_pattern": dsp.channel_pattern,
+                        "volume_ul": dsp.volume_ul,
+                        "liquid_class": dsp.liquid_class,
+                        "transfer_type": dsp.transfer_type,
+                        "marker": dsp.marker,
+                        "sequence_count": dsp.sequence_count,
+                        "batch_size": dsp_batch_size,
+                        "planned_dispense_position_start": dsp_start_position,
+                        "planned_dispense_position_end": dsp_end_position,
+                    })
+                    order += 1
+
+                if tip:
+                    plan.append({
+                        "order": order,
+                        "action": "tip_eject",
+                        "sequence": "Waste",
+                        "hardware_mode": tip.hardware_mode,
+                        "replicate_index": rep_index,
+                        "transfer_iteration": transfer_iteration,
+                        "dispense_iteration": transfer_iteration,
+                        "manual": False,
+                        "autoincrement": False,
+                        "reset_to_first_position": False,
+                        "increment": 0,
+                        "channel_pattern": tip.channel_pattern,
+                        "volume_ul": "",
+                        "liquid_class": "",
+                        "transfer_type": tip.transfer_type,
+                        "marker": tip.marker,
+                        "sequence_count": tip.sequence_count,
+                        "batch_size": get_sequence_batch_size(tip),
+                    })
+                    order += 1
+
+    return plan
+
+
+
+
+
+
+
