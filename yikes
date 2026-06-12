@@ -1,30 +1,46 @@
 def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
-    if not method_path or not os.path.isfile(method_path):
+    if not method_path:
         return []
 
-    candidates = [method_path]
+    method_path = os.path.abspath(method_path)
+    method_dir = os.path.dirname(method_path)
+
+    candidates = []
+
+    if os.path.isfile(method_path):
+        candidates.append(method_path)
+
+    for ext in ("*.hsl", "*.sub", "*.stp", "*.res", "*.med", "*.lay"):
+        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
+
+    candidates = sorted(set(candidates), key=str.lower)
 
     patterns = [
-        re.compile(r"liq[_\s-]*class\s*[=:]\s*[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
-        re.compile(r"liquid[_\s-]*class\s*[=:]\s*[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
-        re.compile(r"LiquidClassName\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
-        re.compile(r"LiquidClass\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
-        re.compile(r"SelectLiquidClass\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
-        re.compile(
-            r"SetStringProperty\([^,\)]*,\s*[\"'](?:liquidClass|liq_class|LiquidClass)[\"']\s*,\s*[\"']([^\"']+)[\"']",
-            re.IGNORECASE,
-        ),
-        re.compile(
-            r"[\"']([A-Za-z0-9_]+(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface)[A-Za-z0-9_ .\-+/()]*)[\"']",
-            re.IGNORECASE,
-        ),
+        re.compile(r"\b(?:liq_class|liquid_class|liquidClass|LiquidClass)\b\s*[=:,]\s*[\"']([^\"']+)[\"']", re.IGNORECASE),
+        re.compile(r"\b(?:LiquidClassName|Liquid Class Name)\b\W+[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"\b(?:SelectLiquidClass|SetLiquidClass)\b\W+[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"[\"']([A-Za-z0-9_]+(?:_Water_|Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface)[A-Za-z0-9_ .\-+/()]*)[\"']", re.IGNORECASE),
     ]
 
     found = set()
 
+    bad_values = {
+        "liquidclass",
+        "liquid class",
+        "liquidclassname",
+        "liquid class name",
+        "liq_class",
+        "liquid_class",
+        "water",
+        "buffer",
+        "serum",
+        "plasma",
+        "dispense",
+        "aspirate",
+    }
+
     for candidate in candidates:
         text = read_text_file_best_effort(candidate)
-
         if not text:
             continue
 
@@ -33,24 +49,26 @@ def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
                 value = clean_control_chars(match)
                 value = value.strip("\"' ,;:=()[]{}")
 
+                if not value:
+                    continue
+
+                value = re.split(r"[\r\n\t;]", value)[0].strip()
+                value = value.strip("\"' ,;:=()[]{}")
+
                 if len(value) < 3 or len(value) > 150:
                     continue
 
-                if not re.match(r"^[A-Za-z][A-Za-z0-9_ .\-+/()]*$", value):
+                if value.lower() in bad_values:
                     continue
 
-                lowered = value.lower()
+                if not re.match(r"^[A-Za-z0-9_][A-Za-z0-9_ .\-+/()]*$", value):
+                    continue
 
-                if lowered in {
-                    "liquidclass",
-                    "liquid class",
-                    "liquidclassname",
-                    "liquid class name",
-                    "water",
-                    "buffer",
-                    "serum",
-                    "plasma",
-                }:
+                if not re.search(
+                    r"(water|serum|plasma|buffer|dmso|etoh|media|dispense|aspirate|empty|jet|surface|hvt|svt|tadm)",
+                    value,
+                    re.IGNORECASE,
+                ):
                     continue
 
                 found.add(value)
