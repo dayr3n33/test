@@ -1,33 +1,105 @@
-def infer_plate_format_from_labware_name(name: str) -> str:
-    text = str(name or "").upper()
+def summarize_layout_format(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+    max_row_num = 0
+    max_col = 0
+    positions = []
+    row_letters = []
 
-    if "384" in text:
-        return "384-well"
-    if "96" in text or "PLATE96" in text or "PCR96" in text:
-        return "96-well"
-    if "24" in text:
-        return "24-well"
+    for entries in layout_matches.values():
+        for entry in entries:
+            plate_row = str(entry.get("plate_row") or "").strip().upper()
+            plate_col = int(entry.get("plate_column") or 0)
 
-    rack_patterns = [
-        (r"\b48\b|48POS|48_POS|48 POSITION|HONEYCOMB", "48-position tube/sample rack"),
-        (r"\b32\b|32POS|32_POS|32 POSITION", "32-position tube/sample rack"),
-        (r"\b24\b|24POS|24_POS|24 POSITION", "24-position tube/sample rack"),
-        (r"\b16\b|16POS|16_POS|16 POSITION", "16-position rack"),
-        (r"\b12\b|12POS|12_POS|12 POSITION", "12-position rack"),
-        (r"\b8\b|8POS|8_POS|8 POSITION", "8-position rack"),
-    ]
+            if plate_row:
+                row_letters.append(plate_row)
+                max_row_num = max(max_row_num, ord(plate_row) - ord("A") + 1)
 
-    if any(word in text for word in ("RACK", "TUBE", "SAMPLE", "CARRIER", "HONEYCOMB")):
-        for pattern, label in rack_patterns:
-            if re.search(pattern, text):
-                return label
-        return "rack/unknown capacity"
+            max_col = max(max_col, plate_col)
 
-    if "WASTE" in text:
-        return "waste"
-    if "TIP" in text or "TIPRACK" in text or "SLIM" in text:
-        return "tip rack"
-    if "PLATE" in text:
-        return "plate/unknown format"
+            dest = entry.get("dest_value")
+            if dest:
+                positions.append(normalize_position_text(dest))
 
-    return "unknown"
+    inferred_format = infer_plate_format_from_dimensions(max_row_num, max_col)
+
+    return {
+        "row_count": max_row_num,
+        "column_count": max_col,
+        "row_letters": sorted(set(row_letters)),
+        "inferred_plate_format": inferred_format,
+        "positions": positions,
+    }
+
+
+
+
+
+
+
+
+
+
+elif ext == ".docx":
+        if Document is None:
+            raise RuntimeError("python-docx is required for DOCX layout parsing.")
+
+        doc = Document(layout_path)
+
+        for table in doc.tables:
+            if not table.rows:
+                continue
+
+            header_cells = table.rows[0].cells
+
+            for row_idx in range(1, len(table.rows)):
+                row = table.rows[row_idx]
+                plate_row = str(row.cells[0].text).strip().upper()
+
+                if not re.match(r"^[A-P]$", plate_row):
+                    continue
+
+                for col_idx in range(1, len(row.cells)):
+                    if col_idx >= len(header_cells):
+                        continue
+
+                    plate_col_text = str(header_cells[col_idx].text).strip()
+                    plate_col_match = re.search(r"\d+", plate_col_text)
+
+                    if not plate_col_match:
+                        continue
+
+                    plate_col = int(plate_col_match.group(0))
+                    cell_text = str(row.cells[col_idx].text).strip().upper()
+                    matches = marker_pattern.findall(cell_text)
+
+                    if not matches:
+                        continue
+
+                    dest_position = f"{plate_row}{plate_col}"
+
+                    for found_marker in matches:
+                        plate_layout[found_marker.upper()].append({
+                            "dest_value": dest_position,
+                            "cell_value": cell_text,
+                            "plate_row": plate_row,
+                            "plate_column": plate_col,
+                            "row_index": row_idx + 1,
+                            "column_index": col_idx + 1,
+                            "excel_position": f"{excel_col_name(col_idx)}{row_idx + 1}",
+                            "column_name": excel_col_name(col_idx),
+                        })
+
+
+
+
+
+def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
+    if not method_path or not os.path.isfile(method_path):
+        return []
+
+    candidates = [method_path]
+
+
+
+
+
+
