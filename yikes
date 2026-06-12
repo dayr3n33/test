@@ -1,105 +1,58 @@
-def summarize_layout_format(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
-    max_row_num = 0
-    max_col = 0
-    positions = []
-    row_letters = []
-
-    for entries in layout_matches.values():
-        for entry in entries:
-            plate_row = str(entry.get("plate_row") or "").strip().upper()
-            plate_col = int(entry.get("plate_column") or 0)
-
-            if plate_row:
-                row_letters.append(plate_row)
-                max_row_num = max(max_row_num, ord(plate_row) - ord("A") + 1)
-
-            max_col = max(max_col, plate_col)
-
-            dest = entry.get("dest_value")
-            if dest:
-                positions.append(normalize_position_text(dest))
-
-    inferred_format = infer_plate_format_from_dimensions(max_row_num, max_col)
-
-    return {
-        "row_count": max_row_num,
-        "column_count": max_col,
-        "row_letters": sorted(set(row_letters)),
-        "inferred_plate_format": inferred_format,
-        "positions": positions,
-    }
-
-
-
-
-
-
-
-
-
-
-elif ext == ".docx":
-        if Document is None:
-            raise RuntimeError("python-docx is required for DOCX layout parsing.")
-
-        doc = Document(layout_path)
-
-        for table in doc.tables:
-            if not table.rows:
-                continue
-
-            header_cells = table.rows[0].cells
-
-            for row_idx in range(1, len(table.rows)):
-                row = table.rows[row_idx]
-                plate_row = str(row.cells[0].text).strip().upper()
-
-                if not re.match(r"^[A-P]$", plate_row):
-                    continue
-
-                for col_idx in range(1, len(row.cells)):
-                    if col_idx >= len(header_cells):
-                        continue
-
-                    plate_col_text = str(header_cells[col_idx].text).strip()
-                    plate_col_match = re.search(r"\d+", plate_col_text)
-
-                    if not plate_col_match:
-                        continue
-
-                    plate_col = int(plate_col_match.group(0))
-                    cell_text = str(row.cells[col_idx].text).strip().upper()
-                    matches = marker_pattern.findall(cell_text)
-
-                    if not matches:
-                        continue
-
-                    dest_position = f"{plate_row}{plate_col}"
-
-                    for found_marker in matches:
-                        plate_layout[found_marker.upper()].append({
-                            "dest_value": dest_position,
-                            "cell_value": cell_text,
-                            "plate_row": plate_row,
-                            "plate_column": plate_col,
-                            "row_index": row_idx + 1,
-                            "column_index": col_idx + 1,
-                            "excel_position": f"{excel_col_name(col_idx)}{row_idx + 1}",
-                            "column_name": excel_col_name(col_idx),
-                        })
-
-
-
-
-
 def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
     if not method_path or not os.path.isfile(method_path):
         return []
 
     candidates = [method_path]
 
+    patterns = [
+        re.compile(r"liq[_\s-]*class\s*[=:]\s*[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"liquid[_\s-]*class\s*[=:]\s*[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"LiquidClassName\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"LiquidClass\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"SelectLiquidClass\W+([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(
+            r"SetStringProperty\([^,\)]*,\s*[\"'](?:liquidClass|liq_class|LiquidClass)[\"']\s*,\s*[\"']([^\"']+)[\"']",
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r"[\"']([A-Za-z0-9_]+(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface)[A-Za-z0-9_ .\-+/()]*)[\"']",
+            re.IGNORECASE,
+        ),
+    ]
 
+    found = set()
 
+    for candidate in candidates:
+        text = read_text_file_best_effort(candidate)
 
+        if not text:
+            continue
 
+        for pattern in patterns:
+            for match in pattern.findall(text):
+                value = clean_control_chars(match)
+                value = value.strip("\"' ,;:=()[]{}")
 
+                if len(value) < 3 or len(value) > 150:
+                    continue
+
+                if not re.match(r"^[A-Za-z][A-Za-z0-9_ .\-+/()]*$", value):
+                    continue
+
+                lowered = value.lower()
+
+                if lowered in {
+                    "liquidclass",
+                    "liquid class",
+                    "liquidclassname",
+                    "liquid class name",
+                    "water",
+                    "buffer",
+                    "serum",
+                    "plasma",
+                }:
+                    continue
+
+                found.add(value)
+
+    return sorted(found, key=str.lower)
