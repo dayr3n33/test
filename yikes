@@ -1,1 +1,281 @@
 
+patterns = [
+    ("tip_pick", re.compile(r"1000\s*ul\s+channel\s+tip\s+pick\s+up\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+    ("aspirate", re.compile(r"1000\s*ul\s+channel\s+aspirate\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+    ("dispense", re.compile(r"1000\s*ul\s+channel\s+dispense\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+    ("tip_eject", re.compile(r"1000\s*ul\s+channel\s+tip\s+eject\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+    ("aspirate_96_head", re.compile(r"co-?re\s+96\s+head\s+aspirate\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+    ("dispense_96_head", re.compile(r"co-?re\s+96\s+head\s+dispense\s+\(single step\)\s*-\s*complete[:;]\s*(.*)", re.IGNORECASE)),
+]
+
+
+tk.Checkbutton(
+    form,
+    text="Variant",
+    variable=self.variant_var,
+    command=self.update_set_column_visibility,
+).grid(row=0, column=9, sticky="w", padx=5, pady=4)
+
+
+
+
+def render_sequences(self):
+    if not hasattr(self, "sequence_frame") or self.sequence_frame is None:
+        messagebox.showerror(
+            "UI Error",
+            "Sequence frame does not exist. Rebuild UI before rendering sequences.",
+        )
+        return
+
+    sequence_frame = self.sequence_frame
+
+    for widget in sequence_frame.winfo_children():
+        widget.destroy()
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.set_header_widget = None
+
+    headers = [
+        ("Use", 0, 6),
+        ("Set", 1, 6),
+        ("Sequence", 2, 34),
+        ("Step Role", 3, 12),
+        ("Manual", 4, 8),
+        ("Channel Pattern", 5, 18),
+        ("Hardware", 6, 10),
+        ("Seq Count", 7, 10),
+    ]
+
+    for text, col, width in headers:
+        label = tk.Label(
+            sequence_frame,
+            text=text,
+            width=width,
+            anchor="w",
+            font=("Arial", 9, "bold"),
+        )
+        label.grid(row=0, column=col, padx=4, pady=4, sticky="w")
+
+        if text == "Set":
+            self.set_header_widget = label
+
+    sequence_names = list(getattr(self, "sequence_names", []) or [])
+    sequence_counts = getattr(self, "sequence_counts", {}) or {}
+
+    for row_index, sequence_name in enumerate(sequence_names, start=1):
+        sequence_count = int(sequence_counts.get(sequence_name, 0) or 0)
+
+        default_hardware = detect_hardware_mode(sequence_name, "").lower()
+        if default_hardware not in ("channels", "head"):
+            default_hardware = "channels"
+
+        default_channel_pattern = "1" * 96 if default_hardware == "head" else "111111111111"
+
+        use_var = tk.IntVar(value=0)
+        set_var = tk.StringVar(value="")
+        role_var = tk.StringVar(value="aspirate")
+        manual_var = tk.IntVar(value=0)
+        channel_var = tk.StringVar(value=default_channel_pattern)
+        hardware_var = tk.StringVar(value=default_hardware)
+        sequence_count_var = tk.StringVar(value=str(sequence_count))
+
+        self.sequence_vars.append((sequence_name, use_var))
+        self.sequence_role_vars[sequence_name] = role_var
+        self.sequence_manual_vars[sequence_name] = manual_var
+        self.sequence_channel_vars[sequence_name] = channel_var
+        self.sequence_hardware_vars[sequence_name] = hardware_var
+        self.sequence_count_vars[sequence_name] = sequence_count_var
+        self.sequence_set_vars[sequence_name] = set_var
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=use_var,
+            command=self.update_set_column_visibility,
+        ).grid(row=row_index, column=0, padx=4, pady=2, sticky="w")
+
+        set_entry = tk.Entry(
+            sequence_frame,
+            textvariable=set_var,
+            width=6,
+        )
+        set_entry.grid(row=row_index, column=1, padx=4, pady=2, sticky="w")
+        self.sequence_set_widgets[sequence_name] = set_entry
+
+        tk.Label(
+            sequence_frame,
+            text=sequence_name,
+            width=34,
+            anchor="w",
+        ).grid(row=row_index, column=2, padx=4, pady=2, sticky="w")
+
+        role_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=role_var,
+            values=ROLE_OPTIONS,
+            width=12,
+            state="readonly",
+        )
+        role_combo.grid(row=row_index, column=3, padx=4, pady=2, sticky="w")
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=manual_var,
+        ).grid(row=row_index, column=4, padx=4, pady=2, sticky="w")
+
+        tk.Entry(
+            sequence_frame,
+            textvariable=channel_var,
+            width=18,
+        ).grid(row=row_index, column=5, padx=4, pady=2, sticky="w")
+
+        hardware_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=hardware_var,
+            values=["channels", "head"],
+            width=10,
+            state="readonly",
+        )
+        hardware_combo.grid(row=row_index, column=6, padx=4, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            textvariable=sequence_count_var,
+            width=10,
+            anchor="w",
+        ).grid(row=row_index, column=7, padx=4, pady=2, sticky="w")
+
+        def on_role_or_hardware_change(event=None, seq=sequence_name):
+            role = self.sequence_role_vars[seq].get().strip()
+            hardware = self.sequence_hardware_vars[seq].get().strip().lower()
+
+            detected = detect_hardware_mode(seq, role).lower()
+
+            if detected in ("channels", "head"):
+                hardware = detected
+                self.sequence_hardware_vars[seq].set(hardware)
+
+            current_pattern = self.sequence_channel_vars[seq].get().strip()
+
+            if hardware == "head":
+                if not current_pattern or len(current_pattern) != 96:
+                    self.sequence_channel_vars[seq].set("1" * 96)
+            else:
+                if not current_pattern or len(current_pattern) == 96:
+                    self.sequence_channel_vars[seq].set("111111111111")
+
+        role_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+        hardware_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+
+    if not sequence_names:
+        tk.Label(
+            sequence_frame,
+            text="No sequences loaded.",
+            anchor="w",
+        ).grid(row=1, column=0, columnspan=8, padx=4, pady=8, sticky="w")
+
+    self.update_set_column_visibility()
+
+    try:
+        sequence_frame.update_idletasks()
+
+        if hasattr(self, "sequence_canvas"):
+            self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all"))
+        elif hasattr(self, "canvas"):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    except Exception:
+        pass
+
+
+
+def generate_pyhamilton_review_script(
+    configs: List[SequenceStepConfig],
+    execution_plan: List[Dict[str, Any]],
+    output_dir: str,
+) -> str:
+    temp_dir = tempfile.mkdtemp(prefix="devpal_lite_pyhamilton_")
+    script_path = os.path.join(temp_dir, "devpal_lite_review_required_pyhamilton_script.py")
+
+    payload = {
+        "review_required": True,
+        "generated_at": datetime.now().isoformat(),
+        "selected_sequences": [asdict(config) for config in configs],
+        "execution_plan": execution_plan,
+    }
+
+    lines = [
+        "from pyhamilton import *",
+        "",
+        "REVIEW_REQUIRED = True",
+        f"DEV_PAL_LITE_PLAN = {json.dumps(payload, indent=4)}",
+        "",
+        "def run_review_required_plan(ham_int):",
+        "    if REVIEW_REQUIRED:",
+        "        raise RuntimeError('Review required before running generated PyHamilton script.')",
+        "    initialize(ham_int)",
+    ]
+
+    for item in execution_plan:
+        action = item.get("action", "")
+        seq = item.get("sequence", "")
+        hardware_mode = item.get("hardware_mode", "channels")
+        channel = normalize_assigned_channel_pattern(
+            item.get("channel_pattern") or "111111111111",
+            hardware_mode,
+        )
+        volume = float(item.get("volume_ul") or 0)
+        liquid_class = item.get("liquid_class", "")
+        increment = int(item.get("increment") or 0)
+
+        if item.get("autoincrement") and seq and increment > 0:
+            lines.append(
+                f"    inc_sequence(ham_int, sequence={seq!r}, increment={increment!r})"
+            )
+
+        if action == "tip_pick":
+            if hardware_mode == "head":
+                lines.append(
+                    f"    tip_pick_up_96_seq(ham_int, tip96_seq={seq!r})"
+                )
+            else:
+                lines.append(
+                    f"    tip_pick_up_seq(ham_int, tipseq={seq!r}, channel={channel!r})"
+                )
+
+        elif action == "aspirate":
+            if hardware_mode == "head":
+                lines.append(
+                    f"    aspirate_96_seq(ham_int, plate96=None, head_asp_seq={seq!r}, vols={volume!r}, liq_class={liquid_class!r})"
+                )
+            else:
+                lines.append(
+                    f"    aspirate_seq(ham_int, asp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})"
+                )
+
+        elif action == "dispense":
+            if hardware_mode == "head":
+                lines.append(
+                    f"    dispense_96_seq2(ham_int, plate96=None, head_disp_seq={seq!r}, vols={volume!r}, liq_class={liquid_class!r})"
+                )
+            else:
+                lines.append(
+                    f"    dispense_seq(ham_int, disp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})"
+                )
+
+        elif action == "tip_eject":
+            if hardware_mode == "head":
+                lines.append("    tip_eject_96(ham_int)")
+            else:
+                lines.append(
+                    f"    tip_eject_seq2(ham_int, waste_seq={seq!r}, channel={channel!r})"
+                )
+
+    Path(script_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return script_path
