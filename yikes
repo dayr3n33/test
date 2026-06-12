@@ -1,258 +1,390 @@
-_Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipEject
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,Waste,1[02,00,00,0,0.0,Waste,2[03,00,00,0,0.0,Waste,3[04,00,00,0,0.0,Waste,4[05,00,00,0,0.0,Waste,5[06,00,00,0,0.0,Waste,6[07,00,00,0,0.0,Waste,7[08,00,00,0,0.0,Waste,8[09,00,00,0,0.0,Waste,9[10,00,00,0,0.0,Waste,10[11,00,00,0,0.0,Waste,11[12,00,00,0,0.0,Waste,12
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xfb5a7ab94ad
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:16.765 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:16.765 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:16.781 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:16.781 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-06-12 10:01:16.783 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:16.784 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-06-12 10:01:16.784 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:16.784 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:16.784 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:16.784 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:16.785 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:16.786 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:16.786 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:16.786 USER : Trace - complete; Waiting for server instructions....
-2026-06-12 10:01:16.892 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:16.892 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:16.892 HSLHttp : HttpGET - progress;  Response Content: 
-2026-06-12 10:01:17.914 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:17.918 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:17.918 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipPickUp", "id": "0xfb5a7bae1e0", "tipSequence": "TA", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
-2026-06-12 10:01:17.918 USER : Trace - complete; JSON received from Server:{"command": "channelTipPickUp", "id": "0xfb5a7bae1e0", "tipSequence": "TA", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipPickUp
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xfb5a7bae1e0
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  TA
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:17.918 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
-2026-06-12 10:01:17.918 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;
-2026-06-12 10:01:18.168 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete;  > channel 1: SLIM1, 1 > channel 2: SLIM1, 2 > channel 3: SLIM1, 3 > channel 4: SLIM1, 4 > channel 5: SLIM1, 5 > channel 6: SLIM1, 6 > channel 7: SLIM1, 7 > channel 8: SLIM1, 8 > channel 9: SLIM1, 9 > channel 10: SLIM1, 10 > channel 11: SLIM1, 11 > channel 12: SLIM1, 12
-2026-06-12 10:01:18.168 USER : Trace - complete; Tip pick up step return:0[01,00,00,0,0.0,SLIM1,1[02,00,00,0,0.0,SLIM1,2[03,00,00,0,0.0,SLIM1,3[04,00,00,0,0.0,SLIM1,4[05,00,00,0,0.0,SLIM1,5[06,00,00,0,0.0,SLIM1,6[07,00,00,0,0.0,SLIM1,7[08,00,00,0,0.0,SLIM1,8[09,00,00,0,0.0,SLIM1,9[10,00,00,0,0.0,SLIM1,10[11,00,00,0,0.0,SLIM1,11[12,00,00,0,0.0,SLIM1,12
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipPickUp
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,SLIM1,1[02,00,00,0,0.0,SLIM1,2[03,00,00,0,0.0,SLIM1,3[04,00,00,0,0.0,SLIM1,4[05,00,00,0,0.0,SLIM1,5[06,00,00,0,0.0,SLIM1,6[07,00,00,0,0.0,SLIM1,7[08,00,00,0,0.0,SLIM1,8[09,00,00,0,0.0,SLIM1,9[10,00,00,0,0.0,SLIM1,10[11,00,00,0,0.0,SLIM1,11[12,00,00,0,0.0,SLIM1,12
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xfb5a7bae1e0
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:18.168 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:18.168 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:18.168 USER : Trace - complete; Waiting for server instructions....
-2026-06-12 10:01:18.278 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:18.278 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:18.278 HSLHttp : HttpGET - progress;  Response Content: 
-2026-06-12 10:01:19.290 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:19.290 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:19.290 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelAspirate", "id": "0xfb5a7ca311d", "aspirateSequence": "Thermo_48_Tube_Honeycomb_Rack_0001", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
-2026-06-12 10:01:19.290 USER : Trace - complete; JSON received from Server:{"command": "channelAspirate", "id": "0xfb5a7ca311d", "aspirateSequence": "Thermo_48_Tube_Honeycomb_Rack_0001", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelAspirate
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xfb5a7ca311d
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  Thermo_48_Tube_Honeycomb_Rack_0001
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  2
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.290 USER : Trace - complete; Bookstart
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; Bookend
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 USER : Trace - complete; getfloatvalue
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-06-12 10:01:19.290 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-06-12 10:01:19.306 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start;
-2026-06-12 10:01:19.401 Microlab STAR : Main - error; An error occurred while running Vector.  The error description is: Tip type mismatch.  (Liquidclass 'HighVolumeFilter_Water_DispenseSurface_Empty' is defined for tip type '1000ul High Volume Tip with filter (5)' but 'Channel 1' uses a tip of type 'SLIM CO-RE Tip 300ul with filter (45)'.) (0x28 - 0x1 - 0x827) 
-2026-06-12 10:01:19.401 Microlab STAR : 1000ul Channel Aspirate (Single Step) - complete with error; An error occurred while running Vector.  The error description is: Tip type mismatch.  (Liquidclass 'HighVolumeFilter_Water_DispenseSurface_Empty' is defined for tip type '1000ul High Volume Tip with filter (5)' but 'Channel 1' uses a tip of type 'SLIM CO-RE Tip 300ul with filter (45)'.) (0x28 - 0x1 - 0x827) 
-2026-06-12 10:01:19.401 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - start;
-2026-06-12 10:01:19.418 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - complete;  > channel 1: 111.1 mm > channel 2: 111.2 mm > channel 3: 111.3 mm > channel 4: 111.4 mm > channel 5: 111.5 mm > channel 6: 111.6 mm > channel 7: 111.7 mm > channel 8: 111.8 mm > channel 9: 111.1 mm > channel 10: 111.2 mm > channel 11: 111.3 mm > channel 12: 111.4 mm
-2026-06-12 10:01:19.418 USER : Trace - complete; Aspirate step return 1:2
-2026-06-12 10:01:19.418 USER : Trace - complete; Aspirate step return 2:
-2026-06-12 10:01:19.418 USER : Trace - complete; Aspirate step return 3:
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelAspirate
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  2
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xfb5a7ca311d
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:19.418 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:19.418 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:19.418 USER : Trace - complete; Waiting for server instructions....
-2026-06-12 10:01:19.528 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:19.528 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:19.528 HSLHttp : HttpGET - progress;  Response Content: 
-2026-06-12 10:01:20.551 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:20.551 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-06-12 10:01:20.551 HSLHttp : HttpGET - progress;  Response Content: {"command": "end", "id": "0x0"}
-2026-06-12 10:01:20.551 USER : Trace - complete; JSON received from Server:{"command": "end", "id": "0x0"}
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  end
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0x0
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Good Bye!
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-06-12 10:01:20.551 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-06-12 10:01:20.551 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-06-12 10:01:20.551 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-06-12 10:01:20.551 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-06-12 10:01:20.551 HSLHttp : Release - progress;  Releasing Hamilton HTTP object.
-2026-06-12 10:01:20.551 HSLHttp : Release - progress;  Hamilton HTTP object Released.
-2026-06-12 10:01:20.551 SYSTEM : Execute method - complete; 
-2026-06-12 10:01:20.566 SYSTEM : End method - start; 
-2026-06-12 10:01:20.636 Microlab STAR : End method command - start;
-2026-06-12 10:01:20.711 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
-2026-06-12 10:01:20.727 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
-2026-06-12 10:01:20.767 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
-2026-06-12 10:01:20.792 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
-2026-06-12 10:01:20.807 Microlab STAR : Clean up instrument - progress; Spreading channels
-2026-06-12 10:01:20.824 Microlab STAR : Clean up instrument - progress; Switch off loading lights
-2026-06-12 10:01:21.130 Microlab STAR : End method command - complete;
-2026-06-12 10:01:21.194 SYSTEM : End method - complete; 
-2026-06-12 10:01:21.496 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-06-12 10:01$$checksum=81287b41$$length=140$$
+def __init__(self):
+    self.root = tk.Tk()
+    self.root.title("DevPal Lite Sequence Layout Runner")
+    self.root.geometry("1180x780")
+    self.root.option_add("*Font", APP_FONT)
+
+    self.lay_path = ""
+    self.layout_path = ""
+    self.trace_path = ""
+
+    self.sequence_names = []
+    self.sequence_counts = {}
+    self.liquid_classes = []
+
+    self.sequence_vars = []
+    self.role_vars = {}
+    self.channel_vars = {}
+    self.manual_vars = {}
+    self.hardware_labels = {}
+
+    self.liquid_class_var = tk.StringVar()
+    self.transfer_type_var = tk.StringVar(value="samples")
+    self.replicate_var = tk.StringVar(value="single")
+    self.volume_var = tk.StringVar(value="100")
+    self.marker_var = tk.StringVar()
+    self.report_format_var = tk.StringVar(value="docx")
+    self.tracking_var = tk.IntVar(value=1)
+
+    self.variant_var = tk.IntVar(value=0)
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.set_header_widget = None
+
+    self.set_liquid_classes = []
+    self.set_liquid_listbox = None
+    self.set_liquid_summary_var = tk.StringVar(value="No set liquid classes selected.")
+
+    self._build_ui()
+
+
+
+
+
+
+
+
+tk.Label(form, text="Liquid Class").grid(row=1, column=0, sticky="w", padx=5, pady=4)
+
+self.liquid_combo = SearchableCombobox(
+    form,
+    textvariable=self.liquid_class_var,
+    completevalues=[],
+    width=70,
+)
+self.liquid_combo.grid(row=1, column=1, columnspan=6, sticky="we", padx=5, pady=4)
+
+tk.Button(
+    form,
+    text="Add LC to Next Set",
+    command=self.add_liquid_class_for_next_set,
+).grid(row=1, column=7, sticky="w", padx=5, pady=4)
+
+tk.Button(
+    form,
+    text="Clear Set LCs",
+    command=self.clear_set_liquid_classes,
+).grid(row=1, column=8, sticky="w", padx=5, pady=4)
+
+tk.Label(
+    form,
+    textvariable=self.set_liquid_summary_var,
+    anchor="w",
+).grid(row=2, column=0, columnspan=10, sticky="we", padx=5, pady=4)
+
+self.set_liquid_listbox = tk.Listbox(form, height=4, width=110)
+self.set_liquid_listbox.grid(row=3, column=0, columnspan=10, sticky="we", padx=5, pady=4)
+
+
+
+
+
+
+def add_liquid_class_for_next_set(self):
+    liquid_class = self.liquid_class_var.get().strip()
+
+    if not liquid_class:
+        messagebox.showerror("Missing Liquid Class", "Select a liquid class first.")
+        return
+
+    if liquid_class not in self.liquid_classes:
+        messagebox.showerror(
+            "Invalid Liquid Class",
+            f"Selected liquid class is not from the uploaded method:\n\n{liquid_class}",
+        )
+        return
+
+    self.set_liquid_classes.append(liquid_class)
+    self.refresh_set_liquid_class_display()
+
+
+def clear_set_liquid_classes(self):
+    self.set_liquid_classes = []
+    self.refresh_set_liquid_class_display()
+
+
+def refresh_set_liquid_class_display(self):
+    if self.set_liquid_listbox is not None:
+        self.set_liquid_listbox.delete(0, tk.END)
+
+        for index, liquid_class in enumerate(self.set_liquid_classes, start=1):
+            self.set_liquid_listbox.insert(tk.END, f"Set {index}: {liquid_class}")
+
+    if self.set_liquid_classes:
+        self.set_liquid_summary_var.set(
+            "Liquid classes assigned by click order: "
+            + "; ".join(
+                f"Set {index} = {liquid_class}"
+                for index, liquid_class in enumerate(self.set_liquid_classes, start=1)
+            )
+        )
+    else:
+        self.set_liquid_summary_var.set("No set liquid classes selected.")
+
+
+
+
+
+
+
+def collect_configs(self) -> List[SequenceStepConfig]:
+    configs = []
+
+    marker = self.marker_var.get().strip().upper()
+    transfer_type = self.transfer_type_var.get().strip() or "samples"
+    replicate = self.replicate_var.get().strip().lower()
+    variant_mode = bool(self.variant_var.get())
+
+    selected_sequences = [
+        sequence_name
+        for sequence_name, use_var in self.sequence_vars
+        if use_var.get()
+    ]
+
+    if not selected_sequences:
+        return []
+
+    use_set_order = len(selected_sequences) > 3 or variant_mode
+
+    try:
+        volume_ul = float(self.volume_var.get().strip())
+    except Exception:
+        messagebox.showerror("Invalid Volume", "Volume must be numeric.")
+        return []
+
+    selected_set_numbers = []
+
+    if use_set_order:
+        for sequence_name in selected_sequences:
+            raw_set = self.sequence_set_vars[sequence_name].get().strip()
+
+            if not raw_set:
+                messagebox.showerror(
+                    "Missing Set Number",
+                    f"Set number is required for selected sequence: {sequence_name}",
+                )
+                return []
+
+            try:
+                set_num = int(raw_set)
+            except Exception:
+                messagebox.showerror(
+                    "Invalid Set Number",
+                    f"Set number must be numeric for sequence: {sequence_name}",
+                )
+                return []
+
+            if set_num <= 0:
+                messagebox.showerror(
+                    "Invalid Set Number",
+                    f"Set number must be 1 or higher for sequence: {sequence_name}",
+                )
+                return []
+
+            selected_set_numbers.append(set_num)
+
+    required_set_count = max(selected_set_numbers) if selected_set_numbers else 1
+
+    if required_set_count > 1:
+        if len(self.set_liquid_classes) < required_set_count:
+            messagebox.showerror(
+                "Missing Set Liquid Classes",
+                (
+                    f"You have {required_set_count} set(s), but only "
+                    f"{len(self.set_liquid_classes)} liquid class assignment(s).\n\n"
+                    f"Select each liquid class in order and click 'Add LC to Next Set'."
+                ),
+            )
+            return []
+
+    for selected_index, sequence_name in enumerate(selected_sequences):
+        role = self.sequence_role_vars[sequence_name].get().strip()
+        channel_pattern = self.sequence_channel_vars[sequence_name].get().strip()
+        hardware_mode = self.sequence_hardware_vars[sequence_name].get().strip().lower()
+        manual = bool(self.sequence_manual_vars[sequence_name].get())
+
+        try:
+            sequence_count = int(self.sequence_count_vars[sequence_name].get())
+        except Exception:
+            sequence_count = int(self.sequence_counts.get(sequence_name, 0) or 0)
+
+        set_order = 1
+
+        if use_set_order:
+            set_order = int(self.sequence_set_vars[sequence_name].get().strip())
+
+        if role in ("aspirate", "dispense"):
+            if self.set_liquid_classes:
+                if set_order <= len(self.set_liquid_classes):
+                    liquid_class = self.set_liquid_classes[set_order - 1]
+                else:
+                    messagebox.showerror(
+                        "Missing Set Liquid Class",
+                        f"No liquid class assigned for Set {set_order}.",
+                    )
+                    return []
+            else:
+                liquid_class = self.liquid_class_var.get().strip()
+
+            if not liquid_class:
+                messagebox.showerror(
+                    "Missing Liquid Class",
+                    "Liquid class is required for aspirate/dispense steps.",
+                )
+                return []
+
+            if liquid_class not in self.liquid_classes:
+                messagebox.showerror(
+                    "Invalid Liquid Class",
+                    f"Liquid class is not from the uploaded method:\n\n{liquid_class}",
+                )
+                return []
+        else:
+            liquid_class = ""
+
+        if hardware_mode == "head":
+            if not channel_pattern or len(channel_pattern) != 96:
+                channel_pattern = "1" * 96
+        else:
+            if not re.match(r"^(?:[01]{8}|[01]{12}|[01]{14}|[01]{16})$", channel_pattern):
+                messagebox.showerror(
+                    "Invalid Channel Pattern",
+                    f"{sequence_name} has invalid channel pattern.\nUse 8, 12, 14, or 16 digits of 0/1.",
+                )
+                return []
+
+        configs.append(
+            SequenceStepConfig(
+                sequence=sequence_name,
+                role=role,
+                liquid_class=liquid_class,
+                transfer_type=transfer_type,
+                replicate=replicate,
+                volume_ul=volume_ul,
+                marker=marker,
+                channel_pattern=channel_pattern,
+                hardware_mode=hardware_mode,
+                selected_index=selected_index,
+                sequence_count=sequence_count,
+                manual=manual,
+                set_order=set_order,
+            )
+        )
+
+    validation_error = validate_step_sets(configs, variant_mode, use_set_order)
+
+    if validation_error:
+        messagebox.showerror("Invalid Step Sets", validation_error)
+        return []
+
+    return configs
+
+
+
+
+
+trace_text = read_text_file_best_effort(self.trace_path)
+
+runtime_step_findings, runtime_step_issues = validate_expected_runtime_steps(
+    execution_plan,
+    ordered_steps,
+    trace_text,
+)
+
+trace_findings.extend(runtime_step_findings)
+issues.extend(runtime_step_issues)
+
+failed_runtime_steps = [
+    issue for issue in runtime_step_issues
+    if issue.severity in ("critical", "major")
+]
+
+if failed_runtime_steps:
+    messagebox.showerror(
+        "Runtime Step Failure",
+        "\n".join(issue.message for issue in failed_runtime_steps[:3]),
+    )
+
+
+
+
+
+
+def validate_expected_runtime_steps(
+    execution_plan: List[Dict[str, Any]],
+    ordered_steps: List[Dict[str, Any]],
+    trace_text: str,
+) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
+    findings = []
+    issues = []
+
+    expected_actions = [
+        item.get("action")
+        for item in execution_plan
+        if item.get("action") in {"tip_pick", "aspirate", "dispense", "tip_eject"}
+    ]
+
+    actual_actions = []
+
+    for step in ordered_steps:
+        step_type = step.get("type", "")
+
+        if "aspirate" in step_type:
+            actual_actions.append("aspirate")
+        elif "dispense" in step_type:
+            actual_actions.append("dispense")
+        elif "tip_pick" in step_type or "tip pick" in step_type:
+            actual_actions.append("tip_pick")
+        elif "tip_eject" in step_type or "tip eject" in step_type:
+            actual_actions.append("tip_eject")
+
+    trace_lower = trace_text.lower()
+
+    runtime_error_reason = ""
+
+    error_match = re.search(
+        r"main\s*-\s*error;\s*(.*?)(?:\n|$)",
+        trace_text,
+        re.IGNORECASE,
+    )
+
+    if error_match:
+        runtime_error_reason = error_match.group(1).strip()
+
+    if "tip type mismatch" in trace_lower:
+        runtime_error_reason = "Tip type mismatch. The selected liquid class is not compatible with the picked tip type."
+
+    expected_count = len(expected_actions)
+    actual_count = len(actual_actions)
+
+    status = "pass" if actual_count >= expected_count and not runtime_error_reason else "fail"
+
+    finding = {
+        "type": "expected_runtime_step_check",
+        "status": status,
+        "expected_step_count": expected_count,
+        "actual_step_count": actual_count,
+        "expected_actions": expected_actions,
+        "actual_actions": actual_actions,
+        "runtime_error_reason": runtime_error_reason,
+    }
+
+    findings.append(finding)
+
+    if status != "pass":
+        message = (
+            f"Runtime did not execute all planned steps. "
+            f"Expected {expected_count} liquid-handling steps, but trace showed {actual_count}."
+        )
+
+        if runtime_error_reason:
+            message += f" Reason: {runtime_error_reason}"
+
+        issues.append(ValidationIssue(
+            "critical",
+            "runtime_step_execution",
+            message,
+            finding,
+        ))
+
+    return findings, issues
