@@ -1,1 +1,36 @@
 
+def infer_tip_type_from_text(text: str) -> str:
+    raw = str(text or "").upper()
+    compact = re.sub(r"[^A-Z0-9]+", "", raw)
+
+    high_volume_tokens = [
+        "HTF", "HT", "HV", "HVT",
+        "HIGHVOLUME", "HIGHVOL", "HIGHVOLUMEFILTER",
+        "1000UL", "1000",
+    ]
+
+    standard_volume_tokens = [
+        "SLIMTIP300", "SLIM300", "300S", "300UL", "300",
+        "SLIM", "SVT", "STANDARDVOLUME", "STANDARD", "STD",
+    ]
+
+    low_volume_tokens = [
+        "LVT", "LV", "LOWVOLUME", "LOWVOL", "50UL", "50",
+    ]
+
+    for token in high_volume_tokens:
+        if token in compact:
+            return "1000ul"
+
+    for token in standard_volume_tokens:
+        if token in compact:
+            return "300ul"
+
+    for token in low_volume_tokens:
+        if token in compact:
+            return "50ul"
+
+    return ""
+
+
+print("TIP DEBUG:", infer_tip_type_from_text("HTF_L_0001"))
