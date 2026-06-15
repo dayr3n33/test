@@ -1,5 +1,18 @@
+
+
+UI_BG = "#000000"
+UI_PANEL_BG = "#000000"
+UI_TEXT_BG = "#2b004f"
+UI_TEXT_FG = "white"
+UI_BUTTON_BG = "#2b004f"
+UI_BUTTON_ACTIVE = "#4b0082"
+CHECK_SELECT_BG = "white"
+
+
+
+
 def style_label(self, widget):
-    widget.configure(bg=UI_TEXT_BG, fg=UI_TEXT_FG)
+widget.configure(bg=UI_TEXT_BG, fg=UI_TEXT_FG)
     return widget
 
 def style_frame(self, widget):
