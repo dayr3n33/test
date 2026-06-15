@@ -1,1 +1,1072 @@
 
+def __init__(self):
+    self.root = tk.Tk()
+    self.root.title("DevPal Lite Sequence Layout Runner")
+    self.root.geometry("1180x780")
+    self.root.option_add("*Font", APP_FONT)
+
+    try:
+        icon_path = os.path.join(os.getcwd(), "thumbs_up.ico")
+        if os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
+    except Exception:
+        pass
+
+    self.bg_image = None
+    self.bg_label = None
+    self.main_frame = None
+
+    self.lay_path = ""
+    self.layout_path = ""
+    self.trace_path = ""
+
+    self.sequence_names = []
+    self.sequence_counts = {}
+    self.liquid_classes = []
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.sequence_control_vars = {}
+    self.set_header_widget = None
+
+    self.liquid_class_var = tk.StringVar()
+    self.transfer_type_var = tk.StringVar(value="samples")
+    self.replicate_var = tk.StringVar(value="single")
+    self.volume_var = tk.StringVar(value="100")
+    self.marker_var = tk.StringVar()
+    self.report_format_var = tk.StringVar(value="docx")
+    self.tracking_var = tk.IntVar(value=1)
+    self.variant_var = tk.IntVar(value=0)
+
+    self.set_liquid_classes = []
+    self.set_liquid_listbox = None
+    self.set_liquid_summary_var = tk.StringVar(value="No set liquid classes selected.")
+
+    self._build_ui()
+
+
+
+
+
+def _build_ui(self):
+    try:
+        bg_path = os.path.join(os.getcwd(), "backgroundSA.png")
+
+        if os.path.exists(bg_path):
+            try:
+                from PIL import Image, ImageTk
+
+                self.root.update_idletasks()
+                width = max(self.root.winfo_width(), 1180)
+                height = max(self.root.winfo_height(), 780)
+
+                image = Image.open(bg_path)
+                image = image.resize((width, height))
+                self.bg_image = ImageTk.PhotoImage(image)
+            except Exception:
+                self.bg_image = tk.PhotoImage(file=bg_path)
+
+            self.bg_label = tk.Label(
+                self.root,
+                image=self.bg_image,
+                borderwidth=0,
+                highlightthickness=0,
+            )
+            self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+            self.bg_label.lower()
+    except Exception:
+        self.bg_image = None
+        self.bg_label = None
+
+    self.main_frame = tk.Frame(
+        self.root,
+        bg="#f2f2f2",
+        bd=2,
+        relief="ridge",
+    )
+    self.main_frame.place(
+        relx=0.015,
+        rely=0.015,
+        relwidth=0.97,
+        relheight=0.97,
+    )
+
+    top = tk.Frame(self.main_frame, bg="#f2f2f2")
+    top.pack(fill="x", padx=10, pady=8)
+
+    tk.Button(top, text="Upload .lay File", command=self.upload_lay).pack(side="left", padx=4)
+
+    self.lay_label = tk.Label(
+        top,
+        text="No .lay selected",
+        anchor="w",
+        bg="#f2f2f2",
+    )
+    self.lay_label.pack(side="left", fill="x", expand=True, padx=6)
+
+    tk.Button(top, text="Upload Plate Layout", command=self.upload_layout).pack(side="left", padx=4)
+
+    self.layout_label = tk.Label(
+        top,
+        text="No layout selected",
+        anchor="w",
+        bg="#f2f2f2",
+    )
+    self.layout_label.pack(side="left", fill="x", expand=True, padx=6)
+
+    form = tk.LabelFrame(
+        self.main_frame,
+        text="Required Transfer Information",
+        bg="#f2f2f2",
+    )
+    form.pack(fill="x", padx=10, pady=5)
+
+    tk.Label(form, text="Transfer Type", bg="#f2f2f2").grid(row=0, column=0, sticky="w", padx=5, pady=4)
+
+    ttk.Combobox(
+        form,
+        textvariable=self.transfer_type_var,
+        values=TRANSFER_OPTIONS,
+        state="readonly",
+        width=18,
+    ).grid(row=0, column=1, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Replicate", bg="#f2f2f2").grid(row=0, column=2, sticky="w", padx=5, pady=4)
+
+    ttk.Combobox(
+        form,
+        textvariable=self.replicate_var,
+        values=REPLICATE_OPTIONS,
+        state="readonly",
+        width=18,
+    ).grid(row=0, column=3, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Volume uL", bg="#f2f2f2").grid(row=0, column=4, sticky="w", padx=5, pady=4)
+
+    tk.Entry(
+        form,
+        textvariable=self.volume_var,
+        width=18,
+    ).grid(row=0, column=5, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Marker", bg="#f2f2f2").grid(row=0, column=6, sticky="w", padx=5, pady=4)
+
+    tk.Entry(
+        form,
+        textvariable=self.marker_var,
+        width=12,
+    ).grid(row=0, column=7, sticky="w", padx=5, pady=4)
+
+    tk.Checkbutton(
+        form,
+        text="Tracking Enabled",
+        variable=self.tracking_var,
+        bg="#f2f2f2",
+        activebackground="#f2f2f2",
+    ).grid(row=0, column=8, sticky="w", padx=5, pady=4)
+
+    tk.Checkbutton(
+        form,
+        text="Variant",
+        variable=self.variant_var,
+        command=self.update_set_column_visibility,
+        bg="#f2f2f2",
+        activebackground="#f2f2f2",
+    ).grid(row=0, column=9, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Liquid Class", bg="#f2f2f2").grid(row=1, column=0, sticky="w", padx=5, pady=4)
+
+    self.liquid_combo = SearchableCombobox(
+        form,
+        textvariable=self.liquid_class_var,
+        completevalues=[],
+        width=70,
+    )
+    self.liquid_combo.grid(row=1, column=1, columnspan=6, sticky="we", padx=5, pady=4)
+
+    tk.Button(
+        form,
+        text="Add LC to Next Set",
+        command=self.add_liquid_class_for_next_set,
+    ).grid(row=1, column=7, sticky="w", padx=5, pady=4)
+
+    tk.Button(
+        form,
+        text="Clear Set LCs",
+        command=self.clear_set_liquid_classes,
+    ).grid(row=1, column=8, sticky="w", padx=5, pady=4)
+
+    tk.Label(
+        form,
+        textvariable=self.set_liquid_summary_var,
+        anchor="w",
+        bg="#f2f2f2",
+    ).grid(row=2, column=0, columnspan=10, sticky="we", padx=5, pady=4)
+
+    self.set_liquid_listbox = tk.Listbox(
+        form,
+        height=4,
+        width=110,
+    )
+    self.set_liquid_listbox.grid(row=3, column=0, columnspan=10, sticky="we", padx=5, pady=4)
+
+    options = tk.LabelFrame(
+        self.main_frame,
+        text="Report Options",
+        bg="#f2f2f2",
+    )
+    options.pack(fill="x", padx=10, pady=5)
+
+    tk.Label(options, text="Report Format", bg="#f2f2f2").pack(side="left", padx=10)
+
+    ttk.Combobox(
+        options,
+        textvariable=self.report_format_var,
+        values=["docx", "pdf", "txt"],
+        state="readonly",
+        width=10,
+    ).pack(side="left")
+
+    list_frame = tk.LabelFrame(
+        self.main_frame,
+        text="Extracted Method/Deck Sequences",
+        bg="#f2f2f2",
+    )
+    list_frame.pack(fill="both", expand=True, padx=10, pady=8)
+
+    self.canvas = tk.Canvas(
+        list_frame,
+        highlightthickness=0,
+        bg="#ffffff",
+    )
+    self.sequence_canvas = self.canvas
+
+    scrollbar = ttk.Scrollbar(
+        list_frame,
+        orient="vertical",
+        command=self.canvas.yview,
+    )
+
+    self.sequence_frame = tk.Frame(
+        self.canvas,
+        bg="#ffffff",
+    )
+    self.scroll_frame = self.sequence_frame
+
+    self.sequence_window = self.canvas.create_window(
+        (0, 0),
+        window=self.sequence_frame,
+        anchor="nw",
+    )
+
+    self.sequence_frame.bind(
+        "<Configure>",
+        lambda event: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
+    )
+
+    self.canvas.bind(
+        "<Configure>",
+        lambda event: self.canvas.itemconfig(self.sequence_window, width=event.width),
+    )
+
+    self.canvas.configure(yscrollcommand=scrollbar.set)
+
+    self.canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    bottom = tk.Frame(self.main_frame, bg="#f2f2f2")
+    bottom.pack(fill="x", padx=10, pady=8)
+
+    tk.Button(
+        bottom,
+        text="Generate Plan + Run PyHamilton Simulation + Validate",
+        command=self.generate_plan_run_and_validate,
+        bg="#4b0082",
+        fg="white",
+    ).pack(side="left", padx=4)
+
+    tk.Button(
+        bottom,
+        text="Select Existing Trace Manually",
+        command=self.upload_trace,
+    ).pack(side="left", padx=4)
+
+    self.status = tk.Label(
+        bottom,
+        text="Upload .lay file to begin.",
+        anchor="w",
+        bg="#f2f2f2",
+    )
+    self.status.pack(side="left", fill="x", expand=True, padx=8)
+
+
+
+
+def render_sequences(self):
+    if not hasattr(self, "sequence_frame") or self.sequence_frame is None:
+        messagebox.showerror(
+            "UI Error",
+            "Sequence frame does not exist. Rebuild UI before rendering sequences.",
+        )
+        return
+
+    sequence_frame = self.sequence_frame
+
+    for widget in sequence_frame.winfo_children():
+        widget.destroy()
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.sequence_control_vars = {}
+    self.set_header_widget = None
+
+    headers = [
+        ("Use", 0, 5),
+        ("Set", 1, 4),
+        ("Control", 2, 7),
+        ("Sequence", 3, 34),
+        ("Step Role", 4, 12),
+        ("Manual", 5, 7),
+        ("Channel Pattern", 6, 18),
+        ("Hardware", 7, 10),
+        ("Seq Count", 8, 9),
+    ]
+
+    for text, col, width in headers:
+        label = tk.Label(
+            sequence_frame,
+            text=text,
+            width=width,
+            anchor="w",
+            font=("Arial", 9, "bold"),
+            bg="#ffffff",
+        )
+        label.grid(row=0, column=col, padx=3, pady=4, sticky="w")
+
+        if text == "Set":
+            self.set_header_widget = label
+
+    sequence_names = list(getattr(self, "sequence_names", []) or [])
+    sequence_counts = getattr(self, "sequence_counts", {}) or {}
+
+    for row_index, sequence_name in enumerate(sequence_names, start=1):
+        sequence_count = int(sequence_counts.get(sequence_name, 0) or 0)
+
+        default_hardware = detect_hardware_mode(sequence_name, "").lower()
+        if default_hardware not in ("channels", "head"):
+            default_hardware = "channels"
+
+        default_channel_pattern = "1" * 96 if default_hardware == "head" else "111111111111"
+
+        use_var = tk.IntVar(value=0)
+        set_var = tk.StringVar(value="")
+        control_var = tk.IntVar(value=0)
+        role_var = tk.StringVar(value="aspirate")
+        manual_var = tk.IntVar(value=0)
+        channel_var = tk.StringVar(value=default_channel_pattern)
+        hardware_var = tk.StringVar(value=default_hardware)
+        sequence_count_var = tk.StringVar(value=str(sequence_count))
+
+        self.sequence_vars.append((sequence_name, use_var))
+        self.sequence_set_vars[sequence_name] = set_var
+        self.sequence_control_vars[sequence_name] = control_var
+        self.sequence_role_vars[sequence_name] = role_var
+        self.sequence_manual_vars[sequence_name] = manual_var
+        self.sequence_channel_vars[sequence_name] = channel_var
+        self.sequence_hardware_vars[sequence_name] = hardware_var
+        self.sequence_count_vars[sequence_name] = sequence_count_var
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=use_var,
+            command=self.update_set_column_visibility,
+            bg="#ffffff",
+            activebackground="#ffffff",
+        ).grid(row=row_index, column=0, padx=3, pady=2, sticky="w")
+
+        set_entry = tk.Entry(
+            sequence_frame,
+            textvariable=set_var,
+            width=4,
+        )
+        set_entry.grid(row=row_index, column=1, padx=3, pady=2, sticky="w")
+        self.sequence_set_widgets[sequence_name] = set_entry
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=control_var,
+            bg="#ffffff",
+            activebackground="#ffffff",
+        ).grid(row=row_index, column=2, padx=3, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            text=sequence_name,
+            width=34,
+            anchor="w",
+            bg="#ffffff",
+        ).grid(row=row_index, column=3, padx=3, pady=2, sticky="w")
+
+        role_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=role_var,
+            values=ROLE_OPTIONS,
+            width=12,
+            state="readonly",
+        )
+        role_combo.grid(row=row_index, column=4, padx=3, pady=2, sticky="w")
+
+        tk.Checkbutton(
+            sequence_frame,
+            variable=manual_var,
+            bg="#ffffff",
+            activebackground="#ffffff",
+        ).grid(row=row_index, column=5, padx=3, pady=2, sticky="w")
+
+        tk.Entry(
+            sequence_frame,
+            textvariable=channel_var,
+            width=18,
+        ).grid(row=row_index, column=6, padx=3, pady=2, sticky="w")
+
+        hardware_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=hardware_var,
+            values=["channels", "head"],
+            width=10,
+            state="readonly",
+        )
+        hardware_combo.grid(row=row_index, column=7, padx=3, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            textvariable=sequence_count_var,
+            width=9,
+            anchor="w",
+            bg="#ffffff",
+        ).grid(row=row_index, column=8, padx=3, pady=2, sticky="w")
+
+        def on_role_or_hardware_change(event=None, seq=sequence_name):
+            role = self.sequence_role_vars[seq].get().strip()
+            hardware = self.sequence_hardware_vars[seq].get().strip().lower()
+
+            detected = detect_hardware_mode(seq, role).lower()
+            if detected in ("channels", "head"):
+                hardware = detected
+                self.sequence_hardware_vars[seq].set(hardware)
+
+            current_pattern = self.sequence_channel_vars[seq].get().strip()
+
+            if hardware == "head":
+                if not current_pattern or len(current_pattern) != 96:
+                    self.sequence_channel_vars[seq].set("1" * 96)
+            else:
+                if not current_pattern or len(current_pattern) == 96:
+                    self.sequence_channel_vars[seq].set("111111111111")
+
+        role_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+        hardware_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+
+    if not sequence_names:
+        tk.Label(
+            sequence_frame,
+            text="No sequences loaded.",
+            anchor="w",
+            bg="#ffffff",
+        ).grid(row=1, column=0, columnspan=9, padx=4, pady=8, sticky="w")
+
+    self.update_set_column_visibility()
+
+    try:
+        sequence_frame.update_idletasks()
+        if hasattr(self, "sequence_canvas"):
+            self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all"))
+        elif hasattr(self, "canvas"):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+    except Exception:
+        pass
+
+
+
+
+
+
+def parse_volume_by_set(volume_text: str, set_count: int) -> Dict[int, float]:
+    raw_values = [item.strip() for item in str(volume_text or "").split(",") if item.strip()]
+
+    if not raw_values:
+        raise ValueError("Volume is required.")
+
+    volumes = []
+    for raw in raw_values:
+        try:
+            value = float(raw)
+        except Exception:
+            raise ValueError(f"Invalid volume value: {raw}")
+
+        if value <= 0 or value > 1000:
+            raise ValueError(f"Volume must be between 1 and 1000 uL: {value}")
+
+        volumes.append(value)
+
+    if len(volumes) == 1:
+        return {set_num: volumes[0] for set_num in range(1, set_count + 1)}
+
+    if len(volumes) < set_count:
+        raise ValueError(
+            f"You entered {len(volumes)} volume value(s), but there are {set_count} set(s). "
+            "Enter one volume or one comma-separated volume per set."
+        )
+
+    return {set_num: volumes[set_num - 1] for set_num in range(1, set_count + 1)}
+
+
+def infer_tip_type_from_sequence(sequence_name: str) -> str:
+    text = str(sequence_name or "").upper()
+
+    if "1000" in text or "HV" in text or "HIGH" in text:
+        return "1000_ul_hv"
+
+    if "300S" in text or "300 S" in text or "300" in text or "STD" in text or "SLIM" in text:
+        return "300_ul_std_slim"
+
+    if "50" in text or "LV" in text or "LOW" in text:
+        return "50_ul_lv"
+
+    return "unknown"
+
+
+def get_tip_volume_range(tip_type: str, hardware_mode: str) -> Optional[Tuple[float, float]]:
+    hardware_mode = str(hardware_mode or "").lower()
+
+    if hardware_mode == "head":
+        ranges = {
+            "1000_ul_hv": (100.0, 1000.0),
+            "300_ul_std_slim": (20.0, 300.0),
+            "50_ul_lv": (12.5, 49.0),
+        }
+    else:
+        ranges = {
+            "1000_ul_hv": (100.0, 1000.0),
+            "300_ul_std_slim": (10.0, 300.0),
+            "50_ul_lv": (10.0, 50.0),
+        }
+
+    return ranges.get(tip_type)
+
+
+def validate_tip_volume_rules(configs: List[SequenceStepConfig]) -> List[ValidationIssue]:
+    issues = []
+    grouped = defaultdict(list)
+
+    for config in configs:
+        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
+
+    for set_order, items in sorted(grouped.items()):
+        tip_steps = [item for item in items if item.role == "tip pick up"]
+        liquid_steps = [item for item in items if item.role in ("aspirate", "dispense")]
+
+        if not tip_steps or not liquid_steps:
+            continue
+
+        tip = tip_steps[0]
+        tip_type = infer_tip_type_from_sequence(tip.sequence)
+        hardware_mode = str(tip.hardware_mode or "channels").lower()
+
+        if tip_type == "unknown":
+            issues.append(ValidationIssue(
+                "major",
+                "tip_type",
+                f"Could not identify tip type for Set {set_order} from tip sequence: {tip.sequence}",
+                {"set_order": set_order, "tip_sequence": tip.sequence},
+            ))
+            continue
+
+        allowed_range = get_tip_volume_range(tip_type, hardware_mode)
+
+        if not allowed_range:
+            continue
+
+        min_ul, max_ul = allowed_range
+
+        for step in liquid_steps:
+            volume = float(step.volume_ul)
+
+            if volume < min_ul or volume > max_ul:
+                issues.append(ValidationIssue(
+                    "critical",
+                    "tip_volume_range",
+                    (
+                        f"Set {set_order} volume {volume} uL is outside allowed range "
+                        f"{min_ul}-{max_ul} uL for {hardware_mode} {tip_type} tips."
+                    ),
+                    {
+                        "set_order": set_order,
+                        "tip_sequence": tip.sequence,
+                        "tip_type": tip_type,
+                        "hardware_mode": hardware_mode,
+                        "volume_ul": volume,
+                        "allowed_min_ul": min_ul,
+                        "allowed_max_ul": max_ul,
+                    },
+                ))
+
+    return issues
+
+
+
+
+def get_required_transfer_iterations(configs: List[SequenceStepConfig]) -> int:
+    control_steps = [
+        config for config in configs
+        if bool(getattr(config, "control", False))
+        and config.role in ("aspirate", "dispense")
+    ]
+
+    if control_steps:
+        return max(get_sequence_iterations(config) for config in control_steps)
+
+    dsp_steps = [config for config in configs if config.role == "dispense" and not bool(config.manual)]
+    asp_steps = [config for config in configs if config.role == "aspirate" and not bool(config.manual)]
+
+    if dsp_steps:
+        return max(get_sequence_iterations(config) for config in dsp_steps)
+
+    if asp_steps:
+        return max(get_sequence_iterations(config) for config in asp_steps)
+
+    return 1
+
+
+
+
+
+
+
+
+
+
+issues.extend(validate_tip_volume_rules(configs))
+
+
+
+
+
+
+
+
+
+
+
+
+
+def collect_configs(self) -> List[SequenceStepConfig]:
+    configs = []
+
+    marker = self.marker_var.get().strip().upper()
+    transfer_type = self.transfer_type_var.get().strip() or "samples"
+    replicate = self.replicate_var.get().strip().lower()
+    variant_mode = bool(self.variant_var.get())
+
+    selected_sequences = [
+        sequence_name
+        for sequence_name, use_var in self.sequence_vars
+        if use_var.get()
+    ]
+
+    if not selected_sequences:
+        return []
+
+    use_set_order = len(selected_sequences) > 3 or variant_mode
+
+    selected_set_numbers = []
+
+    if use_set_order:
+        for sequence_name in selected_sequences:
+            raw_set = self.sequence_set_vars[sequence_name].get().strip()
+
+            if not raw_set:
+                messagebox.showerror(
+                    "Missing Set Number",
+                    f"Set number is required for selected sequence: {sequence_name}",
+                )
+                return []
+
+            try:
+                set_num = int(raw_set)
+            except Exception:
+                messagebox.showerror(
+                    "Invalid Set Number",
+                    f"Set number must be numeric for sequence: {sequence_name}",
+                )
+                return []
+
+            if set_num <= 0:
+                messagebox.showerror(
+                    "Invalid Set Number",
+                    f"Set number must be 1 or higher for sequence: {sequence_name}",
+                )
+                return []
+
+            selected_set_numbers.append(set_num)
+
+    required_set_count = max(selected_set_numbers) if selected_set_numbers else 1
+
+    raw_volume_text = self.volume_var.get().strip()
+
+    if not raw_volume_text:
+        messagebox.showerror("Missing Volume", "Enter a volume.")
+        return []
+
+    volume_parts = [
+        part.strip()
+        for part in raw_volume_text.split(",")
+        if part.strip()
+    ]
+
+    if not volume_parts:
+        messagebox.showerror("Missing Volume", "Enter at least one volume.")
+        return []
+
+    set_volumes = []
+
+    for part in volume_parts:
+        try:
+            volume_value = float(part)
+        except Exception:
+            messagebox.showerror(
+                "Invalid Volume",
+                f"Volume must be numeric. Invalid value: {part}",
+            )
+            return []
+
+        if volume_value <= 0 or volume_value > 1000:
+            messagebox.showerror(
+                "Invalid Volume",
+                f"Volume must be between 1 and 1000 uL. Invalid value: {volume_value}",
+            )
+            return []
+
+        set_volumes.append(volume_value)
+
+    if len(set_volumes) == 1:
+        set_volumes = set_volumes * required_set_count
+    elif len(set_volumes) < required_set_count:
+        messagebox.showerror(
+            "Missing Set Volumes",
+            (
+                f"You have {required_set_count} set(s), but only "
+                f"{len(set_volumes)} volume value(s).\n\n"
+                "Enter one volume to use for all sets, or enter one comma-separated "
+                "volume per set in order, such as: 100, 200."
+            ),
+        )
+        return []
+    elif len(set_volumes) > required_set_count:
+        messagebox.showerror(
+            "Too Many Set Volumes",
+            (
+                f"You entered {len(set_volumes)} volume value(s), but only "
+                f"{required_set_count} set(s) were detected.\n\n"
+                "Enter one volume to use for all sets, or enter one comma-separated "
+                "volume per set in order."
+            ),
+        )
+        return []
+
+    if required_set_count > 1:
+        if len(self.set_liquid_classes) < required_set_count:
+            messagebox.showerror(
+                "Missing Set Liquid Classes",
+                (
+                    f"You have {required_set_count} set(s), but only "
+                    f"{len(self.set_liquid_classes)} liquid class assignment(s).\n\n"
+                    "Select each liquid class in order and click 'Add LC to Next Set'."
+                ),
+            )
+            return []
+
+    for selected_index, sequence_name in enumerate(selected_sequences):
+        role = self.sequence_role_vars[sequence_name].get().strip()
+        channel_pattern = self.sequence_channel_vars[sequence_name].get().strip()
+        hardware_mode = self.sequence_hardware_vars[sequence_name].get().strip().lower()
+        manual = bool(self.sequence_manual_vars[sequence_name].get())
+
+        control = False
+        if hasattr(self, "sequence_control_vars"):
+            control = bool(self.sequence_control_vars.get(sequence_name, tk.IntVar(value=0)).get())
+
+        try:
+            sequence_count = int(self.sequence_count_vars[sequence_name].get())
+        except Exception:
+            sequence_count = int(self.sequence_counts.get(sequence_name, 0) or 0)
+
+        set_order = 1
+
+        if use_set_order:
+            set_order = int(self.sequence_set_vars[sequence_name].get().strip())
+
+        volume_ul = set_volumes[set_order - 1] if set_order <= len(set_volumes) else set_volumes[0]
+
+        if role in ("aspirate", "dispense"):
+            if self.set_liquid_classes:
+                if set_order <= len(self.set_liquid_classes):
+                    liquid_class = self.set_liquid_classes[set_order - 1]
+                else:
+                    messagebox.showerror(
+                        "Missing Set Liquid Class",
+                        f"No liquid class assigned for Set {set_order}.",
+                    )
+                    return []
+            else:
+                liquid_class = self.liquid_class_var.get().strip()
+
+            if not liquid_class:
+                messagebox.showerror(
+                    "Missing Liquid Class",
+                    "Liquid class is required for aspirate/dispense steps.",
+                )
+                return []
+
+            if liquid_class not in self.liquid_classes:
+                messagebox.showerror(
+                    "Invalid Liquid Class",
+                    f"Liquid class is not from the uploaded method:\n\n{liquid_class}",
+                )
+                return []
+        else:
+            liquid_class = ""
+
+        if hardware_mode == "stamp":
+            hardware_mode = "head"
+
+        if hardware_mode == "head":
+            if not channel_pattern or len(channel_pattern) != 96:
+                channel_pattern = "1" * 96
+        else:
+            if not re.match(r"^(?:[01]{8}|[01]{12}|[01]{14}|[01]{16})$", channel_pattern):
+                messagebox.showerror(
+                    "Invalid Channel Pattern",
+                    f"{sequence_name} has invalid channel pattern.\nUse 8, 12, 14, or 16 digits of 0/1.",
+                )
+                return []
+
+        config = SequenceStepConfig(
+            sequence=sequence_name,
+            role=role,
+            liquid_class=liquid_class,
+            transfer_type=transfer_type,
+            replicate=replicate,
+            volume_ul=volume_ul,
+            marker=marker,
+            channel_pattern=channel_pattern,
+            hardware_mode=hardware_mode,
+            selected_index=selected_index,
+            sequence_count=sequence_count,
+            manual=manual,
+            set_order=set_order,
+        )
+
+        setattr(config, "control", control)
+
+        configs.append(config)
+
+    control_by_set = defaultdict(list)
+
+    for config in configs:
+        if bool(getattr(config, "control", False)):
+            control_by_set[int(config.set_order)].append(config)
+
+    for set_order, controls in sorted(control_by_set.items()):
+        if len(controls) > 1:
+            messagebox.showerror(
+                "Invalid Control Selection",
+                (
+                    f"Set {set_order} has more than one Control sequence checked.\n\n"
+                    "Only one sequence per set can be the controlling loop sequence."
+                ),
+            )
+            return []
+
+    validation_error = validate_step_sets(configs, variant_mode, use_set_order)
+
+    if validation_error:
+        messagebox.showerror("Invalid Step Sets", validation_error)
+        return []
+
+    tip_issues = validate_tip_type_volume_rules(configs)
+
+    if tip_issues:
+        messagebox.showerror(
+            "Tip Type / Volume Rule Error",
+            "\n".join(issue.message for issue in tip_issues[:10]),
+        )
+        return []
+
+    return configs
+
+
+
+
+
+
+
+
+def build_execution_plan(
+    configs: List[SequenceStepConfig],
+    lay_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    lay_metadata = lay_metadata or {}
+    plan = []
+    order = 1
+
+    grouped = defaultdict(list)
+
+    for config in configs:
+        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
+
+    for set_order in sorted(grouped):
+        set_configs = sorted(grouped[set_order], key=lambda c: c.selected_index)
+
+        replicate = set_configs[0].replicate if set_configs else "single"
+        replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
+
+        tip_steps = [c for c in set_configs if c.role == "tip pick up"]
+        asp_steps = [c for c in set_configs if c.role == "aspirate"]
+        dsp_steps = [c for c in set_configs if c.role == "dispense"]
+
+        control_steps = [
+            c for c in set_configs
+            if bool(getattr(c, "control", False))
+        ]
+
+        if control_steps:
+            control_config = control_steps[0]
+        elif dsp_steps:
+            control_config = max(dsp_steps, key=lambda c: int(c.sequence_count or 0))
+        elif asp_steps:
+            control_config = max(asp_steps, key=lambda c: int(c.sequence_count or 0))
+        elif tip_steps:
+            control_config = max(tip_steps, key=lambda c: int(c.sequence_count or 0))
+        else:
+            control_config = None
+
+        transfer_iterations = (
+            get_sequence_iterations(control_config)
+            if control_config is not None
+            else 1
+        )
+
+        max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
+
+        for rep_index in range(1, replicate_count + 1):
+            for transfer_iteration in range(1, transfer_iterations + 1):
+                for idx in range(max_len):
+                    triplet = [
+                        tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None,
+                        asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None,
+                        dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None,
+                    ]
+
+                    for config in triplet:
+                        if config is None:
+                            continue
+
+                        batch_size = get_sequence_batch_size(config)
+                        is_control = config is control_config or bool(getattr(config, "control", False))
+
+                        should_increment = (
+                            transfer_iteration > 1
+                            and not bool(config.manual)
+                            and config.role in ("aspirate", "dispense", "tip pick up")
+                            and is_control
+                        )
+
+                        seq_meta = get_sequence_labware_metadata(
+                            config.sequence,
+                            lay_metadata,
+                            getattr(config, "sequence_count", 0),
+                        )
+
+                        action = "tip_pick" if config.role == "tip pick up" else config.role
+
+                        plan.append({
+                            "order": order,
+                            "set_order": set_order,
+                            "action": action,
+                            "sequence": config.sequence,
+                            "hardware_mode": config.hardware_mode,
+                            "labware_name": seq_meta.get("labware_name", ""),
+                            "labware_format": seq_meta.get("labware_format", ""),
+                            "labware_positions": seq_meta.get("positions", []),
+                            "replicate_index": rep_index,
+                            "transfer_iteration": transfer_iteration,
+                            "manual": bool(config.manual),
+                            "control": bool(getattr(config, "control", False)),
+                            "is_control_sequence": is_control,
+                            "control_sequence": control_config.sequence if control_config else "",
+                            "autoincrement": should_increment,
+                            "increment": batch_size if should_increment else 0,
+                            "channel_pattern": config.channel_pattern,
+                            "volume_ul": config.volume_ul if config.role in ("aspirate", "dispense") else "",
+                            "liquid_class": config.liquid_class if config.role in ("aspirate", "dispense") else "",
+                            "transfer_type": config.transfer_type,
+                            "marker": config.marker,
+                            "sequence_count": config.sequence_count,
+                            "batch_size": batch_size,
+                        })
+
+                        order += 1
+
+                    if tip_steps:
+                        tip = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0]
+                        tip_batch_size = get_sequence_batch_size(tip)
+                        tip_meta = get_sequence_labware_metadata(
+                            tip.sequence,
+                            lay_metadata,
+                            getattr(tip, "sequence_count", 0),
+                        )
+
+                        plan.append({
+                            "order": order,
+                            "set_order": set_order,
+                            "action": "tip_eject",
+                            "sequence": "Waste",
+                            "hardware_mode": tip.hardware_mode,
+                            "labware_name": "Waste",
+                            "labware_format": "waste",
+                            "labware_positions": [],
+                            "replicate_index": rep_index,
+                            "transfer_iteration": transfer_iteration,
+                            "manual": False,
+                            "control": False,
+                            "is_control_sequence": False,
+                            "control_sequence": control_config.sequence if control_config else "",
+                            "autoincrement": False,
+                            "increment": 0,
+                            "channel_pattern": tip.channel_pattern,
+                            "volume_ul": "",
+                            "liquid_class": "",
+                            "transfer_type": tip.transfer_type,
+                            "marker": tip.marker,
+                            "sequence_count": tip.sequence_count,
+                            "batch_size": tip_batch_size,
+                            "tip_source_labware_name": tip_meta.get("labware_name", ""),
+                            "tip_source_labware_format": tip_meta.get("labware_format", ""),
+                        })
+
+                        order += 1
+
+    return plan
