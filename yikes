@@ -1,4 +1,3 @@
-
-review_lines.append(
-    f"ph_inc_sequence(ham_int, sequence='{seq}', increment={increment})"
+lines.append(
+    f"    inc_sequence(ham_int, sequence={seq!r}, increment={increment!r})"
 )
