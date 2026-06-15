@@ -1,4 +1,4 @@
-def make_checkbutton(self, parent, text, variable, command=None, width=None):
+def make_checkbutton(self, parent, text="", variable=None, command=None, width=None):
     checkbox = tk.Checkbutton(
         parent,
         text=text,
@@ -10,11 +10,13 @@ def make_checkbutton(self, parent, text, variable, command=None, width=None):
         activeforeground=self.UI_TEXT_FG,
         selectcolor="#1e6bff",
         indicatoron=True,
-        relief="flat",
-        bd=1,
+        relief="raised",
+        bd=2,
         highlightthickness=0,
         anchor="w",
         width=width,
+        onvalue=1,
+        offvalue=0,
     )
 
     checkbox.bind("<Enter>", lambda event: checkbox.configure(bg=self.UI_TEXT_BG))
@@ -26,242 +28,642 @@ def make_checkbutton(self, parent, text, variable, command=None, width=None):
 
 
 
+
+
+def render_sequences(self):
+    sequence_frame = self.get_sequence_frame()
+
+    for widget in sequence_frame.winfo_children():
+        widget.destroy()
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+    self.sequence_control_vars = {}
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.set_header_widget = None
+
+    sequence_names = list(getattr(self, "sequence_names", []) or [])
+    sequence_counts = getattr(self, "sequence_counts", {}) or {}
+
+    max_sequence_len = max([len(str(name)) for name in sequence_names], default=18)
+    sequence_width = min(max(max_sequence_len + 4, 36), 68)
+
+    headers = [
+        ("Use", 0, 5),
+        ("Control", 1, 8),
+        ("Set", 2, 5),
+        ("Sequence", 3, sequence_width),
+        ("Step Role", 4, 14),
+        ("Manual", 5, 8),
+        ("Channel Pattern", 6, 18),
+        ("Hardware", 7, 10),
+        ("Seq Count", 8, 10),
+    ]
+
+    for text, col, width in headers:
+        label = tk.Label(
+            sequence_frame,
+            text=text,
+            width=width,
+            anchor="center",
+            justify="center",
+            bg=UI_TEXT_BG,
+            fg=UI_TEXT_FG,
+            relief="raised",
+            bd=2,
+            font=("Arial", 9, "bold"),
+        )
+        label.grid(row=0, column=col, padx=2, pady=(2, 4), sticky="w")
+
+        if text == "Set":
+            self.set_header_widget = label
+
+    for row_index, sequence_name in enumerate(sequence_names, start=1):
+        sequence_count = int(sequence_counts.get(sequence_name, 0) or 0)
+
+        default_hardware = detect_hardware_mode(sequence_name, "").lower()
+        if default_hardware not in ("channels", "head"):
+            default_hardware = "channels"
+
+        default_channel_pattern = "1" * 96 if default_hardware == "head" else "111111111111"
+
+        use_var = tk.IntVar(value=0)
+        control_var = tk.IntVar(value=0)
+        set_var = tk.StringVar(value="")
+        role_var = tk.StringVar(value="aspirate")
+        manual_var = tk.IntVar(value=0)
+        channel_var = tk.StringVar(value=default_channel_pattern)
+        hardware_var = tk.StringVar(value=default_hardware)
+        sequence_count_var = tk.StringVar(value=str(sequence_count))
+
+        self.sequence_vars.append((sequence_name, use_var))
+        self.sequence_control_vars[sequence_name] = control_var
+        self.sequence_role_vars[sequence_name] = role_var
+        self.sequence_manual_vars[sequence_name] = manual_var
+        self.sequence_channel_vars[sequence_name] = channel_var
+        self.sequence_hardware_vars[sequence_name] = hardware_var
+        self.sequence_count_vars[sequence_name] = sequence_count_var
+        self.sequence_set_vars[sequence_name] = set_var
+
+        self.make_checkbutton(
+            sequence_frame,
+            text="",
+            variable=use_var,
+            command=self.update_set_column_visibility,
+        ).grid(row=row_index, column=0, padx=2, pady=2, sticky="n")
+
+        self.make_checkbutton(
+            sequence_frame,
+            text="",
+            variable=control_var,
+        ).grid(row=row_index, column=1, padx=2, pady=2, sticky="n")
+
+        set_entry = tk.Entry(
+            sequence_frame,
+            textvariable=set_var,
+            width=4,
+            bg="white",
+            fg="black",
+            relief="sunken",
+            bd=2,
+            justify="center",
+        )
+        set_entry.grid(row=row_index, column=2, padx=2, pady=2, sticky="w")
+        self.sequence_set_widgets[sequence_name] = set_entry
+
+        tk.Label(
+            sequence_frame,
+            text=sequence_name,
+            width=sequence_width,
+            anchor="w",
+            bg=UI_BG,
+            fg=UI_TEXT_FG,
+            relief="flat",
+            bd=0,
+        ).grid(row=row_index, column=3, padx=2, pady=2, sticky="w")
+
+        role_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=role_var,
+            values=ROLE_OPTIONS,
+            width=13,
+            state="readonly",
+        )
+        role_combo.grid(row=row_index, column=4, padx=2, pady=2, sticky="w")
+
+        self.make_checkbutton(
+            sequence_frame,
+            text="",
+            variable=manual_var,
+        ).grid(row=row_index, column=5, padx=2, pady=2, sticky="n")
+
+        tk.Entry(
+            sequence_frame,
+            textvariable=channel_var,
+            width=18,
+            bg="white",
+            fg="black",
+            relief="sunken",
+            bd=2,
+        ).grid(row=row_index, column=6, padx=2, pady=2, sticky="w")
+
+        hardware_combo = ttk.Combobox(
+            sequence_frame,
+            textvariable=hardware_var,
+            values=["channels", "head"],
+            width=9,
+            state="readonly",
+        )
+        hardware_combo.grid(row=row_index, column=7, padx=2, pady=2, sticky="w")
+
+        tk.Label(
+            sequence_frame,
+            textvariable=sequence_count_var,
+            width=10,
+            anchor="center",
+            bg=UI_BG,
+            fg=UI_TEXT_FG,
+            relief="flat",
+            bd=0,
+        ).grid(row=row_index, column=8, padx=2, pady=2, sticky="w")
+
+        def on_role_or_hardware_change(event=None, seq=sequence_name):
+            role = self.sequence_role_vars[seq].get().strip()
+            hardware = self.sequence_hardware_vars[seq].get().strip().lower()
+
+            detected = detect_hardware_mode(seq, role).lower()
+            if detected in ("channels", "head"):
+                hardware = detected
+                self.sequence_hardware_vars[seq].set(hardware)
+
+            current_pattern = self.sequence_channel_vars[seq].get().strip()
+
+            if hardware == "head":
+                if not current_pattern or len(current_pattern) != 96:
+                    self.sequence_channel_vars[seq].set("1" * 96)
+            else:
+                if not current_pattern or len(current_pattern) == 96:
+                    self.sequence_channel_vars[seq].set("111111111111")
+
+        role_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+        hardware_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
+
+    if not sequence_names:
+        tk.Label(
+            sequence_frame,
+            text="No sequences loaded.",
+            anchor="w",
+            bg=UI_BG,
+            fg=UI_TEXT_FG,
+        ).grid(row=1, column=0, columnspan=9, padx=4, pady=8, sticky="w")
+
+    self.update_set_column_visibility()
+
+    try:
+        sequence_frame.update_idletasks()
+        if hasattr(self, "sequence_canvas"):
+            self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all"))
+        elif hasattr(self, "canvas"):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+    except Exception:
+        pass
+
+
+
+
+
+
+
+
+try:
+    from PIL import Image, ImageTk
+except ImportError:
+    Image = None
+    ImageTk = None
+
+
+
+def load_right_background_image(self):
+    self.right_bg_original = None
+    self.right_bg_photo = None
+
+    image_path = os.path.join(os.getcwd(), "backgroundSA.png")
+
+    if not os.path.exists(image_path):
+        return
+
+    if Image is None or ImageTk is None:
+        return
+
+    try:
+        self.right_bg_original = Image.open(image_path).convert("RGB")
+    except Exception:
+        self.right_bg_original = None
+
+
+def resize_right_background(self, event=None):
+    if self.right_bg_original is None:
+        return
+
+    width = max(self.right_bg_frame.winfo_width(), 1)
+    height = max(self.right_bg_frame.winfo_height(), 1)
+
+    if width <= 1 or height <= 1:
+        return
+
+    image = self.right_bg_original.copy()
+    image_ratio = image.width / image.height
+    frame_ratio = width / height
+
+    if frame_ratio > image_ratio:
+        new_width = width
+        new_height = int(width / image_ratio)
+    else:
+        new_height = height
+        new_width = int(height * image_ratio)
+
+    image = image.resize((new_width, new_height), Image.LANCZOS)
+
+    left = max((new_width - width) // 2, 0)
+    top = max((new_height - height) // 2, 0)
+    image = image.crop((left, top, left + width, top + height))
+
+    self.right_bg_photo = ImageTk.PhotoImage(image)
+    self.right_bg_label.configure(image=self.right_bg_photo)
+
+
+
+
+
+
+
+self.right_bg_original = None
+self.right_bg_photo = None
+self.right_bg_frame = None
+self.right_bg_label = None
+
+
+
+
+
 def _build_ui(self):
-    self.root.configure(bg=self.UI_BG)
+    self.root.configure(bg=UI_BG)
 
-    try:
-        self.root.iconbitmap(os.path.join(os.getcwd(), "thumbs_up.ico"))
-    except Exception:
-        pass
-
-    style = ttk.Style()
-    try:
-        style.theme_use("clam")
-    except Exception:
-        pass
-
-    style.configure(
-        "DevPal.TCombobox",
-        fieldbackground=self.UI_ENTRY_BG,
-        background=self.UI_TEXT_BG,
-        foreground=self.UI_ENTRY_FG,
-        arrowcolor=self.UI_TEXT_FG,
+    self.main_pane = tk.PanedWindow(
+        self.root,
+        orient=tk.HORIZONTAL,
+        sashwidth=6,
+        bg=UI_BG,
+        bd=0,
+        relief="flat",
     )
+    self.main_pane.pack(fill="both", expand=True)
 
-    main = tk.Frame(self.root, bg=self.UI_BG)
-    main.pack(fill="both", expand=True)
+    self.left_ui_frame = tk.Frame(self.main_pane, bg=UI_BG, width=760)
+    self.right_image_frame = tk.Frame(self.main_pane, bg=UI_BG)
 
-    left_panel = tk.Frame(main, bg=self.UI_BG, width=720)
-    left_panel.pack(side="left", fill="both", expand=False, padx=6, pady=6)
-    left_panel.pack_propagate(False)
+    self.main_pane.add(self.left_ui_frame, minsize=650, stretch="never")
+    self.main_pane.add(self.right_image_frame, minsize=250, stretch="always")
 
-    right_panel = tk.Frame(main, bg=self.UI_BG)
-    right_panel.pack(side="right", fill="both", expand=True, padx=6, pady=6)
+    self.background_canvas = tk.Canvas(
+        self.right_image_frame,
+        bg=UI_BG,
+        highlightthickness=0,
+        bd=0,
+    )
+    self.background_canvas.pack(fill="both", expand=True)
 
-    bg_path = os.path.join(os.getcwd(), "backgroundSA.png")
-    self.background_photo = None
+    self.background_image_original = None
+    self.background_image_tk = None
 
-    if os.path.exists(bg_path):
+    background_path = os.path.join(os.getcwd(), "backgroundSA.png")
+    if os.path.exists(background_path):
         try:
-            self.background_photo = tk.PhotoImage(file=bg_path)
-            tk.Label(right_panel, image=self.background_photo, bg=self.UI_BG, bd=0).pack(fill="both", expand=True)
+            from PIL import Image, ImageTk
+            self.background_image_original = Image.open(background_path)
         except Exception:
-            tk.Label(right_panel, text="backgroundSA.png could not be loaded.", bg=self.UI_BG, fg=self.UI_TEXT_FG).pack(fill="both", expand=True)
+            self.background_image_original = None
 
-    top = tk.Frame(left_panel, bg=self.UI_BG, relief="raised", bd=2)
-    top.pack(fill="x", padx=4, pady=4)
+    icon_path = os.path.join(os.getcwd(), "thumbs_up.ico")
+    if os.path.exists(icon_path):
+        try:
+            self.root.iconbitmap(icon_path)
+        except Exception:
+            pass
 
-    self.style_button(tk.Button(top, text="Upload .lay File", command=self.upload_lay, relief="raised", bd=3)).grid(row=0, column=0, padx=3, pady=3, sticky="w")
+    def resize_background(event=None):
+        if self.background_image_original is None:
+            return
 
+        try:
+            from PIL import ImageTk
+
+            width = max(self.background_canvas.winfo_width(), 1)
+            height = max(self.background_canvas.winfo_height(), 1)
+
+            image = self.background_image_original.copy()
+            image_ratio = image.width / image.height
+            canvas_ratio = width / height
+
+            if image_ratio > canvas_ratio:
+                new_width = width
+                new_height = int(width / image_ratio)
+            else:
+                new_height = height
+                new_width = int(height * image_ratio)
+
+            image = image.resize((new_width, new_height))
+            self.background_image_tk = ImageTk.PhotoImage(image)
+
+            self.background_canvas.delete("all")
+            self.background_canvas.create_image(
+                width // 2,
+                height // 2,
+                image=self.background_image_tk,
+                anchor="center",
+            )
+        except Exception:
+            pass
+
+    self.background_canvas.bind("<Configure>", resize_background)
+
+    def purple_label(parent, text, **kwargs):
+        return tk.Label(
+            parent,
+            text=text,
+            bg=UI_TEXT_BG,
+            fg=UI_TEXT_FG,
+            bd=2,
+            relief="raised",
+            padx=5,
+            pady=2,
+            **kwargs,
+        )
+
+    def black_frame(parent, **kwargs):
+        return tk.Frame(parent, bg=UI_BG, bd=0, **kwargs)
+
+    def purple_button(parent, text, command, **kwargs):
+        return tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=UI_BUTTON_BG,
+            fg=UI_TEXT_FG,
+            activebackground=UI_BUTTON_ACTIVE,
+            activeforeground=UI_TEXT_FG,
+            bd=3,
+            relief="raised",
+            padx=8,
+            pady=3,
+            **kwargs,
+        )
+
+    def blue_check(parent, text="", variable=None, command=None):
+        return tk.Checkbutton(
+            parent,
+            text=text,
+            variable=variable,
+            command=command,
+            bg=UI_BG,
+            fg=UI_TEXT_FG,
+            activebackground=UI_BUTTON_ACTIVE,
+            activeforeground=UI_TEXT_FG,
+            selectcolor="#1e6bff",
+            bd=2,
+            relief="raised",
+            indicatoron=True,
+            highlightthickness=0,
+            anchor="w",
+        )
+
+    top = black_frame(self.left_ui_frame)
+    top.pack(fill="x", padx=8, pady=(8, 4))
+
+    lay_row = black_frame(top)
+    lay_row.pack(fill="x", pady=2)
+
+    purple_button(lay_row, "Upload .lay File", self.upload_lay, width=18).pack(side="left", padx=(0, 6))
     self.lay_label = tk.Label(
-        top,
+        lay_row,
         text="No .lay selected",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         anchor="w",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="sunken",
         bd=2,
-        padx=4,
+        relief="sunken",
+        padx=5,
     )
-    self.lay_label.grid(row=0, column=1, padx=3, pady=3, sticky="we")
+    self.lay_label.pack(side="left", fill="x", expand=True)
 
-    self.style_button(tk.Button(top, text="Upload Plate Layout", command=self.upload_layout, relief="raised", bd=3)).grid(row=1, column=0, padx=3, pady=3, sticky="w")
+    layout_row = black_frame(top)
+    layout_row.pack(fill="x", pady=2)
 
+    purple_button(layout_row, "Upload Plate Layout", self.upload_layout, width=18).pack(side="left", padx=(0, 6))
     self.layout_label = tk.Label(
-        top,
+        layout_row,
         text="No layout selected",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         anchor="w",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="sunken",
         bd=2,
-        padx=4,
+        relief="sunken",
+        padx=5,
     )
-    self.layout_label.grid(row=1, column=1, padx=3, pady=3, sticky="we")
-
-    top.grid_columnconfigure(1, weight=1)
+    self.layout_label.pack(side="left", fill="x", expand=True)
 
     form = tk.LabelFrame(
-        left_panel,
+        self.left_ui_frame,
         text="Required Transfer Information",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="groove",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         bd=3,
+        relief="ridge",
+        labelanchor="nw",
     )
-    form.pack(fill="x", padx=4, pady=4)
+    form.pack(fill="x", padx=8, pady=4)
 
-    self.make_bg_label(form, "Transfer Type").grid(row=0, column=0, sticky="w", padx=3, pady=3)
+    form_inner = black_frame(form)
+    form_inner.pack(fill="x", padx=6, pady=6)
+
+    purple_label(form_inner, "Transfer Type").grid(row=0, column=0, sticky="w", padx=(0, 4), pady=3)
     ttk.Combobox(
-        form,
+        form_inner,
         textvariable=self.transfer_type_var,
         values=TRANSFER_OPTIONS,
         state="readonly",
-        width=14,
-        style="DevPal.TCombobox",
-    ).grid(row=0, column=1, sticky="w", padx=3, pady=3)
+        width=12,
+    ).grid(row=0, column=1, sticky="w", padx=(0, 10), pady=3)
 
-    self.make_bg_label(form, "Replicate").grid(row=0, column=2, sticky="w", padx=3, pady=3)
+    purple_label(form_inner, "Replicate").grid(row=0, column=2, sticky="w", padx=(0, 4), pady=3)
     ttk.Combobox(
-        form,
+        form_inner,
         textvariable=self.replicate_var,
         values=REPLICATE_OPTIONS,
         state="readonly",
-        width=11,
-        style="DevPal.TCombobox",
-    ).grid(row=0, column=3, sticky="w", padx=3, pady=3)
+        width=10,
+    ).grid(row=0, column=3, sticky="w", padx=(0, 10), pady=3)
 
-    self.make_bg_label(form, "Volume uL").grid(row=0, column=4, sticky="w", padx=3, pady=3)
+    purple_label(form_inner, "Volume uL").grid(row=0, column=4, sticky="w", padx=(0, 4), pady=3)
     tk.Entry(
-        form,
+        form_inner,
         textvariable=self.volume_var,
-        width=8,
-        bg=self.UI_ENTRY_BG,
-        fg=self.UI_ENTRY_FG,
-        relief="sunken",
+        width=9,
+        bg="white",
+        fg="black",
         bd=2,
-    ).grid(row=0, column=5, sticky="w", padx=3, pady=3)
+        relief="sunken",
+    ).grid(row=0, column=5, sticky="w", padx=(0, 10), pady=3)
 
-    self.make_bg_label(form, "Marker").grid(row=0, column=6, sticky="w", padx=3, pady=3)
+    purple_label(form_inner, "Marker").grid(row=0, column=6, sticky="w", padx=(0, 4), pady=3)
     tk.Entry(
-        form,
+        form_inner,
         textvariable=self.marker_var,
-        width=8,
-        bg=self.UI_ENTRY_BG,
-        fg=self.UI_ENTRY_FG,
-        relief="sunken",
+        width=9,
+        bg="white",
+        fg="black",
         bd=2,
-    ).grid(row=0, column=7, sticky="w", padx=3, pady=3)
+        relief="sunken",
+    ).grid(row=0, column=7, sticky="w", padx=(0, 0), pady=3)
 
-    self.make_bg_label(form, "Liquid Class").grid(row=1, column=0, sticky="w", padx=3, pady=3)
+    lc_row = black_frame(form)
+    lc_row.pack(fill="x", padx=6, pady=(0, 6))
+
+    purple_label(lc_row, "Liquid Class").pack(side="left", padx=(0, 6))
 
     self.liquid_combo = SearchableCombobox(
-        form,
+        lc_row,
         textvariable=self.liquid_class_var,
         completevalues=[],
-        width=40,
-        style="DevPal.TCombobox",
+        width=38,
     )
-    self.liquid_combo.grid(row=1, column=1, columnspan=5, sticky="we", padx=3, pady=3)
+    self.liquid_combo.pack(side="left", padx=(0, 6))
 
-    self.style_button(tk.Button(form, text="Add LC", command=self.add_liquid_class_for_next_set, relief="raised", bd=3)).grid(row=1, column=6, sticky="w", padx=3, pady=3)
-    self.style_button(tk.Button(form, text="Clear", command=self.clear_set_liquid_classes, relief="raised", bd=3)).grid(row=1, column=7, sticky="w", padx=3, pady=3)
+    purple_button(lc_row, "Add LC", self.add_liquid_class_for_next_set, width=8).pack(side="left", padx=(0, 4))
+    purple_button(lc_row, "Clear", self.clear_set_liquid_classes, width=7).pack(side="left", padx=(0, 0))
 
-    summary_box = tk.Frame(form, bg=self.UI_BG, relief="sunken", bd=2)
-    summary_box.grid(row=2, column=0, columnspan=8, sticky="we", padx=3, pady=4)
+    self.set_liquid_summary_box = tk.LabelFrame(
+        self.left_ui_frame,
+        text="Liquid Class Set Assignments",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
+        bd=3,
+        relief="ridge",
+        labelanchor="nw",
+    )
+    self.set_liquid_summary_box.pack(fill="x", padx=8, pady=4)
 
-    tk.Label(
-        summary_box,
+    self.set_liquid_summary_label = tk.Label(
+        self.set_liquid_summary_box,
         textvariable=self.set_liquid_summary_var,
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         anchor="w",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        padx=4,
-        pady=2,
-    ).pack(fill="x", expand=True)
+        bd=0,
+        padx=6,
+        pady=3,
+    )
+    self.set_liquid_summary_label.pack(fill="x", padx=4, pady=(3, 2))
 
     self.set_liquid_listbox = tk.Listbox(
-        form,
+        self.set_liquid_summary_box,
         height=3,
-        width=84,
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        selectbackground=self.UI_TEXT_BG,
-        selectforeground=self.UI_TEXT_FG,
-        relief="sunken",
+        width=70,
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
+        selectbackground=UI_BUTTON_ACTIVE,
+        selectforeground=UI_TEXT_FG,
         bd=2,
+        relief="sunken",
     )
-    self.set_liquid_listbox.grid(row=3, column=0, columnspan=8, sticky="we", padx=3, pady=3)
+    self.set_liquid_listbox.pack(fill="x", padx=4, pady=(0, 5))
 
-    form.grid_columnconfigure(1, weight=1)
+    options_row = black_frame(self.left_ui_frame)
+    options_row.pack(fill="x", padx=8, pady=4)
 
-    options_row = tk.Frame(left_panel, bg=self.UI_BG, relief="raised", bd=2)
-    options_row.pack(fill="x", padx=4, pady=4)
-
-    self.make_checkbutton(
+    blue_check(
         options_row,
         text="Tracking Enabled",
         variable=self.tracking_var,
-        width=16,
-    ).pack(side="left", padx=4, pady=4)
+    ).pack(side="left", padx=(0, 8))
 
-    self.make_checkbutton(
+    blue_check(
         options_row,
         text="Variant",
         variable=self.variant_var,
         command=self.update_set_column_visibility,
-        width=8,
-    ).pack(side="left", padx=4, pady=4)
+    ).pack(side="left", padx=(0, 12))
 
     report_box = tk.LabelFrame(
         options_row,
         text="Report Options",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="groove",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         bd=3,
+        relief="ridge",
+        labelanchor="nw",
     )
-    report_box.pack(side="left", padx=8, pady=3)
+    report_box.pack(side="left", padx=(0, 0), pady=0)
 
-    self.make_bg_label(report_box, "Report Format").pack(side="left", padx=4, pady=3)
+    purple_label(report_box, "Report Format").pack(side="left", padx=5, pady=5)
     ttk.Combobox(
         report_box,
         textvariable=self.report_format_var,
         values=["docx", "pdf", "txt"],
         state="readonly",
-        width=7,
-        style="DevPal.TCombobox",
-    ).pack(side="left", padx=4, pady=3)
+        width=8,
+    ).pack(side="left", padx=(0, 6), pady=5)
 
     list_frame = tk.LabelFrame(
-        left_panel,
+        self.left_ui_frame,
         text="Extracted Method/Deck Sequences",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="groove",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         bd=3,
+        relief="ridge",
+        labelanchor="nw",
     )
-    list_frame.pack(fill="both", expand=True, padx=4, pady=4)
+    list_frame.pack(fill="both", expand=True, padx=8, pady=4)
 
     self.sequence_canvas = tk.Canvas(
         list_frame,
-        bg=self.UI_BG,
+        bg=UI_BG,
         highlightthickness=0,
-        width=680,
+        bd=0,
+        width=720,
     )
-    self.canvas = self.sequence_canvas
 
-    y_scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.sequence_canvas.yview)
-    x_scrollbar = ttk.Scrollbar(list_frame, orient="horizontal", command=self.sequence_canvas.xview)
+    y_scrollbar = ttk.Scrollbar(
+        list_frame,
+        orient="vertical",
+        command=self.sequence_canvas.yview,
+    )
 
-    self.sequence_frame = tk.Frame(self.sequence_canvas, bg=self.UI_BG)
+    x_scrollbar = ttk.Scrollbar(
+        list_frame,
+        orient="horizontal",
+        command=self.sequence_canvas.xview,
+    )
+
+    self.sequence_frame = tk.Frame(self.sequence_canvas, bg=UI_BG)
     self.scroll_frame = self.sequence_frame
 
-    self.sequence_window = self.sequence_canvas.create_window((0, 0), window=self.sequence_frame, anchor="nw")
+    self.sequence_window = self.sequence_canvas.create_window(
+        (0, 0),
+        window=self.sequence_frame,
+        anchor="nw",
+    )
 
     self.sequence_frame.bind(
         "<Configure>",
-        lambda event: self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all")),
+        lambda event: self.sequence_canvas.configure(
+            scrollregion=self.sequence_canvas.bbox("all")
+        ),
     )
 
     self.sequence_canvas.configure(
@@ -276,45 +678,35 @@ def _build_ui(self):
     list_frame.grid_rowconfigure(0, weight=1)
     list_frame.grid_columnconfigure(0, weight=1)
 
-    bottom = tk.Frame(left_panel, bg=self.UI_BG, relief="raised", bd=2)
-    bottom.pack(fill="x", padx=4, pady=4)
+    bottom = black_frame(self.left_ui_frame)
+    bottom.pack(fill="x", padx=8, pady=(4, 8))
 
-    self.style_button(
-        tk.Button(
-            bottom,
-            text="Run Sequence Analyzer",
-            command=self.generate_plan_run_and_validate,
-            relief="raised",
-            bd=4,
-        )
-    ).pack(side="left", padx=4, pady=5)
+    purple_button(
+        bottom,
+        "Run Sequence Analyzer",
+        self.generate_plan_run_and_validate,
+        width=24,
+    ).pack(side="left", padx=(0, 6))
 
-    self.style_button(
-        tk.Button(
-            bottom,
-            text="Select Existing .trc",
-            command=self.upload_trace,
-            relief="raised",
-            bd=3,
-        )
-    ).pack(side="left", padx=4, pady=5)
+    purple_button(
+        bottom,
+        "Select Existing .trc",
+        self.upload_trace,
+        width=17,
+    ).pack(side="left", padx=(0, 6))
 
     self.status = tk.Label(
         bottom,
         text="Upload .lay file to begin.",
+        bg=UI_BG,
+        fg=UI_TEXT_FG,
         anchor="w",
-        bg=self.UI_BG,
-        fg=self.UI_TEXT_FG,
-        relief="sunken",
         bd=2,
-        padx=4,
+        relief="sunken",
+        padx=5,
     )
-    self.status.pack(side="left", fill="x", expand=True, padx=4, pady=5)
+    self.status.pack(side="left", fill="x", expand=True)
 
 
 
 
-
-
-self.tracking_var = tk.IntVar(value=0)
-self.variant_var = tk.IntVar(value=0)
