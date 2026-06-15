@@ -1,3 +1,31 @@
+def make_checkbutton(self, parent, text, variable, command=None, width=None):
+    checkbox = tk.Checkbutton(
+        parent,
+        text=text,
+        variable=variable,
+        command=command,
+        bg=self.UI_BG,
+        fg=self.UI_TEXT_FG,
+        activebackground=self.UI_TEXT_BG,
+        activeforeground=self.UI_TEXT_FG,
+        selectcolor="#1e6bff",
+        indicatoron=True,
+        relief="flat",
+        bd=1,
+        highlightthickness=0,
+        anchor="w",
+        width=width,
+    )
+
+    checkbox.bind("<Enter>", lambda event: checkbox.configure(bg=self.UI_TEXT_BG))
+    checkbox.bind("<Leave>", lambda event: checkbox.configure(bg=self.UI_BG))
+
+    return checkbox
+
+
+
+
+
 def _build_ui(self):
     self.root.configure(bg=self.UI_BG)
 
@@ -18,15 +46,12 @@ def _build_ui(self):
         background=self.UI_TEXT_BG,
         foreground=self.UI_ENTRY_FG,
         arrowcolor=self.UI_TEXT_FG,
-        bordercolor=self.UI_TEXT_BG,
-        lightcolor=self.UI_TEXT_BG,
-        darkcolor=self.UI_TEXT_BG,
     )
 
     main = tk.Frame(self.root, bg=self.UI_BG)
     main.pack(fill="both", expand=True)
 
-    left_panel = tk.Frame(main, bg=self.UI_BG, width=760)
+    left_panel = tk.Frame(main, bg=self.UI_BG, width=720)
     left_panel.pack(side="left", fill="both", expand=False, padx=6, pady=6)
     left_panel.pack_propagate(False)
 
@@ -39,40 +64,14 @@ def _build_ui(self):
     if os.path.exists(bg_path):
         try:
             self.background_photo = tk.PhotoImage(file=bg_path)
-            bg_label = tk.Label(
-                right_panel,
-                image=self.background_photo,
-                bg=self.UI_BG,
-                bd=0,
-            )
-            bg_label.pack(fill="both", expand=True)
+            tk.Label(right_panel, image=self.background_photo, bg=self.UI_BG, bd=0).pack(fill="both", expand=True)
         except Exception:
-            tk.Label(
-                right_panel,
-                text="backgroundSA.png found but could not be loaded.",
-                bg=self.UI_BG,
-                fg=self.UI_TEXT_FG,
-            ).pack(fill="both", expand=True)
-    else:
-        tk.Label(
-            right_panel,
-            text="backgroundSA.png not found in project directory.",
-            bg=self.UI_BG,
-            fg=self.UI_TEXT_FG,
-        ).pack(fill="both", expand=True)
+            tk.Label(right_panel, text="backgroundSA.png could not be loaded.", bg=self.UI_BG, fg=self.UI_TEXT_FG).pack(fill="both", expand=True)
 
     top = tk.Frame(left_panel, bg=self.UI_BG, relief="raised", bd=2)
     top.pack(fill="x", padx=4, pady=4)
 
-    self.style_button(
-        tk.Button(
-            top,
-            text="Upload .lay File",
-            command=self.upload_lay,
-            relief="raised",
-            bd=3,
-        )
-    ).pack(side="left", padx=3, pady=4)
+    self.style_button(tk.Button(top, text="Upload .lay File", command=self.upload_lay, relief="raised", bd=3)).grid(row=0, column=0, padx=3, pady=3, sticky="w")
 
     self.lay_label = tk.Label(
         top,
@@ -84,17 +83,9 @@ def _build_ui(self):
         bd=2,
         padx=4,
     )
-    self.lay_label.pack(side="left", fill="x", expand=True, padx=3, pady=4)
+    self.lay_label.grid(row=0, column=1, padx=3, pady=3, sticky="we")
 
-    self.style_button(
-        tk.Button(
-            top,
-            text="Upload Plate Layout",
-            command=self.upload_layout,
-            relief="raised",
-            bd=3,
-        )
-    ).pack(side="left", padx=3, pady=4)
+    self.style_button(tk.Button(top, text="Upload Plate Layout", command=self.upload_layout, relief="raised", bd=3)).grid(row=1, column=0, padx=3, pady=3, sticky="w")
 
     self.layout_label = tk.Label(
         top,
@@ -106,7 +97,9 @@ def _build_ui(self):
         bd=2,
         padx=4,
     )
-    self.layout_label.pack(side="left", fill="x", expand=True, padx=3, pady=4)
+    self.layout_label.grid(row=1, column=1, padx=3, pady=3, sticky="we")
+
+    top.grid_columnconfigure(1, weight=1)
 
     form = tk.LabelFrame(
         left_panel,
@@ -115,7 +108,6 @@ def _build_ui(self):
         fg=self.UI_TEXT_FG,
         relief="groove",
         bd=3,
-        labelanchor="nw",
     )
     form.pack(fill="x", padx=4, pady=4)
 
@@ -125,7 +117,7 @@ def _build_ui(self):
         textvariable=self.transfer_type_var,
         values=TRANSFER_OPTIONS,
         state="readonly",
-        width=12,
+        width=14,
         style="DevPal.TCombobox",
     ).grid(row=0, column=1, sticky="w", padx=3, pady=3)
 
@@ -143,7 +135,7 @@ def _build_ui(self):
     tk.Entry(
         form,
         textvariable=self.volume_var,
-        width=12,
+        width=8,
         bg=self.UI_ENTRY_BG,
         fg=self.UI_ENTRY_FG,
         relief="sunken",
@@ -154,27 +146,12 @@ def _build_ui(self):
     tk.Entry(
         form,
         textvariable=self.marker_var,
-        width=9,
+        width=8,
         bg=self.UI_ENTRY_BG,
         fg=self.UI_ENTRY_FG,
         relief="sunken",
         bd=2,
     ).grid(row=0, column=7, sticky="w", padx=3, pady=3)
-
-    self.make_checkbutton(
-        form,
-        text="Tracking Enabled",
-        variable=self.tracking_var,
-        width=15,
-    ).grid(row=0, column=8, sticky="w", padx=2, pady=3)
-
-    self.make_checkbutton(
-        form,
-        text="Variant",
-        variable=self.variant_var,
-        command=self.update_set_column_visibility,
-        width=8,
-    ).grid(row=0, column=9, sticky="w", padx=2, pady=3)
 
     self.make_bg_label(form, "Liquid Class").grid(row=1, column=0, sticky="w", padx=3, pady=3)
 
@@ -182,45 +159,31 @@ def _build_ui(self):
         form,
         textvariable=self.liquid_class_var,
         completevalues=[],
-        width=42,
+        width=40,
         style="DevPal.TCombobox",
     )
-    self.liquid_combo.grid(row=1, column=1, columnspan=6, sticky="we", padx=3, pady=3)
+    self.liquid_combo.grid(row=1, column=1, columnspan=5, sticky="we", padx=3, pady=3)
 
-    self.style_button(
-        tk.Button(
-            form,
-            text="Add LC",
-            command=self.add_liquid_class_for_next_set,
-            relief="raised",
-            bd=3,
-        )
-    ).grid(row=1, column=7, sticky="w", padx=3, pady=3)
+    self.style_button(tk.Button(form, text="Add LC", command=self.add_liquid_class_for_next_set, relief="raised", bd=3)).grid(row=1, column=6, sticky="w", padx=3, pady=3)
+    self.style_button(tk.Button(form, text="Clear", command=self.clear_set_liquid_classes, relief="raised", bd=3)).grid(row=1, column=7, sticky="w", padx=3, pady=3)
 
-    self.style_button(
-        tk.Button(
-            form,
-            text="Clear",
-            command=self.clear_set_liquid_classes,
-            relief="raised",
-            bd=3,
-        )
-    ).grid(row=1, column=8, sticky="w", padx=3, pady=3)
+    summary_box = tk.Frame(form, bg=self.UI_BG, relief="sunken", bd=2)
+    summary_box.grid(row=2, column=0, columnspan=8, sticky="we", padx=3, pady=4)
 
     tk.Label(
-        form,
+        summary_box,
         textvariable=self.set_liquid_summary_var,
         anchor="w",
         bg=self.UI_BG,
         fg=self.UI_TEXT_FG,
-        relief="flat",
-        bd=0,
-    ).grid(row=2, column=0, columnspan=10, sticky="we", padx=3, pady=3)
+        padx=4,
+        pady=2,
+    ).pack(fill="x", expand=True)
 
     self.set_liquid_listbox = tk.Listbox(
         form,
         height=3,
-        width=92,
+        width=84,
         bg=self.UI_BG,
         fg=self.UI_TEXT_FG,
         selectbackground=self.UI_TEXT_BG,
@@ -228,31 +191,47 @@ def _build_ui(self):
         relief="sunken",
         bd=2,
     )
-    self.set_liquid_listbox.grid(row=3, column=0, columnspan=10, sticky="we", padx=3, pady=3)
+    self.set_liquid_listbox.grid(row=3, column=0, columnspan=8, sticky="we", padx=3, pady=3)
 
     form.grid_columnconfigure(1, weight=1)
-    form.grid_columnconfigure(8, weight=0)
-    form.grid_columnconfigure(9, weight=0)
 
-    options = tk.LabelFrame(
-        left_panel,
+    options_row = tk.Frame(left_panel, bg=self.UI_BG, relief="raised", bd=2)
+    options_row.pack(fill="x", padx=4, pady=4)
+
+    self.make_checkbutton(
+        options_row,
+        text="Tracking Enabled",
+        variable=self.tracking_var,
+        width=16,
+    ).pack(side="left", padx=4, pady=4)
+
+    self.make_checkbutton(
+        options_row,
+        text="Variant",
+        variable=self.variant_var,
+        command=self.update_set_column_visibility,
+        width=8,
+    ).pack(side="left", padx=4, pady=4)
+
+    report_box = tk.LabelFrame(
+        options_row,
         text="Report Options",
         bg=self.UI_BG,
         fg=self.UI_TEXT_FG,
         relief="groove",
         bd=3,
     )
-    options.pack(fill="x", padx=4, pady=4)
+    report_box.pack(side="left", padx=8, pady=3)
 
-    self.make_bg_label(options, "Report Format").pack(side="left", padx=5, pady=4)
+    self.make_bg_label(report_box, "Report Format").pack(side="left", padx=4, pady=3)
     ttk.Combobox(
-        options,
+        report_box,
         textvariable=self.report_format_var,
         values=["docx", "pdf", "txt"],
         state="readonly",
-        width=8,
+        width=7,
         style="DevPal.TCombobox",
-    ).pack(side="left", padx=4, pady=4)
+    ).pack(side="left", padx=4, pady=3)
 
     list_frame = tk.LabelFrame(
         left_panel,
@@ -268,36 +247,21 @@ def _build_ui(self):
         list_frame,
         bg=self.UI_BG,
         highlightthickness=0,
-        width=720,
+        width=680,
     )
     self.canvas = self.sequence_canvas
 
-    y_scrollbar = ttk.Scrollbar(
-        list_frame,
-        orient="vertical",
-        command=self.sequence_canvas.yview,
-    )
-
-    x_scrollbar = ttk.Scrollbar(
-        list_frame,
-        orient="horizontal",
-        command=self.sequence_canvas.xview,
-    )
+    y_scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.sequence_canvas.yview)
+    x_scrollbar = ttk.Scrollbar(list_frame, orient="horizontal", command=self.sequence_canvas.xview)
 
     self.sequence_frame = tk.Frame(self.sequence_canvas, bg=self.UI_BG)
     self.scroll_frame = self.sequence_frame
 
-    self.sequence_window = self.sequence_canvas.create_window(
-        (0, 0),
-        window=self.sequence_frame,
-        anchor="nw",
-    )
+    self.sequence_window = self.sequence_canvas.create_window((0, 0), window=self.sequence_frame, anchor="nw")
 
     self.sequence_frame.bind(
         "<Configure>",
-        lambda event: self.sequence_canvas.configure(
-            scrollregion=self.sequence_canvas.bbox("all")
-        ),
+        lambda event: self.sequence_canvas.configure(scrollregion=self.sequence_canvas.bbox("all")),
     )
 
     self.sequence_canvas.configure(
@@ -318,7 +282,7 @@ def _build_ui(self):
     self.style_button(
         tk.Button(
             bottom,
-            text="Generate Plan + Run PyHamilton Simulation + Validate",
+            text="Run Sequence Analyzer",
             command=self.generate_plan_run_and_validate,
             relief="raised",
             bd=4,
@@ -328,7 +292,7 @@ def _build_ui(self):
     self.style_button(
         tk.Button(
             bottom,
-            text="Select Existing Trace Manually",
+            text="Select Existing .trc",
             command=self.upload_trace,
             relief="raised",
             bd=3,
@@ -346,3 +310,11 @@ def _build_ui(self):
         padx=4,
     )
     self.status.pack(side="left", fill="x", expand=True, padx=4, pady=5)
+
+
+
+
+
+
+self.tracking_var = tk.IntVar(value=0)
+self.variant_var = tk.IntVar(value=0)
