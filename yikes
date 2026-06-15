@@ -1,133 +1,698 @@
-
-def get_required_transfer_iterations(configs: List[SequenceStepConfig]) -> int:
-    control_configs = [
-        config for config in configs
-        if bool(getattr(config, "control", False))
-        and not bool(getattr(config, "manual", False))
-        and config.role in ("aspirate", "dispense")
-    ]
-
-    if control_configs:
-        return max(get_sequence_iterations(config) for config in control_configs)
-
-    nonmanual_liquid_configs = [
-        config for config in configs
-        if config.role in ("aspirate", "dispense")
-        and not bool(getattr(config, "manual", False))
-    ]
-
-    if nonmanual_liquid_configs:
-        return max(get_sequence_iterations(config) for config in nonmanual_liquid_configs)
-
-    return 1
-
-
-
-
-def build_execution_plan(
-    configs: List[SequenceStepConfig],
-    lay_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
-) -> List[Dict[str, Any]]:
-    lay_metadata = lay_metadata or {}
-    plan = []
-    order = 1
-
-    grouped = defaultdict(list)
-    for config in configs:
-        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
-
-    for set_order in sorted(grouped):
-        set_configs = sorted(grouped[set_order], key=lambda c: c.selected_index)
-
-        replicate = set_configs[0].replicate if set_configs else "single"
-        replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
-
-        tip_steps = [c for c in set_configs if c.role == "tip pick up"]
-        asp_steps = [c for c in set_configs if c.role == "aspirate"]
-        dsp_steps = [c for c in set_configs if c.role == "dispense"]
-
-        max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
-        transfer_iterations = get_required_transfer_iterations(set_configs)
-
-        for rep_index in range(1, replicate_count + 1):
-            for transfer_iteration in range(1, transfer_iterations + 1):
-                for idx in range(max_len):
-                    triplet = [
-                        tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None,
-                        asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None,
-                        dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None,
-                    ]
-
-                    for config in triplet:
-                        if config is None:
-                            continue
-
-                        batch_size = get_sequence_batch_size(config)
-                        action = "tip_pick" if config.role == "tip pick up" else config.role
-
-                        should_increment = (
-                            transfer_iteration > 1
-                            and not bool(getattr(config, "manual", False))
-                            and config.role in ("aspirate", "dispense")
-                        )
-
-                        seq_meta = get_sequence_labware_metadata(
-                            config.sequence,
-                            lay_metadata,
-                            getattr(config, "sequence_count", 0),
-                        )
-
-                        plan.append({
-                            "order": order,
-                            "set_order": set_order,
-                            "action": action,
-                            "sequence": config.sequence,
-                            "hardware_mode": config.hardware_mode,
-                            "labware_name": seq_meta.get("labware_name", ""),
-                            "labware_format": seq_meta.get("labware_format", ""),
-                            "labware_positions": seq_meta.get("positions", []),
-                            "replicate_index": rep_index,
-                            "transfer_iteration": transfer_iteration,
-                            "manual": bool(getattr(config, "manual", False)),
-                            "control": bool(getattr(config, "control", False)),
-                            "autoincrement": should_increment,
-                            "increment": batch_size if should_increment else 0,
-                            "channel_pattern": config.channel_pattern,
-                            "volume_ul": config.volume_ul if config.role in ("aspirate", "dispense") else "",
-                            "liquid_class": config.liquid_class if config.role in ("aspirate", "dispense") else "",
-                            "transfer_type": config.transfer_type,
-                            "marker": config.marker,
-                            "sequence_count": config.sequence_count,
-                            "batch_size": batch_size,
-                        })
-                        order += 1
-
-                    if tip_steps:
-                        tip = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0]
-
-                        plan.append({
-                            "order": order,
-                            "set_order": set_order,
-                            "action": "tip_eject",
-                            "sequence": "Waste",
-                            "hardware_mode": tip.hardware_mode,
-                            "labware_name": "Waste",
-                            "labware_format": "waste",
-                            "labware_positions": [],
-                            "replicate_index": rep_index,
-                            "transfer_iteration": transfer_iteration,
-                            "manual": False,
-                            "control": False,
-                            "autoincrement": False,
-                            "increment": 0,
-                            "channel_pattern": tip.channel_pattern,
-                            "volume_ul": "",
-                            "liquid_class": "",
-                            "transfer_type": tip.transfer_type,
-                            "marker": tip.marker,
-                            "sequence_count": tip.sequence_count,
-                            "batch_size": get_sequence_batch_size(tip),
-                        })
-                        order += 1
-
-    return plan
+2026-06-15 14:06:56.800 Venus software version: 6.2.2.4006
+2026-06-15 14:06:56.800 SYSTEM : Analyze method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-15 14:06:58.587 Microlab STAR : Communication - progress; Connection to instrument is created.
+2026-06-15 14:06:59.850 SYSTEM : Analyze method - complete; 
+2026-06-15 14:07:00.577 SYSTEM : Start method - start; 
+2026-06-15 14:07:00.577 SYSTEM : Start method - progress; User name: LYNCHD27
+2026-06-15 14:07:00.586 SYSTEM : Start method - progress; Phoenix software version: 6.2.2.50003
+2026-06-15 14:07:00.586 SYSTEM : Start method - progress; Database version: Standard
+2026-06-15 14:07:00.586 SYSTEM : Start method - progress; Sample tracking: On
+2026-06-15 14:07:00.586 SYSTEM : Start method - progress; Vector Database: On
+2026-06-15 14:07:00.593 SYSTEM : Start method - progress; Vector Database connection: Database 'HamiltonVectorDB' on Microsoft SQL Server 'LOCALHOST\HAMILTON' with user 'Hamilton'
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - start;
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Microlab STAR software version: 6.2.2.50003
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Serial number of Instrument: 0000
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of main module: 0.0X 2002-05-08
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of 1000µl channels: 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of 5ml channels: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of labware handling channels: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of X drive: 0.0X 2002-05-08
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of auto load: 0.0X 2002-05-08
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of iSWAP: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of washer 1: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of washer 2: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 1: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 2: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of CO-RE 96 Head: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of pump station 1: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of pump station 2: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of pump station 3: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of CO-RE 384 Head: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of tube gripper: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of camera channel: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of gel card gripper: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of punch card gripper: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of puncher module: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 1: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 2: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 1: not installed
+2026-06-15 14:07:00.975 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 2: not installed
+2026-06-15 14:07:02.301 Microlab STAR : Start method command - complete;
+2026-06-15 14:07:02.333 SYSTEM : Start method - complete; 
+2026-06-15 14:07:02.333 SYSTEM : Execute method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
+2026-06-15 14:07:02.381 HSLHttp : Initialize - progress;  Creating Hamilton HTTP object: Hamilton.HSLHttp
+2026-06-15 14:07:02.413 HSLHttp : Initialize - progress;  Hamilton HTTP object Created.
+2026-06-15 14:07:02.428 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:02.428 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Hi, I´m a VENUS method.
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:02.444 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:02.444 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:04.909 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:04.909 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:04.909 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:04.909 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:04.909 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:04.909 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:04.909 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:05.020 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:05.020 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:05.020 HSLHttp : HttpGET - progress;  Response Content: {"command": "initialize", "id": "0xff56fc1c259", "initializeAlways": 0}
+2026-06-15 14:07:05.020 USER : Trace - complete; JSON received from Server:{"command": "initialize", "id": "0xff56fc1c259", "initializeAlways": 0}
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  initialize
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff56fc1c259
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:05.020 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:05.020 Microlab STAR : Initialize (Single Step) - start;
+2026-06-15 14:07:05.100 Microlab STAR : Initialize (Single Step) - complete;  > channel 1: Waste,  > channel 2: Waste,  > channel 3: Waste,  > channel 4: Waste,  > channel 5: Waste,  > channel 6: Waste,  > channel 7: Waste,  > channel 8: Waste,  > channel 9: Waste,  > channel 10: Waste,  > channel 11: Waste,  > channel 12: Waste, 
+2026-06-15 14:07:05.116 USER : Trace - complete; Init step return:0[01,00,00,0,,Waste,[02,00,00,0,,Waste,[03,00,00,0,,Waste,[04,00,00,0,,Waste,[05,00,00,0,,Waste,[06,00,00,0,,Waste,[07,00,00,0,,Waste,[08,00,00,0,,Waste,[09,00,00,0,,Waste,[10,00,00,0,,Waste,[11,00,00,0,,Waste,[12,00,00,0,,Waste,
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  initialize
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,,Waste,[02,00,00,0,,Waste,[03,00,00,0,,Waste,[04,00,00,0,,Waste,[05,00,00,0,,Waste,[06,00,00,0,,Waste,[07,00,00,0,,Waste,[08,00,00,0,,Waste,[09,00,00,0,,Waste,[10,00,00,0,,Waste,[11,00,00,0,,Waste,[12,00,00,0,,Waste,
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff56fc1c259
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:05.116 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:05.116 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:05.116 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:05.225 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:05.225 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:05.225 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:06.252 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:06.252 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:06.252 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipPickUp", "id": "0xff5704b38da", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-15 14:07:06.252 USER : Trace - complete; JSON received from Server:{"command": "channelTipPickUp", "id": "0xff5704b38da", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipPickUp
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff5704b38da
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  TP
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:06.252 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:06.252 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;
+2026-06-15 14:07:06.537 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete;  > channel 1: HTF_L_0001, 1 > channel 2: HTF_L_0001, 2 > channel 3: HTF_L_0001, 3 > channel 4: HTF_L_0001, 4 > channel 5: HTF_L_0001, 5 > channel 6: HTF_L_0001, 6 > channel 7: HTF_L_0001, 7 > channel 8: HTF_L_0001, 8 > channel 9: HTF_L_0001, 9 > channel 10: HTF_L_0001, 10 > channel 11: HTF_L_0001, 11 > channel 12: HTF_L_0001, 12
+2026-06-15 14:07:06.537 USER : Trace - complete; Tip pick up step return:0[01,00,00,0,0.0,HTF_L_0001,1[02,00,00,0,0.0,HTF_L_0001,2[03,00,00,0,0.0,HTF_L_0001,3[04,00,00,0,0.0,HTF_L_0001,4[05,00,00,0,0.0,HTF_L_0001,5[06,00,00,0,0.0,HTF_L_0001,6[07,00,00,0,0.0,HTF_L_0001,7[08,00,00,0,0.0,HTF_L_0001,8[09,00,00,0,0.0,HTF_L_0001,9[10,00,00,0,0.0,HTF_L_0001,10[11,00,00,0,0.0,HTF_L_0001,11[12,00,00,0,0.0,HTF_L_0001,12
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipPickUp
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,HTF_L_0001,1[02,00,00,0,0.0,HTF_L_0001,2[03,00,00,0,0.0,HTF_L_0001,3[04,00,00,0,0.0,HTF_L_0001,4[05,00,00,0,0.0,HTF_L_0001,5[06,00,00,0,0.0,HTF_L_0001,6[07,00,00,0,0.0,HTF_L_0001,7[08,00,00,0,0.0,HTF_L_0001,8[09,00,00,0,0.0,HTF_L_0001,9[10,00,00,0,0.0,HTF_L_0001,10[11,00,00,0,0.0,HTF_L_0001,11[12,00,00,0,0.0,HTF_L_0001,12
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff5704b38da
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:06.537 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:06.537 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:06.537 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:06.537 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:06.553 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:06.553 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:06.553 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:06.553 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:06.662 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:06.662 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:06.662 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:07.685 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:07.685 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:07.685 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelAspirate", "id": "0xff57069ccb6", "aspirateSequence": "twelveasp", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:07.685 USER : Trace - complete; JSON received from Server:{"command": "channelAspirate", "id": "0xff57069ccb6", "aspirateSequence": "twelveasp", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelAspirate
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff57069ccb6
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  twelveasp
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
+2026-06-15 14:07:07.685 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  2
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.685 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.694 USER : Trace - complete; Bookstart
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; Bookend
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:07.694 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:07.701 Microlab STAR : 1000ul Channel Aspirate (Single Step) - start;
+2026-06-15 14:07:07.902 Microlab STAR : 1000ul Channel Aspirate (Single Step) - complete;  > channel 1: Thermo_48_Tube_Honeycomb_Rack_0001, B1 100µL > channel 2: Thermo_48_Tube_Honeycomb_Rack_0001, D1 100µL > channel 3: Thermo_48_Tube_Honeycomb_Rack_0001, F1 100µL > channel 4: Thermo_48_Tube_Honeycomb_Rack_0001, H1 100µL > channel 5: Thermo_48_Tube_Honeycomb_Rack_0001, A1 100µL > channel 6: Thermo_48_Tube_Honeycomb_Rack_0001, C1 100µL > channel 7: Thermo_48_Tube_Honeycomb_Rack_0001, E1 100µL > channel 8: Thermo_48_Tube_Honeycomb_Rack_0001, G1 100µL > channel 9: Thermo_48_Tube_Honeycomb_Rack_0001, B2 100µL > channel 10: Thermo_48_Tube_Honeycomb_Rack_0001, D2 100µL > channel 11: Thermo_48_Tube_Honeycomb_Rack_0001, F2 100µL > channel 12: Thermo_48_Tube_Honeycomb_Rack_0001, H2 100µL
+2026-06-15 14:07:07.902 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - start;
+2026-06-15 14:07:07.924 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - complete;  > channel 1: 111.1 mm > channel 2: 111.2 mm > channel 3: 111.3 mm > channel 4: 111.4 mm > channel 5: 111.5 mm > channel 6: 111.6 mm > channel 7: 111.7 mm > channel 8: 111.8 mm > channel 9: 111.1 mm > channel 10: 111.2 mm > channel 11: 111.3 mm > channel 12: 111.4 mm
+2026-06-15 14:07:07.975 USER : Trace - complete; Aspirate step return 1:0[01,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B1[02,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D1[03,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F1[04,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H1[05,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,A1[06,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,C1[07,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,E1[08,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,G1[09,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B2[10,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D2[11,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F2[12,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H2
+2026-06-15 14:07:07.975 USER : Trace - complete; Aspirate step return 2:111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000;111.1000;111.2000;111.3000;111.4000
+2026-06-15 14:07:07.975 USER : Trace - complete; Aspirate step return 3:-99.11680;-98.70074;-98.28585;-97.87212;-97.45956;-97.04816;-96.63791;-96.22883;-99.11680;-98.70074;-98.28585;-97.87212
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelAspirate
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B1[02,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D1[03,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F1[04,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H1[05,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,A1[06,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,C1[07,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,E1[08,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,G1[09,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,B2[10,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,D2[11,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,F2[12,00,00,0,100.0,Thermo_48_Tube_Honeycomb_Rack_0001,H2
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000;111.1000;111.2000;111.3000;111.4000
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  -99.11680;-98.70074;-98.28585;-97.87212;-97.45956;-97.04816;-96.63791;-96.22883;-99.11680;-98.70074;-98.28585;-97.87212
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff57069ccb6
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:07.975 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:07.975 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:07.975 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:08.083 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:08.083 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:08.083 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:09.108 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:09.108 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:09.108 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelDispense", "id": "0xff5707921cc", "dispenseSequence": "P", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "dispenseMode": 8, "capacitiveLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "dispPositionAboveTouch": 0.0, "zMoveAfterStep": 0, "sideTouch": 0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:09.108 USER : Trace - complete; JSON received from Server:{"command": "channelDispense", "id": "0xff5707921cc", "dispenseSequence": "P", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "dispenseMode": 8, "capacitiveLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "dispPositionAboveTouch": 0.0, "zMoveAfterStep": 0, "sideTouch": 0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelDispense
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff5707921cc
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  P
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  8
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:09.108 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:09.131 Microlab STAR : 1000ul Channel Dispense (Single Step) - start;
+2026-06-15 14:07:09.194 Microlab STAR : 1000ul Channel Dispense (Single Step) - complete;  > channel 1: P1, A1 100µL > channel 2: P1, B1 100µL > channel 3: P1, C1 100µL > channel 4: P1, D1 100µL > channel 5: P1, A2 100µL > channel 6: P1, B2 100µL > channel 7: P1, C2 100µL > channel 8: P1, D2 100µL > channel 9: P1, A3 100µL > channel 10: P1, B3 100µL > channel 11: P1, C3 100µL > channel 12: P1, D3 100µL
+2026-06-15 14:07:09.194 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - start;
+2026-06-15 14:07:09.204 Microlab STAR : 1000ul Channel Get Last Liquid Level (Single Step) - complete;  > channel 1: 111.1 mm > channel 2: 111.2 mm > channel 3: 111.3 mm > channel 4: 111.4 mm > channel 5: 111.5 mm > channel 6: 111.6 mm > channel 7: 111.7 mm > channel 8: 111.8 mm > channel 9: 111.1 mm > channel 10: 111.2 mm > channel 11: 111.3 mm > channel 12: 111.4 mm
+2026-06-15 14:07:09.250 USER : Trace - complete; Aspirate step return 1:0[01,00,00,0,100.0,P1,A1[02,00,00,0,100.0,P1,B1[03,00,00,0,100.0,P1,C1[04,00,00,0,100.0,P1,D1[05,00,00,0,100.0,P1,A2[06,00,00,0,100.0,P1,B2[07,00,00,0,100.0,P1,C2[08,00,00,0,100.0,P1,D2[09,00,00,0,100.0,P1,A3[10,00,00,0,100.0,P1,B3[11,00,00,0,100.0,P1,C3[12,00,00,0,100.0,P1,D3
+2026-06-15 14:07:09.250 USER : Trace - complete; Aspirate step return 2:111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000;111.1000;111.2000;111.3000;111.4000
+2026-06-15 14:07:09.250 USER : Trace - complete; Aspirate step return 3:-4.291219;-4.285329;-4.279438;-4.273548;-4.267657;-4.261767;-4.255876;-4.249986;-4.291219;-4.285329;-4.279438;-4.273548
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelDispense
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,100.0,P1,A1[02,00,00,0,100.0,P1,B1[03,00,00,0,100.0,P1,C1[04,00,00,0,100.0,P1,D1[05,00,00,0,100.0,P1,A2[06,00,00,0,100.0,P1,B2[07,00,00,0,100.0,P1,C2[08,00,00,0,100.0,P1,D2[09,00,00,0,100.0,P1,A3[10,00,00,0,100.0,P1,B3[11,00,00,0,100.0,P1,C3[12,00,00,0,100.0,P1,D3
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  111.1000;111.2000;111.3000;111.4000;111.5000;111.6000;111.7000;111.8000;111.1000;111.2000;111.3000;111.4000
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  -4.291219;-4.285329;-4.279438;-4.273548;-4.267657;-4.261767;-4.255876;-4.249986;-4.291219;-4.285329;-4.279438;-4.273548
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff5707921cc
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:09.250 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:09.250 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:09.256 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:09.256 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:09.256 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:09.256 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:09.256 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:09.256 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:09.256 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:09.362 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:09.362 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:09.362 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:10.386 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:10.386 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:10.386 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipEject", "id": "0xff5708874fa", "wasteSequence": "Waste", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "useDefaultWaste": 0}
+2026-06-15 14:07:10.386 USER : Trace - complete; JSON received from Server:{"command": "channelTipEject", "id": "0xff5708874fa", "wasteSequence": "Waste", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "useDefaultWaste": 0}
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipEject
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff5708874fa
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  Waste
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:10.386 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:10.396 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - start;
+2026-06-15 14:07:10.470 Microlab STAR : 1000ul Channel Tip Eject (Single Step) - complete;  > channel 1: Waste, 1 > channel 2: Waste, 2 > channel 3: Waste, 3 > channel 4: Waste, 4 > channel 5: Waste, 5 > channel 6: Waste, 6 > channel 7: Waste, 7 > channel 8: Waste, 8 > channel 9: Waste, 9 > channel 10: Waste, 10 > channel 11: Waste, 11 > channel 12: Waste, 12
+2026-06-15 14:07:10.470 USER : Trace - complete; Tip eject step return:0[01,00,00,0,0.0,Waste,1[02,00,00,0,0.0,Waste,2[03,00,00,0,0.0,Waste,3[04,00,00,0,0.0,Waste,4[05,00,00,0,0.0,Waste,5[06,00,00,0,0.0,Waste,6[07,00,00,0,0.0,Waste,7[08,00,00,0,0.0,Waste,8[09,00,00,0,0.0,Waste,9[10,00,00,0,0.0,Waste,10[11,00,00,0,0.0,Waste,11[12,00,00,0,0.0,Waste,12
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipEject
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,Waste,1[02,00,00,0,0.0,Waste,2[03,00,00,0,0.0,Waste,3[04,00,00,0,0.0,Waste,4[05,00,00,0,0.0,Waste,5[06,00,00,0,0.0,Waste,6[07,00,00,0,0.0,Waste,7[08,00,00,0,0.0,Waste,8[09,00,00,0,0.0,Waste,9[10,00,00,0,0.0,Waste,10[11,00,00,0,0.0,Waste,11[12,00,00,0,0.0,Waste,12
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:10.471 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff5708874fa
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:10.472 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:10.473 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:10.475 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:10.475 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:10.475 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:10.475 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:10.475 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:10.475 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:10.475 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:10.575 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:10.575 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:10.575 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:11.605 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:11.605 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:11.605 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipPickUp", "id": "0xff570a70174", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-15 14:07:11.605 USER : Trace - complete; JSON received from Server:{"command": "channelTipPickUp", "id": "0xff570a70174", "tipSequence": "TP", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 1, "channelUse": 1}
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipPickUp
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff570a70174
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  TP
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:11.605 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:11.613 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;
+2026-06-15 14:07:11.818 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete;  > channel 1: HTF_L_0001, 13 > channel 2: HTF_L_0001, 14 > channel 3: HTF_L_0001, 15 > channel 4: HTF_L_0001, 16 > channel 5: HTF_L_0001, 17 > channel 6: HTF_L_0001, 18 > channel 7: HTF_L_0001, 19 > channel 8: HTF_L_0001, 20 > channel 9: HTF_L_0001, 21 > channel 10: HTF_L_0001, 22 > channel 11: HTF_L_0001, 23 > channel 12: HTF_L_0001, 24
+2026-06-15 14:07:11.818 USER : Trace - complete; Tip pick up step return:0[01,00,00,0,0.0,HTF_L_0001,13[02,00,00,0,0.0,HTF_L_0001,14[03,00,00,0,0.0,HTF_L_0001,15[04,00,00,0,0.0,HTF_L_0001,16[05,00,00,0,0.0,HTF_L_0001,17[06,00,00,0,0.0,HTF_L_0001,18[07,00,00,0,0.0,HTF_L_0001,19[08,00,00,0,0.0,HTF_L_0001,20[09,00,00,0,0.0,HTF_L_0001,21[10,00,00,0,0.0,HTF_L_0001,22[11,00,00,0,0.0,HTF_L_0001,23[12,00,00,0,0.0,HTF_L_0001,24
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipPickUp
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,0.0,HTF_L_0001,13[02,00,00,0,0.0,HTF_L_0001,14[03,00,00,0,0.0,HTF_L_0001,15[04,00,00,0,0.0,HTF_L_0001,16[05,00,00,0,0.0,HTF_L_0001,17[06,00,00,0,0.0,HTF_L_0001,18[07,00,00,0,0.0,HTF_L_0001,19[08,00,00,0,0.0,HTF_L_0001,20[09,00,00,0,0.0,HTF_L_0001,21[10,00,00,0,0.0,HTF_L_0001,22[11,00,00,0,0.0,HTF_L_0001,23[12,00,00,0,0.0,HTF_L_0001,24
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff570a70174
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:11.818 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:11.818 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:11.818 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:11.818 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:11.827 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:11.827 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:11.829 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:11.829 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:11.829 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:11.939 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:11.939 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:11.939 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:12.957 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:12.957 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:12.957 HSLHttp : HttpGET - progress;  Response Content: {"command": "seqIncrement", "id": "0xff570b64fc5", "increment": 12, "sequenceObj": "twelveasp"}
+2026-06-15 14:07:12.957 USER : Trace - complete; JSON received from Server:{"command": "seqIncrement", "id": "0xff570b64fc5", "increment": 12, "sequenceObj": "twelveasp"}
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  seqIncrement
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff570b64fc5
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  twelveasp
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  12
+2026-06-15 14:07:12.957 USER : Trace - complete; 12
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  seqIncrement
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  1
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0xff570b64fc5
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
+2026-06-15 14:07:12.957 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Response Status Code: 200
+2026-06-15 14:07:12.957 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
+2026-06-15 14:07:12.957 USER : Trace - complete; Waiting for server instructions....
+2026-06-15 14:07:13.067 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:13.068 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:13.068 HSLHttp : HttpGET - progress;  Response Content: 
+2026-06-15 14:07:14.082 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
+2026-06-15 14:07:14.082 HSLHttp : HttpGET - progress;  Response Status Code: 200
+2026-06-15 14:07:14.082 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelAspirate", "id": "0xff570c59c6d", "aspirateSequence": "twelveasp", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:14.082 USER : Trace - complete; JSON received from Server:{"command": "channelAspirate", "id": "0xff570c59c6d", "aspirateSequence": "twelveasp", "labwarePositions": "", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1, "aspirateMode": 0, "capacitiveLLD": 2, "pressureLLD": 0, "liquidFollowing": 0, "submergeDepth": 2.0, "liquidHeight": 1.0, "maxLLdDifference": 0.0, "mixCycles": 0, "mixPosition": 0.0, "mixVolume": 0.0, "xDisplacement": 0.0, "yDisplacement": 0.0, "zDisplacement": 0.0, "airTransportRetractDist": 10.0, "touchOff": 0, "aspPosAboveTouch": 0.0, "volumes": 100.0, "liquidClass": "HighVolumeFilter_Water_DispenseSurface_Empty"}
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelAspirate
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0xff570c59c6d
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  twelveasp
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetArrayLength - complete;  volumes Length: 0
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  100.0000
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  HighVolumeFilter_Water_DispenseSurface_Empty
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  2
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 USER : Trace - complete; Bookstart
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  2.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; Bookend
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  1.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  10.00000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 USER : Trace - complete; getfloatvalue
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetFloatProperty - complete;  0.000000
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
+2026-06-15 14:07:14.082 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
+2026-06-15 14:07:14.082 SYSTEM : Execute method - error; An error occurred while running Vector.  The error description is: C:\Program Files (x86)\Hamilton\Library\SchedulingDev\HSLAppsLib.hsl(555) : An error occurred while running Vector.  The error description is: LabwareId  is invalid for the current deck layout. (0x5 - 0x0 - 0x0)  (0x23 - 0x2 - 0x39) , 
+2026-06-15 14:07:14.082 SYSTEM : Method has been aborted by the system - complete; 
+2026-06-15 14:07:14.082 SYSTEM : Abort method - start; 
+2026-06-15 14:07:14.100 Microlab STAR : Abort requested command - start;
+2026-06-15 14:07:14.100 Microlab STAR : Abort requested command - complete;
+2026-06-15 14:07:14.100 Microlab STAR : Start Method Abort Handler command - start;
+2026-06-15 14:07:14.114 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
+2026-06-15 14:07:14.130 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
+2026-06-15 14:07:14.168 Microlab STAR : Start Method Abort Handler command - complete;
+2026-06-15 14:07:14.168 HSLHttp : Release - progress;  Releasing Hamilton HTTP object.
+2026-06-15 14:07:14.168 HSLHttp : Release - progress;  Hamilton HTTP object Released.
+2026-06-15 14:07:14.168 Microlab STAR : Abort command - start;
+2026-06-15 14:07:14.194 Microlab STAR : Abort command - complete;
+2026-06-15 14:07:14.287 SYSTEM : Abort method - complete; 
+2026-06-15 14:07:14.287 SYSTEM : Execute method - complete with error; 
+2026-06-15 14:07:14.287 SYSTEM : End method - start; 
+2026-06-15 14:07:14.350 Microlab STAR : End method command - start;
+2026-06-15 14:07:14.429 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
+2026-06-15 14:07:14.445 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
+2026-06-15 14:07:14.484 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
+2026-06-15 14:07:14.509 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
+2026-06-15 14:07:14.525 Microlab STAR : Clean up instrument - progress; Spreading channels
+2026-06-15 14:07:14.541 Microlab STAR : Clean up instrument - progress; Switch off loading lights
+2026-06-15 14:07:14.834 Microlab STAR : End method command - complete;
+2026-06-15 14:07:14.915 SYSTEM : End method - complete; 
+2026-06-15 14:07:30.238 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-06-15 14:07$$checksum=fddcfab4$$length=140$$
