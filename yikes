@@ -1,17 +1,51 @@
-
 def infer_tip_type_from_text(text: str) -> str:
     value = str(text or "").upper()
+    compact = re.sub(r"[^A-Z0-9]+", "", value)
 
-    if any(token in value for token in ("1000", "1000UL", "1000_UL", "HIGHVOLUME", "HIGH_VOLUME", "HV")):
+    if any(token in compact for token in (
+        "1000",
+        "HIGHVOLUME",
+        "HIGHVOLFILTER",
+        "HIGHVOLUMEFILTER",
+        "HIGHTIP",
+        "HVT",
+        "HV",
+        "HTF",
+        "HT",
+    )):
         return "1000ul"
 
-    if any(token in value for token in ("300S", "300 S", "SLIM", "300UL", "300_UL", "300", "STANDARD")):
+    if any(token in compact for token in (
+        "300S",
+        "300UL",
+        "300",
+        "SLIMTIP",
+        "SLIM",
+        "STANDARDVOLUME",
+        "STANDARDTIP",
+        "STDTIP",
+        "STD",
+        "SVT",
+        "SLIM1",
+    )):
         return "300ul"
 
-    if any(token in value for token in ("50UL", "50_UL", "LOWVOLUME", "LOW_VOLUME", "LV")):
+    if any(token in compact for token in (
+        "50UL",
+        "50",
+        "LOWVOLUME",
+        "LOWVOLUMEFILTER",
+        "LOWTIP",
+        "LVT",
+        "LV",
+    )):
         return "50ul"
 
     return ""
+
+
+
+
 
 
 def infer_tip_type_for_set(
@@ -39,110 +73,26 @@ def infer_tip_type_for_set(
             meta.get("sequence_name", ""),
             meta.get("labware_name", ""),
             meta.get("labware_format", ""),
+            meta.get("sequence_id", ""),
             " ".join(meta.get("positions", []) or []),
         ]
 
+        for key, value in meta.items():
+            if isinstance(value, str):
+                values.append(value)
+            elif isinstance(value, list):
+                values.append(" ".join(str(v) for v in value))
+
         for value in values:
-            if value:
-                searched.append(str(value))
-                tip_type = infer_tip_type_from_text(value)
-                if tip_type:
-                    return tip_type, str(value)
+            if not value:
+                continue
+
+            text = str(value)
+            searched.append(text)
+
+            tip_type = infer_tip_type_from_text(text)
+            if tip_type:
+                return tip_type, text
 
     return "", " | ".join(searched) if searched else "no tip pick up sequence selected"
-
-
-def tip_volume_allowed(tip_type: str, hardware_mode: str, volume_ul: float) -> bool:
-    mode = str(hardware_mode or "channels").lower()
-    tip = str(tip_type or "").lower()
-
-    if mode == "head":
-        ranges = {
-            "1000ul": (100.0, 1000.0),
-            "300ul": (20.0, 300.0),
-            "50ul": (12.5, 49.0),
-        }
-    else:
-        ranges = {
-            "1000ul": (100.0, 1000.0),
-            "300ul": (10.0, 300.0),
-            "50ul": (10.0, 50.0),
-        }
-
-    if tip not in ranges:
-        return False
-
-    low, high = ranges[tip]
-    return low <= float(volume_ul) <= high
-
-
-def validate_tip_volume_rules(
-    configs: List[SequenceStepConfig],
-    lay_metadata: Dict[str, Dict[str, Any]],
-) -> List[ValidationIssue]:
-    issues = []
-
-    set_numbers = sorted({int(c.set_order) for c in configs})
-
-    for set_order in set_numbers:
-        set_configs = [c for c in configs if int(c.set_order) == int(set_order)]
-        liquid_steps = [c for c in set_configs if c.role in ("aspirate", "dispense")]
-
-        if not liquid_steps:
-            continue
-
-        tip_type, evidence = infer_tip_type_for_set(set_order, configs, lay_metadata)
-
-        if not tip_type:
-            issues.append(ValidationIssue(
-                "major",
-                "tip_type",
-                f"Could not identify tip type for Set {set_order}. Checked LAY metadata: {evidence}",
-                {"set_order": set_order, "evidence": evidence},
-            ))
-            continue
-
-        for step in liquid_steps:
-            if not tip_volume_allowed(tip_type, step.hardware_mode, step.volume_ul):
-                issues.append(ValidationIssue(
-                    "critical",
-                    "tip_volume_range",
-                    (
-                        f"Set {set_order} volume {step.volume_ul} uL is outside allowed range "
-                        f"for {step.hardware_mode} {tip_type} tips."
-                    ),
-                    {
-                        "set_order": set_order,
-                        "sequence": step.sequence,
-                        "tip_type": tip_type,
-                        "hardware_mode": step.hardware_mode,
-                        "volume_ul": step.volume_ul,
-                        "tip_evidence": evidence,
-                    },
-                ))
-
-    return issues
-
-
-
-
-lay_metadata = parse_lay_sequence_metadata(self.lay_path)
-
-tip_issues = validate_tip_volume_rules(
-    configs,
-    lay_metadata,
-)
-
-
-
-
-
-
-
-lay_metadata = parse_lay_sequence_metadata(self.lay_path)
-
-issues.extend(validate_tip_volume_rules(
-    configs,
-    lay_metadata,
-))
 
