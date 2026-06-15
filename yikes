@@ -1,8 +1,7 @@
-
 def __init__(self):
     self.root = tk.Tk()
     self.root.title("DevPal Lite Sequence Layout Runner")
-    self.root.geometry("1180x780")
+    self.root.geometry("1400x820")
     self.root.option_add("*Font", APP_FONT)
 
     try:
@@ -12,9 +11,10 @@ def __init__(self):
     except Exception:
         pass
 
-    self.bg_image = None
+    self.bg_photo = None
     self.bg_label = None
-    self.main_frame = None
+    self.left_panel = None
+    self.right_panel = None
 
     self.lay_path = ""
     self.layout_path = ""
@@ -56,9 +56,144 @@ def __init__(self):
 
 
 
+def _build_ui(self):
+    self.root.configure(bg="#12001f")
 
-def _load_liquid_classes(self):
-    return self.load_liquid_classes()
+    outer = tk.Frame(self.root, bg="#12001f")
+    outer.pack(fill="both", expand=True)
+
+    self.left_panel = tk.Frame(outer, bg="#2b004f", width=860)
+    self.left_panel.pack(side="left", fill="both", expand=False)
+    self.left_panel.pack_propagate(False)
+
+    self.right_panel = tk.Frame(outer, bg="#12001f")
+    self.right_panel.pack(side="right", fill="both", expand=True)
+
+    bg_path = os.path.join(os.getcwd(), "backgroundSA.png")
+    if os.path.exists(bg_path):
+        try:
+            self.bg_photo = tk.PhotoImage(file=bg_path)
+            self.bg_label = tk.Label(self.right_panel, image=self.bg_photo, bg="#12001f")
+            self.bg_label.pack(fill="both", expand=True)
+        except Exception:
+            tk.Label(
+                self.right_panel,
+                text="backgroundSA.png found but could not be loaded.",
+                bg="#12001f",
+                fg="white",
+            ).pack(expand=True)
+    else:
+        tk.Label(
+            self.right_panel,
+            text="backgroundSA.png not found in project directory.",
+            bg="#12001f",
+            fg="white",
+            font=("Arial", 16, "bold"),
+        ).pack(expand=True)
+
+    top = tk.Frame(self.left_panel, bg="#2b004f")
+    top.pack(fill="x", padx=10, pady=8)
+
+    tk.Button(top, text="Upload .lay File", command=self.upload_lay, bg="#4b0082", fg="white").pack(side="left", padx=4)
+    self.lay_label = tk.Label(top, text="No .lay selected", anchor="w", bg="#2b004f", fg="white")
+    self.lay_label.pack(side="left", fill="x", expand=True, padx=6)
+
+    tk.Button(top, text="Upload Plate Layout", command=self.upload_layout, bg="#4b0082", fg="white").pack(side="left", padx=4)
+    self.layout_label = tk.Label(top, text="No layout selected", anchor="w", bg="#2b004f", fg="white")
+    self.layout_label.pack(side="left", fill="x", expand=True, padx=6)
+
+    form = tk.LabelFrame(self.left_panel, text="Required Transfer Information", bg="#2b004f", fg="white")
+    form.pack(fill="x", padx=10, pady=5)
+
+    tk.Label(form, text="Transfer Type", bg="#2b004f", fg="white").grid(row=0, column=0, sticky="w", padx=5, pady=4)
+    ttk.Combobox(form, textvariable=self.transfer_type_var, values=TRANSFER_OPTIONS, state="readonly", width=14).grid(row=0, column=1, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Replicate", bg="#2b004f", fg="white").grid(row=0, column=2, sticky="w", padx=5, pady=4)
+    ttk.Combobox(form, textvariable=self.replicate_var, values=REPLICATE_OPTIONS, state="readonly", width=12).grid(row=0, column=3, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Volume uL", bg="#2b004f", fg="white").grid(row=0, column=4, sticky="w", padx=5, pady=4)
+    tk.Entry(form, textvariable=self.volume_var, width=14).grid(row=0, column=5, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Marker", bg="#2b004f", fg="white").grid(row=0, column=6, sticky="w", padx=5, pady=4)
+    tk.Entry(form, textvariable=self.marker_var, width=10).grid(row=0, column=7, sticky="w", padx=5, pady=4)
+
+    tk.Checkbutton(form, text="Tracking", variable=self.tracking_var, bg="#2b004f", fg="white", selectcolor="#2b004f").grid(row=1, column=0, sticky="w", padx=5, pady=4)
+    tk.Checkbutton(form, text="Variant", variable=self.variant_var, command=self.update_set_column_visibility, bg="#2b004f", fg="white", selectcolor="#2b004f").grid(row=1, column=1, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, text="Liquid Class", bg="#2b004f", fg="white").grid(row=2, column=0, sticky="w", padx=5, pady=4)
+
+    self.liquid_combo = SearchableCombobox(
+        form,
+        textvariable=self.liquid_class_var,
+        completevalues=[],
+        width=65,
+    )
+    self.liquid_combo.grid(row=2, column=1, columnspan=6, sticky="we", padx=5, pady=4)
+
+    tk.Button(form, text="Add LC to Next Set", command=self.add_liquid_class_for_next_set, bg="#4b0082", fg="white").grid(row=2, column=7, sticky="w", padx=5, pady=4)
+    tk.Button(form, text="Clear Set LCs", command=self.clear_set_liquid_classes, bg="#4b0082", fg="white").grid(row=3, column=7, sticky="w", padx=5, pady=4)
+
+    tk.Label(form, textvariable=self.set_liquid_summary_var, anchor="w", bg="#2b004f", fg="white").grid(row=3, column=0, columnspan=7, sticky="we", padx=5, pady=4)
+
+    self.set_liquid_listbox = tk.Listbox(form, height=3, width=90)
+    self.set_liquid_listbox.grid(row=4, column=0, columnspan=8, sticky="we", padx=5, pady=4)
+
+    options = tk.LabelFrame(self.left_panel, text="Report Options", bg="#2b004f", fg="white")
+    options.pack(fill="x", padx=10, pady=5)
+
+    tk.Label(options, text="Report Format", bg="#2b004f", fg="white").pack(side="left", padx=10)
+    ttk.Combobox(options, textvariable=self.report_format_var, values=["docx", "pdf", "txt"], state="readonly", width=10).pack(side="left")
+
+    list_frame = tk.LabelFrame(self.left_panel, text="Extracted Method/Deck Sequences", bg="#2b004f", fg="white")
+    list_frame.pack(fill="both", expand=True, padx=10, pady=8)
+
+    self.canvas = tk.Canvas(list_frame, highlightthickness=0, bg="#2b004f")
+    self.sequence_canvas = self.canvas
+    scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.canvas.yview)
+
+    self.sequence_frame = tk.Frame(self.canvas, bg="#2b004f")
+    self.scroll_frame = self.sequence_frame
+
+    self.sequence_window = self.canvas.create_window((0, 0), window=self.sequence_frame, anchor="nw")
+
+    self.sequence_frame.bind(
+        "<Configure>",
+        lambda event: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
+    )
+
+    self.canvas.bind(
+        "<Configure>",
+        lambda event: self.canvas.itemconfig(self.sequence_window, width=event.width),
+    )
+
+    self.canvas.configure(yscrollcommand=scrollbar.set)
+
+    self.canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    bottom = tk.Frame(self.left_panel, bg="#2b004f")
+    bottom.pack(fill="x", padx=10, pady=8)
+
+    tk.Button(
+        bottom,
+        text="Generate Plan + Run PyHamilton Simulation + Validate",
+        command=self.generate_plan_run_and_validate,
+        bg="#4b0082",
+        fg="white",
+        activebackground="#4b0082",
+        activeforeground="white",
+    ).pack(side="left", padx=4)
+
+    tk.Button(
+        bottom,
+        text="Select Existing Trace Manually",
+        command=self.upload_trace,
+        bg="#4b0082",
+        fg="white",
+    ).pack(side="left", padx=4)
+
+    self.status = tk.Label(bottom, text="Upload .lay file to begin.", anchor="w", bg="#2b004f", fg="white")
+    self.status.pack(side="left", fill="x", expand=True, padx=8)
 
 
 
@@ -68,11 +203,8 @@ def _load_liquid_classes(self):
 
 
 
-def main():
-    app = DevPalLiteApp()
-    app.run()
+
+bg="#2b004f", fg="white"
 
 
-if __name__ == "__main__":
-    main()
-
+bg="#2b004f", fg="white", selectcolor="#2b004f"
