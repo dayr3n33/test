@@ -1,1 +1,31 @@
 
+def style_label(self, widget):
+    widget.configure(bg="#2b004f", fg="white")
+    return widget
+
+def style_frame(self, widget):
+    widget.configure(bg="#2b004f")
+    return widget
+
+def style_button(self, widget):
+    widget.configure(
+        bg="#2b004f",
+        fg="white",
+        activebackground="#4b0082",
+        activeforeground="white"
+    )
+    return widget
+
+def make_bg_label(self, parent, text, **kwargs):
+    label = tk.Label(
+        parent,
+        text=text,
+        bg="#2b004f",
+        fg="white",
+        **kwargs
+    )
+    return label
+
+
+
+
