@@ -1,1 +1,99 @@
 
+def normalize_tip_type(value: str) -> str:
+    text = str(value or "").lower().replace(" ", "").replace("_", "")
+    if text in {"1000ul", "1000"}:
+        return "1000ul"
+    if text in {"300ul", "300s", "300"}:
+        return "300ul"
+    if text in {"50ul", "50"}:
+        return "50ul"
+    return text
+
+
+def infer_tip_type_from_text(text: str) -> str:
+    raw = str(text or "").upper()
+    compact = re.sub(r"[^A-Z0-9]+", "", raw)
+
+    if any(token in compact for token in ("HTF", "HVT", "HV", "HIGHVOLUME", "HIGHVOL", "1000UL", "1000")):
+        return "1000ul"
+
+    if any(token in compact for token in ("SLIMTIP300", "SLIM300", "300S", "300UL", "300", "SLIM", "SVT", "STANDARD", "STD")):
+        return "300ul"
+
+    if any(token in compact for token in ("LVT", "LV", "LOWVOLUME", "LOWVOL", "50UL", "50")):
+        return "50ul"
+
+    return ""
+
+
+def infer_tip_type_for_set(
+    set_order: int,
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> Tuple[str, str]:
+    tip_configs = [
+        c for c in configs
+        if int(c.set_order) == int(set_order)
+        and c.role == "tip pick up"
+    ]
+
+    searched = []
+
+    for config in tip_configs:
+        meta = get_sequence_labware_metadata(
+            config.sequence,
+            lay_metadata,
+            getattr(config, "sequence_count", 0),
+        )
+
+        values = [
+            config.sequence,
+            meta.get("sequence_name", ""),
+            meta.get("labware_name", ""),
+            meta.get("labware_format", ""),
+            meta.get("sequence_id", ""),
+            " ".join(meta.get("positions", []) or []),
+        ]
+
+        for key, value in meta.items():
+            if isinstance(value, str):
+                values.append(value)
+            elif isinstance(value, list):
+                values.append(" ".join(str(v) for v in value))
+
+        for value in values:
+            text = str(value or "")
+            if not text:
+                continue
+
+            searched.append(text)
+            tip_type = normalize_tip_type(infer_tip_type_from_text(text))
+
+            if tip_type in {"1000ul", "300ul", "50ul"}:
+                return tip_type, text
+
+    return "", " | ".join(searched) if searched else "no tip pick up sequence selected"
+
+
+def tip_volume_allowed(tip_type: str, hardware_mode: str, volume_ul: float) -> bool:
+    tip = normalize_tip_type(tip_type)
+    mode = str(hardware_mode or "channels").lower()
+
+    if mode == "head":
+        ranges = {
+            "1000ul": (100.0, 1000.0),
+            "300ul": (20.0, 300.0),
+            "50ul": (12.5, 49.0),
+        }
+    else:
+        ranges = {
+            "1000ul": (100.0, 1000.0),
+            "300ul": (10.0, 300.0),
+            "50ul": (10.0, 50.0),
+        }
+
+    if tip not in ranges:
+        return False
+
+    low, high = ranges[tip]
+    return low <= float(volume_ul) <= high
