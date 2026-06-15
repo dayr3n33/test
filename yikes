@@ -1,1 +1,78 @@
 
+def __init__(self):
+    self.root = tk.Tk()
+    self.root.title("DevPal Lite Sequence Layout Runner")
+    self.root.geometry("1180x780")
+    self.root.option_add("*Font", APP_FONT)
+
+    try:
+        icon_path = os.path.join(os.getcwd(), "thumbs_up.ico")
+        if os.path.exists(icon_path):
+            self.root.iconbitmap(icon_path)
+    except Exception:
+        pass
+
+    self.bg_image = None
+    self.bg_label = None
+    self.main_frame = None
+
+    self.lay_path = ""
+    self.layout_path = ""
+    self.trace_path = ""
+
+    self.sequence_names = []
+    self.sequence_counts = {}
+    self.liquid_classes = []
+
+    self.sequence_vars = []
+    self.sequence_role_vars = {}
+    self.sequence_channel_vars = {}
+    self.sequence_hardware_vars = {}
+    self.sequence_count_vars = {}
+    self.sequence_manual_vars = {}
+    self.sequence_control_vars = {}
+    self.sequence_set_vars = {}
+    self.sequence_set_widgets = {}
+    self.sequence_tip_type_vars = {}
+    self.set_header_widget = None
+
+    self.liquid_class_var = tk.StringVar()
+    self.transfer_type_var = tk.StringVar(value="samples")
+    self.replicate_var = tk.StringVar(value="single")
+    self.volume_var = tk.StringVar(value="100")
+    self.marker_var = tk.StringVar()
+    self.report_format_var = tk.StringVar(value="docx")
+    self.tracking_var = tk.IntVar(value=1)
+    self.variant_var = tk.IntVar(value=0)
+
+    self.set_liquid_classes = []
+    self.set_liquid_listbox = None
+    self.set_liquid_summary_var = tk.StringVar(value="No set liquid classes selected.")
+
+    self._build_ui()
+
+
+
+
+
+
+
+def _load_liquid_classes(self):
+    return self.load_liquid_classes()
+
+
+
+
+
+
+
+
+
+def main():
+    app = DevPalLiteApp()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
+
