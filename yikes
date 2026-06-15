@@ -1,1 +1,125 @@
 
+def infer_tip_type_from_text(text: str) -> str:
+    value = str(text or "").upper()
+
+    if any(token in value for token in ("1000", "1000UL", "1000_UL", "HIGHVOLUME", "HIGH_VOLUME", "HV")):
+        return "1000ul"
+
+    if any(token in value for token in ("300S", "300 S", "SLIM", "300UL", "300_UL", "300")):
+        return "300ul"
+
+    if any(token in value for token in ("50UL", "50_UL", "LOWVOLUME", "LOW_VOLUME", "LV")):
+        return "50ul"
+
+    return ""
+
+
+def infer_tip_type_for_set(
+    set_order: int,
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> Tuple[str, str]:
+    set_configs = [c for c in configs if int(c.set_order) == int(set_order)]
+    tip_configs = [c for c in set_configs if c.role == "tip pick up"]
+
+    search_values = []
+
+    for config in tip_configs:
+        meta = get_sequence_labware_metadata(
+            config.sequence,
+            lay_metadata,
+            getattr(config, "sequence_count", 0),
+        )
+
+        search_values.extend([
+            config.sequence,
+            meta.get("labware_name", ""),
+            meta.get("sequence_name", ""),
+            " ".join(meta.get("positions", []) or []),
+        ])
+
+    for value in search_values:
+        tip_type = infer_tip_type_from_text(value)
+        if tip_type:
+            return tip_type, str(value)
+
+    return "", ", ".join(c.sequence for c in tip_configs) if tip_configs else "no tip sequence selected"
+
+
+def tip_volume_allowed(tip_type: str, hardware_mode: str, volume_ul: float) -> bool:
+    mode = str(hardware_mode or "channels").lower()
+    tip = str(tip_type or "").lower()
+
+    if mode == "head":
+        ranges = {
+            "1000ul": (100, 1000),
+            "300ul": (20, 300),
+            "50ul": (12.5, 49),
+        }
+    else:
+        ranges = {
+            "1000ul": (100, 1000),
+            "300ul": (10, 300),
+            "50ul": (10, 50),
+        }
+
+    if tip not in ranges:
+        return False
+
+    low, high = ranges[tip]
+    return low <= float(volume_ul) <= high
+
+
+def validate_tip_volume_rules(
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> List[ValidationIssue]:
+    issues = []
+
+    set_numbers = sorted({int(c.set_order) for c in configs})
+
+    for set_order in set_numbers:
+        set_configs = [c for c in configs if int(c.set_order) == int(set_order)]
+        liquid_steps = [c for c in set_configs if c.role in ("aspirate", "dispense")]
+
+        if not liquid_steps:
+            continue
+
+        tip_type, evidence = infer_tip_type_for_set(set_order, configs, lay_metadata)
+
+        if not tip_type:
+            issues.append(ValidationIssue(
+                "critical",
+                "tip_volume_rule",
+                f"Could not identify tip type for Set {set_order}. Checked tip sequence/labware metadata: {evidence}",
+                {"set_order": set_order, "evidence": evidence},
+            ))
+            continue
+
+        for config in liquid_steps:
+            if not tip_volume_allowed(tip_type, config.hardware_mode, config.volume_ul):
+                issues.append(ValidationIssue(
+                    "critical",
+                    "tip_volume_rule",
+                    (
+                        f"Volume {config.volume_ul} uL is not valid for {tip_type} tips "
+                        f"in {config.hardware_mode} mode for Set {set_order}."
+                    ),
+                    {
+                        "set_order": set_order,
+                        "sequence": config.sequence,
+                        "tip_type": tip_type,
+                        "volume_ul": config.volume_ul,
+                        "hardware_mode": config.hardware_mode,
+                        "tip_evidence": evidence,
+                    },
+                ))
+
+    return issues
+
+
+
+
+
+
+
