@@ -1,14 +1,10 @@
 if (
     item.get("autoincrement")
-    and action in {"aspirate", "dispense"}
+    and item.get("action") in {"aspirate", "dispense"}
     and not bool(item.get("manual"))
+    and seq
+    and increment > 0
 ):
-    increment_amount = int(item.get("increment") or count_active_channels(channel))
-    print(f"AUTO-INCREMENTING SEQUENCE {seq} BY {increment_amount}")
-    ph_inc_sequence(
-        ham_int,
-        sequence=seq,
-        increment=increment_amount,
+    review_lines.append(
+        f"ph_inc_sequence(ham_int, sequence='{seq}', increment={increment})"
     )
-elif bool(item.get("manual")):
-    print(f"MANUAL SEQUENCE MODE: {seq} will not auto-increment.")
