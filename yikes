@@ -1,3 +1,1 @@
-lines.append(
-    f"    inc_sequence(ham_int, sequence={seq!r}, increment={increment!r})"
-)
+
