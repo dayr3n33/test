@@ -1,1 +1,63 @@
 
+def get_required_transfer_iterations(configs: List[SequenceStepConfig]) -> int:
+    control_configs = [
+        config for config in configs
+        if bool(getattr(config, "control", False))
+        and not bool(getattr(config, "manual", False))
+        and config.role in ("tip pick up", "aspirate", "dispense")
+    ]
+
+    if control_configs:
+        return max(get_sequence_iterations(config) for config in control_configs)
+
+    aspirate_configs = [
+        config for config in configs
+        if config.role == "aspirate"
+    ]
+
+    dispense_configs = [
+        config for config in configs
+        if config.role == "dispense"
+    ]
+
+    aspirate_manual = aspirate_configs and all(bool(getattr(config, "manual", False)) for config in aspirate_configs)
+    dispense_manual = dispense_configs and all(bool(getattr(config, "manual", False)) for config in dispense_configs)
+
+    if aspirate_manual and dispense_manual:
+        return 1
+
+    nonmanual_dispense_configs = [
+        config for config in dispense_configs
+        if not bool(getattr(config, "manual", False))
+    ]
+
+    if nonmanual_dispense_configs:
+        return max(get_sequence_iterations(config) for config in nonmanual_dispense_configs)
+
+    nonmanual_aspirate_configs = [
+        config for config in aspirate_configs
+        if not bool(getattr(config, "manual", False))
+    ]
+
+    if nonmanual_aspirate_configs:
+        return max(get_sequence_iterations(config) for config in nonmanual_aspirate_configs)
+
+    return 1
+
+
+
+
+
+
+
+
+and config.role in ("tip pick up", "aspirate", "dispense")
+
+
+
+
+
+
+
+
+and action in {"tip_pick", "aspirate", "dispense"}
