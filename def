@@ -1,15 +1,3 @@
-
-_channel_patt_8 = "1" * 8
-_channel_patt_12 = "1" * 12
-_channel_patt_14 = "1" * 14
-_channel_patt_16 = "1" * 16
-_channel_patt_96 = "1" * 96
-_channel_patt_384 = "1" * 384
-
-
-
-
-
 import sys
 import os
 import logging
