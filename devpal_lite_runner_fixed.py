@@ -5,7 +5,9 @@ import inspect
 import json
 import os
 import re
+import shutil
 import subprocess
+import tempfile
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
@@ -62,8 +64,7 @@ UI_TEXT_FG = "white"
 UI_BUTTON_BG = "#2b004f"
 UI_BUTTON_ACTIVE = "#4b0082"
 CHECK_SELECT_BG = "white"
-CHANNEL_MODE_OPTIONS = ["channels", "head96", "head384"]
-VALID_CHANNEL_PATTERN_LENGTHS = {8, 12, 14, 16}
+
 
 PYHAMILTON_IMPORT_ERROR = ""
 
@@ -106,7 +107,6 @@ def _import_optional_pyhamilton_module(module_name: str):
 
 
 PYHAMILTON_MODULES = []
-
 if pyhamilton is not None:
     PYHAMILTON_MODULES.extend(
         module
@@ -116,7 +116,6 @@ if pyhamilton is not None:
             _import_optional_pyhamilton_module("pyhamilton.liquid_handling_wrappers"),
             _import_optional_pyhamilton_module("pyhamilton.defaultcmds"),
             _import_optional_pyhamilton_module("pyhamilton.oemerr"),
-            _import_optional_pyhamilton_module("pyhamilton.interface"),
         ]
         if module is not None
     )
@@ -148,10 +147,7 @@ def _call_best_effort(func, *args, **kwargs):
         if key in signature.parameters
     }
 
-    try:
-        return func(*args, **allowed_kwargs)
-    except TypeError:
-        return func(*args)
+    return func(*args, **allowed_kwargs)
 
 
 def _send_command_best_effort(ham_int, command_name: str, **kwargs):
@@ -163,48 +159,15 @@ def _send_command_best_effort(ham_int, command_name: str, **kwargs):
         command_name.lower(),
     ]
 
-    for module in PYHAMILTON_MODULES:
-        for candidate in command_candidates:
-            if hasattr(module, candidate):
-                command_candidates.append(getattr(module, candidate))
-
-    seen = []
-    deduped_candidates = []
-
-    for candidate in command_candidates:
-        key = str(candidate)
-
-        if key not in seen:
-            seen.append(key)
-            deduped_candidates.append(candidate)
-
     if hasattr(ham_int, "send_command"):
-        for candidate in deduped_candidates:
+        for candidate in command_candidates:
             try:
-                tid = ham_int.send_command(command=candidate, **kwargs)
-
-                if hasattr(ham_int, "wait_on_response"):
-                    return ham_int.wait_on_response(
-                        tid,
-                        raise_first_exception=True,
-                        timeout=120,
-                    )
-
-                return tid
+                return ham_int.send_command(command=candidate, **kwargs)
             except Exception as exc:
                 last_error = exc
 
             try:
-                tid = ham_int.send_command(candidate, **kwargs)
-
-                if hasattr(ham_int, "wait_on_response"):
-                    return ham_int.wait_on_response(
-                        tid,
-                        raise_first_exception=True,
-                        timeout=120,
-                    )
-
-                return tid
+                return ham_int.send_command(candidate, **kwargs)
             except Exception as exc:
                 last_error = exc
 
@@ -221,7 +184,6 @@ def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
     func = _get_optional_pyhamilton_function(
         "tip_pick_up_seq",
         "tip_pickup_seq",
-        "tip_pick_up_seq2",
         "tip_pick_up",
         "tip_pickup",
     )
@@ -235,29 +197,29 @@ def ph_tip_pick_up_seq(ham_int, tipseq: str, channel: str):
             sequence=tipseq,
             channel=channel,
             channels=channel,
-            ch_patt=channel,
         )
 
     return _send_command_best_effort(
         ham_int,
-        "PICKUP",
-        tipSequence=tipseq,
-        channelVariable=channel,
-        sequenceCounting=1,
+        "tip_pick_up_seq",
+        tipseq=tipseq,
+        tip_seq=tipseq,
+        sequence=tipseq,
+        channel=channel,
+        channels=channel,
     )
+
 
 
 def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class: str):
     channel = normalize_assigned_channel_pattern(channel, "channels")
     liq_class = _clean_liquid_class(liq_class)
-
     print(f"USING CHANNEL ASPIRATE PATTERN: {channel}")
     print(f"USING CHANNEL ASPIRATE LIQUID CLASS: {liq_class}")
 
     func = _get_optional_pyhamilton_function(
         "aspirate_seq",
         "aspirate_from_seq",
-        "aspirate_ch_seq",
         "aspirate",
     )
 
@@ -271,36 +233,32 @@ def ph_aspirate_seq(ham_int, asp_seq: str, vols: float, channel: str, liq_class:
             volume=vols,
             channel=channel,
             channels=channel,
-            ch_patt=channel,
             liq_class=liq_class,
             liquid_class=liq_class,
-            lc=liq_class,
         )
 
     return _send_command_best_effort(
         ham_int,
-        "ASPIRATE",
-        aspirateSequence=asp_seq,
-        labwarePositions="",
-        volumes=vols,
-        channelVariable=channel,
-        liquidClass=liq_class,
-        sequenceCounting=0,
-        capacitiveLLD=2,
+        "aspirate_seq",
+        asp_seq=asp_seq,
+        sequence=asp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        channels=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
     )
-
 
 def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class: str):
     channel = normalize_assigned_channel_pattern(channel, "channels")
     liq_class = _clean_liquid_class(liq_class)
-
     print(f"USING CHANNEL DISPENSE PATTERN: {channel}")
     print(f"USING CHANNEL DISPENSE LIQUID CLASS: {liq_class}")
 
     func = _get_optional_pyhamilton_function(
         "dispense_seq",
         "dispense_to_seq",
-        "dispense_seq_countoff",
         "dispense",
     )
 
@@ -314,22 +272,21 @@ def ph_dispense_seq(ham_int, disp_seq: str, vols: float, channel: str, liq_class
             volume=vols,
             channel=channel,
             channels=channel,
-            ch_patt=channel,
             liq_class=liq_class,
             liquid_class=liq_class,
-            lc=liq_class,
         )
 
     return _send_command_best_effort(
         ham_int,
-        "DISPENSE",
-        dispenseSequence=disp_seq,
-        labwarePositions="",
-        volumes=vols,
-        channelVariable=channel,
-        liquidClass=liq_class,
-        sequenceCounting=0,
-        channelUse=1,
+        "dispense_seq",
+        disp_seq=disp_seq,
+        sequence=disp_seq,
+        vols=vols,
+        volume=vols,
+        channel=channel,
+        channels=channel,
+        liq_class=liq_class,
+        liquid_class=liq_class,
     )
 
 
@@ -339,7 +296,6 @@ def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
     func = _get_optional_pyhamilton_function(
         "tip_eject_seq2",
         "tip_eject_seq",
-        "tip_eject3",
         "tip_eject",
     )
 
@@ -351,16 +307,15 @@ def ph_tip_eject_seq2(ham_int, waste_seq: str, channel: str):
             sequence=waste_seq,
             channel=channel,
             channels=channel,
-            ch_patt=channel,
         )
 
     return _send_command_best_effort(
         ham_int,
-        "EJECT",
-        wasteSequence=waste_seq,
-        labwarePositions="",
-        channelVariable=channel,
-        sequenceCounting=0,
+        "tip_eject_seq2",
+        waste_seq=waste_seq,
+        sequence=waste_seq,
+        channel=channel,
+        channels=channel,
     )
 
 
@@ -381,81 +336,55 @@ def ph_inc_sequence(ham_int, sequence: str, increment: int):
 
     return _send_command_best_effort(
         ham_int,
-        "SEQINCREMENT",
-        sequenceObj=sequence,
+        "inc_sequence",
         sequence=sequence,
         increment=increment,
     )
 
 
-def ph_tip_pick_up_head_seq(ham_int, tip_seq: str, head_size: int = 96):
-    head_size = int(head_size)
-
-    if head_size not in {96, 384}:
-        raise ValueError(f"Unsupported head size: {head_size}. Use 96 or 384.")
-
+def ph_tip_pick_up_96_seq(ham_int, tip96_seq: str):
     func = _get_optional_pyhamilton_function(
-        "tip_pick_up_head_seq",
-        "tip_pick_up_384_seq" if head_size == 384 else "tip_pick_up_96_seq",
-        "tip_pickup_head_seq",
-        "tip_pickup_384_seq" if head_size == 384 else "tip_pickup_96_seq",
+        "tip_pick_up_96_seq",
+        "tip_pickup_96_seq",
+        "tip_pick_up_96",
+        "tip_pickup_96",
     )
 
     if func:
         return _call_best_effort(
             func,
             ham_int,
-            tip_seq=tip_seq,
-            tip384_seq=tip_seq,
-            tip96_seq=tip_seq,
-            tip_seq_name=tip_seq,
-            sequence=tip_seq,
-            head_size=head_size,
+            tip96_seq=tip96_seq,
+            tip_seq=tip96_seq,
+            sequence=tip96_seq,
         )
-
-    command_name = "PICKUP384" if head_size == 384 else "PICKUP96"
 
     return _send_command_best_effort(
         ham_int,
-        command_name,
-        tipSequence=tip_seq,
-        channelVariable="1" * head_size,
-        sequenceCounting=1,
+        "tip_pick_up_96_seq",
+        tip96_seq=tip96_seq,
+        tip_seq=tip96_seq,
+        sequence=tip96_seq,
     )
 
 
-def ph_aspirate_head_seq(
-    ham_int,
-    plate,
-    head_asp_seq: str,
-    vols: float,
-    liq_class: str,
-    head_size: int = 96,
-):
-    head_size = int(head_size)
+def ph_aspirate_96_seq(ham_int, plate96, head_asp_seq: str, vols: float, liq_class: str):
     liq_class = _clean_liquid_class(liq_class)
-
-    if head_size not in {96, 384}:
-        raise ValueError(f"Unsupported head size: {head_size}. Use 96 or 384.")
-
-    print(f"USING {head_size}-HEAD ASPIRATE LIQUID CLASS: {liq_class}")
+    print(f"USING 96-HEAD ASPIRATE LIQUID CLASS: {liq_class}")
 
     func = _get_optional_pyhamilton_function(
-        "aspirate_head_seq",
-        "aspirate_384_seq" if head_size == 384 else "aspirate_96_seq",
-        "aspirate384_seq" if head_size == 384 else "aspirate96_seq",
-        "aspirate_384" if head_size == 384 else "aspirate_96",
-        "aspirate384" if head_size == 384 else "aspirate96",
+        "aspirate_96_seq",
+        "aspirate96_seq",
+        "aspirate_96",
+        "aspirate96",
     )
 
     if func:
         return _call_best_effort(
             func,
             ham_int,
-            plate,
-            plate96=plate,
-            plate384=plate,
-            plate=plate,
+            plate96=plate96,
+            plate=plate96,
             head_asp_seq=head_asp_seq,
             asp_seq=head_asp_seq,
             sequence=head_asp_seq,
@@ -463,59 +392,41 @@ def ph_aspirate_head_seq(
             volume=vols,
             liq_class=liq_class,
             liquid_class=liq_class,
-            liq_class2=liq_class,
-            head_size=head_size,
         )
-
-    command_name = "ASPIRATE384" if head_size == 384 else "ASPIRATE96"
 
     return _send_command_best_effort(
         ham_int,
-        command_name,
-        aspirateSequence=head_asp_seq,
-        labwarePositions="",
-        aspirateVolume=vols,
-        volumes=vols,
-        channelVariable="1" * head_size,
-        liquidClass=liq_class,
-        sequenceCounting=0,
-        capacitiveLLD=2,
+        "aspirate_96_seq",
+        plate96=plate96,
+        plate=plate96,
+        head_asp_seq=head_asp_seq,
+        asp_seq=head_asp_seq,
+        sequence=head_asp_seq,
+        vols=vols,
+        volume=vols,
+        liq_class=liq_class,
+        liquid_class=liq_class,
     )
 
 
-def ph_dispense_head_seq(
-    ham_int,
-    plate,
-    head_disp_seq: str,
-    vols: float,
-    liq_class: str,
-    head_size: int = 96,
-):
-    head_size = int(head_size)
+def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float, liq_class: str):
     liq_class = _clean_liquid_class(liq_class)
-
-    if head_size not in {96, 384}:
-        raise ValueError(f"Unsupported head size: {head_size}. Use 96 or 384.")
-
-    print(f"USING {head_size}-HEAD DISPENSE LIQUID CLASS: {liq_class}")
+    print(f"USING 96-HEAD DISPENSE LIQUID CLASS: {liq_class}")
 
     func = _get_optional_pyhamilton_function(
-        "dispense_head_seq",
-        "dispense_384_seq" if head_size == 384 else "dispense_96_seq2",
-        "dispense_384_seq" if head_size == 384 else "dispense_96_seq",
-        "dispense384_seq" if head_size == 384 else "dispense96_seq",
-        "dispense_384" if head_size == 384 else "dispense_96",
-        "dispense384" if head_size == 384 else "dispense96",
+        "dispense_96_seq2",
+        "dispense_96_seq",
+        "dispense96_seq",
+        "dispense_96",
+        "dispense96",
     )
 
     if func:
         return _call_best_effort(
             func,
             ham_int,
-            plate,
-            plate96=plate,
-            plate384=plate,
-            plate=plate,
+            plate96=plate96,
+            plate=plate96,
             head_disp_seq=head_disp_seq,
             disp_seq=head_disp_seq,
             sequence=head_disp_seq,
@@ -523,128 +434,34 @@ def ph_dispense_head_seq(
             volume=vols,
             liq_class=liq_class,
             liquid_class=liq_class,
-            liq_class2=liq_class,
-            head_size=head_size,
         )
-
-    command_name = "DISPENSE384" if head_size == 384 else "DISPENSE96"
 
     return _send_command_best_effort(
         ham_int,
-        command_name,
-        dispenseSequence=head_disp_seq,
-        labwarePositions="",
-        dispenseVolume=vols,
-        volumes=vols,
-        channelVariable="1" * head_size,
-        liquidClass=liq_class,
-        sequenceCounting=0,
-    )
-
-
-def ph_tip_eject_head(ham_int, head_size: int = 96):
-    head_size = int(head_size)
-
-    if head_size not in {96, 384}:
-        raise ValueError(f"Unsupported head size: {head_size}. Use 96 or 384.")
-
-    func = _get_optional_pyhamilton_function(
-        "tip_eject_head",
-        "tip_eject_384" if head_size == 384 else "tip_eject_96",
-        "tip_eject384" if head_size == 384 else "tip_eject96",
-        "tip_eject_384_seq" if head_size == 384 else "tip_eject_96_seq",
-    )
-
-    if func:
-        return _call_best_effort(
-            func,
-            ham_int,
-            head_size=head_size,
-        )
-
-    command_name = "EJECT384" if head_size == 384 else "EJECT96"
-
-    return _send_command_best_effort(
-        ham_int,
-        command_name,
-        labwarePositions="",
-        channelVariable="1" * head_size,
-        tipEjectToKnownPosition=2,
-    )
-
-
-def ph_tip_pick_up_96_seq(ham_int, tip96_seq: str):
-    return ph_tip_pick_up_head_seq(
-        ham_int,
-        tip_seq=tip96_seq,
-        head_size=96,
-    )
-
-
-def ph_aspirate_96_seq(ham_int, plate96, head_asp_seq: str, vols: float, liq_class: str):
-    return ph_aspirate_head_seq(
-        ham_int,
-        plate=plate96,
-        head_asp_seq=head_asp_seq,
-        vols=vols,
-        liq_class=liq_class,
-        head_size=96,
-    )
-
-
-def ph_dispense_96_seq2(ham_int, plate96, head_disp_seq: str, vols: float, liq_class: str):
-    return ph_dispense_head_seq(
-        ham_int,
+        "dispense_96_seq2",
+        plate96=plate96,
         plate=plate96,
         head_disp_seq=head_disp_seq,
+        disp_seq=head_disp_seq,
+        sequence=head_disp_seq,
         vols=vols,
+        volume=vols,
         liq_class=liq_class,
-        head_size=96,
+        liquid_class=liq_class,
     )
 
 
 def ph_tip_eject_96(ham_int):
-    return ph_tip_eject_head(
-        ham_int,
-        head_size=96,
+    func = _get_optional_pyhamilton_function(
+        "tip_eject_96",
+        "tip_eject_96_seq",
+        "tip_eject96",
     )
 
+    if func:
+        return _call_best_effort(func, ham_int)
 
-def ph_tip_pick_up_384_seq(ham_int, tip384_seq: str):
-    return ph_tip_pick_up_head_seq(
-        ham_int,
-        tip_seq=tip384_seq,
-        head_size=384,
-    )
-
-
-def ph_aspirate_384_seq(ham_int, plate384, head_asp_seq: str, vols: float, liq_class: str):
-    return ph_aspirate_head_seq(
-        ham_int,
-        plate=plate384,
-        head_asp_seq=head_asp_seq,
-        vols=vols,
-        liq_class=liq_class,
-        head_size=384,
-    )
-
-
-def ph_dispense_384_seq(ham_int, plate384, head_disp_seq: str, vols: float, liq_class: str):
-    return ph_dispense_head_seq(
-        ham_int,
-        plate=plate384,
-        head_disp_seq=head_disp_seq,
-        vols=vols,
-        liq_class=liq_class,
-        head_size=384,
-    )
-
-
-def ph_tip_eject_384(ham_int):
-    return ph_tip_eject_head(
-        ham_int,
-        head_size=384,
-    )
+    return _send_command_best_effort(ham_int, "tip_eject_96")
 
 
 @dataclass
@@ -780,48 +597,14 @@ def safe_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
-def normalize_hardware_mode(value: str) -> str:
-    text = str(value or "").strip().lower().replace(" ", "").replace("_", "-")
-
-    if text in {"head384", "384head", "384", "head-384", "mph384", "384mph"}:
-        return "head384"
-
-    if text in {"head96", "96head", "head", "96", "head-96", "mph96", "96mph"}:
-        return "head96"
-
-    return "channels"
-
-
-def get_head_size_from_mode(hardware_mode: str) -> int:
-    mode = normalize_hardware_mode(hardware_mode)
-    if mode == "head384":
-        return 384
-    if mode == "head96":
-        return 96
-    return 0
-
-
 def normalize_assigned_channel_pattern(channel_pattern: str, hardware_mode: str = "channels") -> str:
-    mode = normalize_hardware_mode(hardware_mode)
     pattern = str(channel_pattern or "").strip()
 
-    if mode == "head384":
-        return "1" * 384
-
-    if mode == "head96":
+    if str(hardware_mode).lower() == "head":
         return "1" * 96
 
     if not re.match(r"^[01]+$", pattern):
         raise ValueError(f"Invalid channel pattern: {pattern}")
-
-    if len(pattern) not in VALID_CHANNEL_PATTERN_LENGTHS:
-        raise ValueError(
-            f"Invalid channel pattern length {len(pattern)}. "
-            "Use 8, 12, 14, or 16 digits for channel mode."
-        )
-
-    if "1" not in pattern:
-        raise ValueError("Channel pattern must contain at least one active channel.")
 
     return pattern
 
@@ -843,304 +626,6 @@ def normalize_position_text(value: Any) -> str:
     text = text.replace(":", "")
     return text
 
-
-
-def clean_control_chars(value: Any) -> str:
-    text = str(value or "")
-    return "".join(ch for ch in text if ch in "\n\r\t" or ord(ch) >= 32).strip()
-
-
-def read_text_file_best_effort(path: str) -> str:
-    if not path:
-        return ""
-
-    path = str(path)
-    if not os.path.exists(path):
-        return ""
-
-    encodings = ["utf-8", "utf-8-sig", "latin-1", "cp1252", "utf-16", "utf-16-le", "utf-16-be"]
-
-    for encoding in encodings:
-        try:
-            with open(path, "r", encoding=encoding, errors="ignore") as handle:
-                return handle.read()
-        except Exception:
-            pass
-
-    try:
-        with open(path, "rb") as handle:
-            return handle.read().decode("latin-1", errors="ignore")
-    except Exception:
-        return ""
-
-
-def extract_position_number(position: Any) -> Optional[int]:
-    text = str(position or "").strip()
-    match = re.search(r"(\d+)", text)
-    if not match:
-        return None
-    try:
-        return int(match.group(1))
-    except Exception:
-        return None
-
-
-def sort_position_key(value: Any):
-    text = str(value or "").strip().upper()
-    match = re.match(r"^([A-Z]*)(\d+)$", text)
-    if match:
-        return (match.group(1), int(match.group(2)))
-    return (text, 0)
-
-
-def summarize_layout_format(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
-    positions = []
-
-    for entries in (layout_matches or {}).values():
-        for entry in entries or []:
-            pos = normalize_position_text(entry.get("dest_value", ""))
-            if pos:
-                positions.append(pos)
-
-    rows = []
-    columns = []
-
-    for pos in positions:
-        match = re.match(r"^([A-Z]+)(\d+)$", pos)
-        if match:
-            rows.append(match.group(1))
-            columns.append(int(match.group(2)))
-
-    unique_rows = sorted(set(rows))
-    unique_columns = sorted(set(columns))
-    row_count = len(unique_rows)
-    column_count = len(unique_columns)
-    unique_position_count = len(set(positions))
-
-    inferred = "unknown"
-    if row_count and column_count:
-        inferred = infer_plate_format_from_dimensions(row_count, column_count)
-
-    return {
-        "type": "Layout Format Summary",
-        "row_count": row_count,
-        "column_count": column_count,
-        "rows_detected": unique_rows,
-        "columns_detected": unique_columns,
-        "total_layout_destinations": len(positions),
-        "unique_destination_wells": unique_position_count,
-        "inferred_plate_format": inferred,
-        "format_basis": "uploaded layout row/column span only; method labware file remains source of truth for deck labware format",
-    }
-
-
-def validate_trace_labware_against_layout_format(
-    aspirate_to_dispense_map: Dict[Any, Any],
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
-    findings = []
-    issues = []
-    layout_summary = summarize_layout_format(layout_matches)
-    expected_layout_format = layout_summary.get("inferred_plate_format", "unknown")
-    dispense_labware_names = []
-
-    for _, dispenses in (aspirate_to_dispense_map or {}).items():
-        for dispense in dispenses or []:
-            if len(dispense) >= 1:
-                labware = clean_control_chars(dispense[0])
-                if labware:
-                    dispense_labware_names.append(labware)
-
-    detected = []
-    for labware in sorted(set(dispense_labware_names), key=str.lower):
-        detected_format = infer_labware_format_from_name(labware)
-        detected.append({
-            "labware_name": labware,
-            "detected_labware_format_or_type": detected_format,
-            "expected_uploaded_layout_format": expected_layout_format,
-            "status": "informational" if expected_layout_format == "unknown" or detected_format == "unknown" else ("pass" if detected_format == expected_layout_format else "warning"),
-        })
-
-    findings.append({
-        "type": "Trace Labware Format Check",
-        "expected_uploaded_layout_format": expected_layout_format,
-        "trace_dispense_labware": detected,
-        "note": "Trace labware names are runtime evidence. Unknown names are reported but not treated as failure without method labware metadata.",
-    })
-
-    for item in detected:
-        detected_format = item.get("detected_labware_format_or_type")
-        if (
-            expected_layout_format != "unknown"
-            and detected_format not in {"unknown", "plate/unknown format", "rack/unknown capacity"}
-            and detected_format != expected_layout_format
-        ):
-            issues.append(ValidationIssue(
-                "major",
-                "trace_labware_format",
-                f"Trace dispense labware '{item.get('labware_name')}' appears to be {detected_format}, but uploaded layout appears to be {expected_layout_format}.",
-                item,
-            ))
-
-    return findings, issues
-
-
-def assign_sequence_labware_resource(layout_manager, labware_name: str):
-    if layout_manager is None:
-        return None
-
-    labware_name = str(labware_name or "").strip()
-    if not labware_name:
-        return None
-
-    try:
-        if hasattr(layout_manager, "assign_unused_resource") and ResourceType is not None:
-            candidates = [labware_name, labware_name.lower(), labware_name.upper()]
-            for candidate in candidates:
-                try:
-                    return layout_manager.assign_unused_resource(ResourceType(Plate96, candidate))
-                except Exception:
-                    pass
-    except Exception:
-        pass
-
-    try:
-        if hasattr(layout_manager, "resources"):
-            resources = layout_manager.resources
-            if isinstance(resources, dict):
-                for key, resource in resources.items():
-                    if str(key).strip().lower() == labware_name.lower():
-                        return resource
-                    if hasattr(resource, "layout_name") and str(resource.layout_name()).strip().lower() == labware_name.lower():
-                        return resource
-    except Exception:
-        pass
-
-    try:
-        if Plate96 is not None:
-            return Plate96(labware_name)
-    except Exception:
-        pass
-
-    return None
-
-
-def load_combined_liquid_classes(lay_path: str = "") -> List[str]:
-    found = set()
-
-    default_classes = [
-        "HighVolumeFilter_Water_DispenseSurface_Empty",
-        "HighVolumeFilter_Water_DispenseJet_Empty",
-        "12C_SVT_Water_DispenseJet_Empty_V2_TADM",
-        "96H_SVT_Water_DispenseSurface_Empty_V2",
-        "96H_HVT_Water_DispenseJet_Empty_V2",
-    ]
-
-    for value in default_classes:
-        found.add(value)
-
-    search_dirs = []
-    if lay_path:
-        search_dirs.append(os.path.dirname(os.path.abspath(lay_path)))
-    search_dirs.extend([os.getcwd(), str(Path.home())])
-
-    db_names = ["LC.mdb", "LC.accdb"]
-
-    if pyodbc is not None:
-        for directory in search_dirs:
-            for db_name in db_names:
-                db_path = os.path.join(directory, db_name)
-                if not os.path.exists(db_path):
-                    continue
-
-                drivers = [driver for driver in pyodbc.drivers() if "Access" in driver]
-                for driver in drivers:
-                    try:
-                        conn = pyodbc.connect(f"DRIVER={{{driver}}};DBQ={db_path};", timeout=3)
-                        cursor = conn.cursor()
-                        table_names = [row.table_name for row in cursor.tables(tableType="TABLE")]
-                        for table_name in table_names:
-                            try:
-                                rows = cursor.execute(f"SELECT * FROM [{table_name}]").fetchmany(5000)
-                                columns = [col[0] for col in cursor.description or []]
-                                for row in rows:
-                                    for col_name, value in zip(columns, row):
-                                        text = str(value or "").strip()
-                                        if text and ("water" in text.lower() or "dispense" in text.lower() or "aspirate" in text.lower() or "empty" in text.lower()):
-                                            if 3 <= len(text) <= 180 and " " not in text[:2]:
-                                                found.add(text)
-                            except Exception:
-                                pass
-                        conn.close()
-                    except Exception:
-                        pass
-
-    if lay_path and os.path.exists(lay_path):
-        text = read_text_file_best_effort(lay_path)
-        for match in re.findall(r"[A-Za-z0-9_\-]*?(?:Water|Dispense|Aspirate|Serum|Plasma|Buffer)[A-Za-z0-9_\-]*", text, re.IGNORECASE):
-            clean = clean_control_chars(match)
-            if 3 <= len(clean) <= 180:
-                found.add(clean)
-
-    return sorted(found, key=str.lower)
-
-
-def detect_hardware_mode(sequence_name: str, selected_role: str = "", sequence_count: int = 0, labware_name: str = "") -> str:
-    text = f"{sequence_name} {selected_role} {labware_name}".upper()
-
-    if "384" in text and any(token in text for token in ("HEAD", "CORE", "CO-RE", "MPH")):
-        return "head384"
-
-    if "96" in text and any(token in text for token in ("HEAD", "CORE", "CO-RE", "MPH")):
-        return "head96"
-
-    if "HEAD384" in text or "384HEAD" in text or "MPH384" in text:
-        return "head384"
-
-    if "HEAD96" in text or "96HEAD" in text or "MPH96" in text or "CORE96" in text:
-        return "head96"
-
-    try:
-        count = int(sequence_count or 0)
-    except Exception:
-        count = 0
-
-    if count == 384:
-        return "head384"
-    if count == 96 and any(token in text for token in ("HEAD", "CORE", "CO-RE", "MPH")):
-        return "head96"
-
-    return "channels"
-
-
-def validate_step_sets(configs: List[SequenceStepConfig], variant_mode: bool = False, use_set_order: bool = False) -> str:
-    if not configs:
-        return "Select at least one sequence."
-
-    grouped = defaultdict(list)
-    for config in configs:
-        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
-
-    for set_order, items in sorted(grouped.items()):
-        roles = [item.role for item in items]
-        missing = [role for role in ROLE_OPTIONS if role not in roles]
-        if missing:
-            return f"Set {set_order} is missing required step role(s): {', '.join(missing)}. Each set needs tip pick up, aspirate, and dispense."
-
-        for item in items:
-            if item.role not in ROLE_OPTIONS:
-                return f"Set {set_order} has invalid step role for sequence {item.sequence}: {item.role}."
-            if item.role in {"aspirate", "dispense"} and not item.liquid_class:
-                return f"Set {set_order} sequence {item.sequence} is missing a liquid class."
-            if item.role in {"aspirate", "dispense"} and (float(item.volume_ul) <= 0 or float(item.volume_ul) > 1000):
-                return f"Set {set_order} sequence {item.sequence} has invalid volume {item.volume_ul}."
-            try:
-                normalize_assigned_channel_pattern(item.channel_pattern, item.hardware_mode)
-            except Exception as exc:
-                return f"Set {set_order} sequence {item.sequence} has invalid channel/head configuration: {exc}"
-
-    return ""
-
 def infer_plate_format_from_dimensions(row_count: int, col_count: int) -> str:
     if row_count <= 4 and col_count <= 6:
         return "24-well"
@@ -1151,205 +636,386 @@ def infer_plate_format_from_dimensions(row_count: int, col_count: int) -> str:
     return f"unknown-{row_count}x{col_count}"
 
 
-def normalize_lay_text(text: str) -> str:
-    text = str(text or "")
-    text = text.replace("\x00", " ")
-    text = re.sub(r"[\x01-\x1f]+", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+def infer_plate_format_from_position(position: str) -> str:
+    pos = normalize_position_text(position)
+    match = re.match(r"^([A-P])(\d{1,2})$", pos)
+    if not match:
+        return "unknown"
 
+    row = match.group(1)
+    col = int(match.group(2))
 
-def clean_lay_value(value: Any) -> str:
-    value = clean_control_chars(value)
-    value = value.strip(" ;:=[]{}'\"")
-    value = re.sub(r"\s+", " ", value)
-    return value.strip()
-
-
-def infer_plate_format_from_position_count(count: int) -> str:
-    return "unknown"
-
-
-def is_carrier_labware(labware_id: str, labware_file: str, properties: Dict[str, Any]) -> bool:
-    text = " ".join([
-        str(labware_id or ""),
-        str(labware_file or ""),
-        os.path.basename(str(labware_file or "")),
-        " ".join(str(key) for key in properties.keys()),
-        " ".join(str(value) for value in properties.values()),
-    ]).upper()
-
-    return (
-        str(labware_file or "").lower().endswith(".tml")
-        or "CARRIER" in text
-        or "MLSTARCAR" in text
-        or "TIP_CAR" in text
-        or "PLT_CAR" in text
-        or "SMP_CAR" in text
-        or "TAB" in text
-    )
-
-
-def infer_labware_format_from_labware_record(
-    labware_id: str,
-    labware_file: str = "",
-    properties: Optional[Dict[str, Any]] = None,
-) -> str:
-    properties = properties or {}
-
-    text = " ".join([
-        str(labware_id or ""),
-        str(labware_file or ""),
-        os.path.basename(str(labware_file or "")),
-        " ".join(str(key) for key in properties.keys()),
-        " ".join(str(value) for value in properties.values()),
-    ]).upper()
-
-    if is_carrier_labware(labware_id, labware_file, properties):
-        if "TIP_CAR" in text or "TIPCAR" in text:
-            return "tip carrier"
-        if "PLT_CAR" in text or "PLTCAR" in text:
-            return "plate carrier"
-        if "SMP_CAR" in text or "SAMPLE_CAR" in text:
-            return "sample carrier"
-        return "carrier"
-
-    if "SLIMTIP300" in text or "SLIMTIP" in text or "300UL" in text or "300S" in text:
-        return "300 uL slim/filter tip rack"
-
-    if "HTF" in text or "HVT" in text or "HIGHVOLUME" in text or "HIGH_VOLUME" in text or "1000UL" in text:
-        return "1000 uL high-volume/filter tip rack"
-
-    if "50UL" in text or "LOWVOLUME" in text or "LOW_VOLUME" in text or "LVT" in text:
-        return "50 uL low-volume tip rack"
-
-    if "WASTE" in text:
-        return "waste"
-
-    if "HONEYCOMB" in text or "48_TUBE" in text or "48TUBE" in text or (re.search(r"\b48\b", text) and "TUBE" in text):
-        return "48-position tube/sample rack"
-
-    if "MAGMAX24" in text or ("24" in text and ("PLATE" in text or "WELL" in text)):
-        return "24-well plate"
-
-    if "384" in text:
-        return "384-well plate"
-
-    if "96" in text and any(token in text for token in ("PLATE", "NUNC", "RGT", "DWP", "MTP", "WELL", "96L")):
-        return "96-well plate"
-
-    if "TIP" in text:
-        return "tip rack"
-
-    if "PLATE" in text:
-        return "plate/unknown format"
-
-    if "RACK" in text or "TUBE" in text:
-        return "rack/unknown capacity"
+    if row <= "D" and col <= 6:
+        return "24-well"
+    if row <= "H" and col <= 12:
+        return "96-well"
+    if row <= "P" and col <= 24:
+        return "384-well"
 
     return "unknown"
-
-
-def infer_plate_format_from_labware_name(name: str) -> str:
-    return infer_labware_format_from_labware_record(str(name or ""), "", {})
 
 
 def infer_labware_format_from_name(labware_name: str) -> str:
-    return infer_labware_format_from_labware_record(str(labware_name or ""), "", {})
+    return infer_plate_format_from_labware_name(labware_name)
 
 
-def parse_lay_labware_catalog(lay_path: str) -> Dict[str, Dict[str, Any]]:
-    text = normalize_lay_text(read_text_file_best_effort(lay_path))
-    catalog = {}
+def summarize_layout_format(layout_matches: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+    max_row_num = 0
+    max_col = 0
+    positions = []
+    row_letters = []
 
-    if not text:
-        return catalog
+    for entries in layout_matches.values():
+        for entry in entries:
+            plate_row = str(entry.get("plate_row") or "").strip().upper()
+            plate_col = int(entry.get("plate_column") or 0)
 
-    labware_nums = sorted(
-        {int(value) for value in re.findall(r"Labware\.(\d+)\.", text, re.IGNORECASE)}
-    )
+            if plate_row:
+                row_letters.append(plate_row)
+                max_row_num = max(max_row_num, ord(plate_row) - ord("A") + 1)
 
-    for labware_num in labware_nums:
-        prefix = rf"Labware\.{labware_num}\."
+            max_col = max(max_col, plate_col)
 
-        def field_value(field: str) -> str:
-            pattern = re.compile(
-                prefix + re.escape(field) + r"\s*(.*?)(?=\s+Labware\.\d+\.|\s+Layer\.\d+\.|\s+Seq\.\d+\.|\s+Labware\.Cnt|\s+Layer\.Cnt|\s+Seq\.Cnt|\s+PhoenixVersion|\s+UseGlobalTpl|$)",
-                re.IGNORECASE,
-            )
-            match = pattern.search(text)
-            return clean_lay_value(match.group(1)) if match else ""
+            dest = entry.get("dest_value")
+            if dest:
+                positions.append(normalize_position_text(dest))
 
-        labware_id = field_value("Id")
-        labware_file = field_value("File")
-        template = field_value("Template")
-        site_id = field_value("SiteId")
+    inferred_format = infer_plate_format_from_dimensions(max_row_num, max_col)
 
-        properties = {}
-        property_matches = re.findall(
-            prefix + r"LwProperties\.(\d+)\.Property\s*(.*?)\s+"
-            + prefix + r"LwProperties\.\1\.Value\s*(.*?)(?=\s+Labware\.\d+\.|\s+Layer\.|\s+Seq\.|\s+Labware\.Cnt|$)",
-            text,
-            re.IGNORECASE,
-        )
+    return {
+        "row_count": max_row_num,
+        "column_count": max_col,
+        "row_letters": sorted(set(row_letters)),
+        "inferred_plate_format": inferred_format,
+        "positions": positions,
+    }
 
-        for _, prop_name, prop_value in property_matches:
-            prop_name = clean_lay_value(prop_name)
-            prop_value = clean_lay_value(prop_value)
-            if prop_name:
-                properties[prop_name] = prop_value
 
-        if not labware_id:
+def validate_trace_labware_against_layout_format(
+    aspirate_to_dispense_map: Dict[Any, Any],
+    layout_matches: Dict[str, List[Dict[str, Any]]],
+) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
+    findings = []
+    issues = []
+
+    layout_summary = summarize_layout_format(layout_matches)
+    expected_format = layout_summary.get("inferred_plate_format", "unknown")
+
+    for aspirate_step, dispenses in aspirate_to_dispense_map.items():
+        for dispense in dispenses:
+            labware = str(dispense[0]).strip()
+            destination = normalize_position_text(dispense[1])
+
+            labware_format = infer_labware_format_from_name(labware)
+            destination_format = infer_plate_format_from_position(destination)
+
+            status = "pass"
+
+            if expected_format.startswith("unknown"):
+                status = "warning"
+            elif labware_format != "unknown" and labware_format != expected_format:
+                status = "fail"
+                issues.append(ValidationIssue(
+                    "critical",
+                    "URGENT_LABWARE_MISMATCH",
+                    (
+                        f"URGENT ERROR: Dispense used labware '{labware}', which appears to be "
+                        f"{labware_format}, but the uploaded plate layout appears to be {expected_format}."
+                    ),
+                    {
+                        "labware": labware,
+                        "labware_format": labware_format,
+                        "expected_layout_format": expected_format,
+                        "destination": destination,
+                    },
+                ))
+
+            if expected_format == "24-well" and destination_format in {"96-well", "384-well"}:
+                status = "fail"
+                issues.append(ValidationIssue(
+                    "critical",
+                    "URGENT_DESTINATION_OUTSIDE_LAYOUT_FORMAT",
+                    (
+                        f"URGENT ERROR: Destination {destination} is outside the expected "
+                        f"{expected_format} layout range."
+                    ),
+                    {
+                        "destination": destination,
+                        "destination_format": destination_format,
+                        "expected_layout_format": expected_format,
+                    },
+                ))
+
+            findings.append({
+                "type": "labware_format_check",
+                "status": status,
+                "labware": labware,
+                "destination": destination,
+                "labware_format": labware_format,
+                "destination_format": destination_format,
+                "expected_layout_format": expected_format,
+            })
+
+    return findings, issues
+
+def build_labware_validation_summary(
+    layout_matches: Dict[str, List[Dict[str, Any]]],
+    trace_findings: List[Dict[str, Any]],
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    summary = []
+
+    layout_summary = summarize_layout_format(layout_matches)
+    expected_format = layout_summary.get("inferred_plate_format", "unknown")
+
+    for config in configs:
+        if config.role not in ("aspirate", "dispense"):
             continue
 
-        labware_format = infer_labware_format_from_labware_record(
-            labware_id,
-            labware_file,
-            properties,
+        seq_meta = get_sequence_labware_metadata(
+            config.sequence,
+            lay_metadata,
+            getattr(config, "sequence_count", 0),
         )
 
-        record = {
-            "labware_number": labware_num,
-            "labware_id": labware_id,
-            "labware_file": labware_file,
-            "labware_file_name": os.path.basename(labware_file.replace("\\", os.sep)) if labware_file else "",
-            "template": template,
-            "site_id": site_id,
-            "properties": properties,
-            "is_carrier": is_carrier_labware(labware_id, labware_file, properties),
-            "labware_format": labware_format,
-            "format_basis": "Labware.N.Id/File/Template/Properties",
-        }
+        sequence_format = seq_meta.get("labware_format", "unknown")
+        labware_name = seq_meta.get("labware_name", "unknown")
+        position_count = seq_meta.get("selected_position_count", seq_meta.get("position_count", 0))
 
-        catalog[labware_id] = record
-        catalog[labware_id.lower()] = record
+        status = "pass"
 
-    return catalog
+        if config.role == "dispense":
+            if expected_format != "unknown" and sequence_format != "unknown" and sequence_format != expected_format:
+                status = "fail"
+
+        message = (
+            f"Sequence '{config.sequence}' uses labware '{labware_name}' "
+            f"with detected labware format {sequence_format}. "
+            f"The sequence contains {position_count} selected position(s); this is not treated as labware capacity."
+        )
+
+        if status == "fail":
+            message = (
+                f"URGENT ERROR: Wrong destination labware detected. "
+                f"Dispense sequence '{config.sequence}' uses labware '{labware_name}' "
+                f"detected as {sequence_format}, but uploaded layout requires {expected_format}."
+            )
+
+        summary.append({
+            "type": "labware_validation_summary",
+            "status": status,
+            "step_role": config.role,
+            "sequence": config.sequence,
+            "trace_or_method_labware": labware_name,
+            "detected_labware_format": sequence_format,
+            "position_count": position_count,
+            "expected_layout_format": expected_format if config.role == "dispense" else "not applicable to source",
+            "message": message,
+        })
+
+    return summary
+
+def extract_position_number(position_text: Any) -> Optional[int]:
+    match = re.search(r"(\d+)$", str(position_text).strip())
+    return int(match.group(1)) if match else None
 
 
-def parse_lay_layer_sequence_map(lay_path: str) -> Dict[str, str]:
-    text = normalize_lay_text(read_text_file_best_effort(lay_path))
-    seq_to_labware = {}
+def read_text_file_best_effort(path: str) -> str:
+    for encoding in ("utf-8", "latin-1", "cp1252"):
+        try:
+            with open(path, "r", encoding=encoding, errors="ignore") as file:
+                return file.read()
+        except Exception:
+            continue
+    return ""
 
-    matches = re.findall(
-        r"Layer\.\d+\.(\d+)\.LabwareName\s*(.*?)\s+Layer\.\d+\.\1\.SeqName\s*(.*?)(?=\s+Layer\.|\s+Labware\.|\s+Seq\.|$)",
-        text,
-        re.IGNORECASE,
+
+def clean_control_chars(text: str) -> str:
+    return re.sub(r"[\x00-\x1f]+", " ", str(text)).strip()
+
+
+def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
+    if not method_path:
+        return []
+
+    method_path = os.path.abspath(method_path)
+    method_dir = os.path.dirname(method_path)
+
+    candidates = []
+
+    if os.path.isfile(method_path):
+        candidates.append(method_path)
+
+    for ext in ("*.hsl", "*.sub", "*.stp", "*.res", "*.med", "*.lay"):
+        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
+
+    candidates = sorted(set(candidates), key=str.lower)
+
+    patterns = [
+        re.compile(r"\b(?:liq_class|liquid_class|liquidClass|LiquidClass)\b\s*[=:,]\s*[\"']([^\"']+)[\"']", re.IGNORECASE),
+        re.compile(r"\b(?:LiquidClassName|Liquid Class Name)\b\W+[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"\b(?:SelectLiquidClass|SetLiquidClass)\b\W+[\"']?([A-Za-z0-9_ .\-+/()]+)", re.IGNORECASE),
+        re.compile(r"[\"']([A-Za-z0-9_]+(?:_Water_|Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface)[A-Za-z0-9_ .\-+/()]*)[\"']", re.IGNORECASE),
+    ]
+
+    found = set()
+
+    bad_values = {
+        "liquidclass",
+        "liquid class",
+        "liquidclassname",
+        "liquid class name",
+        "liq_class",
+        "liquid_class",
+        "water",
+        "buffer",
+        "serum",
+        "plasma",
+        "dispense",
+        "aspirate",
+    }
+
+    for candidate in candidates:
+        text = read_text_file_best_effort(candidate)
+        if not text:
+            continue
+
+        for pattern in patterns:
+            for match in pattern.findall(text):
+                value = clean_control_chars(match)
+                value = value.strip("\"' ,;:=()[]{}")
+
+                if not value:
+                    continue
+
+                value = re.split(r"[\r\n\t;]", value)[0].strip()
+                value = value.strip("\"' ,;:=()[]{}")
+
+                if len(value) < 3 or len(value) > 150:
+                    continue
+
+                if value.lower() in bad_values:
+                    continue
+
+                if not re.match(r"^[A-Za-z0-9_][A-Za-z0-9_ .\-+/()]*$", value):
+                    continue
+
+                if not re.search(
+                    r"(water|serum|plasma|buffer|dmso|etoh|media|dispense|aspirate|empty|jet|surface|hvt|svt|tadm)",
+                    value,
+                    re.IGNORECASE,
+                ):
+                    continue
+
+                found.add(value)
+
+    return sorted(found, key=str.lower)
+
+
+def load_liquid_classes_from_access(db_path: str = "") -> List[str]:
+    if pyodbc is None:
+        raise RuntimeError("pyodbc is not installed.")
+
+    candidates = []
+
+    if db_path:
+        candidates.append(db_path)
+
+    candidates.extend([
+        os.path.join(os.getcwd(), "LC.mdb"),
+        os.path.join(os.getcwd(), "LC.accdb"),
+        "LC.mdb",
+        "LC.accdb",
+    ])
+
+    selected = next((path for path in candidates if path and os.path.exists(path)), None)
+
+    if not selected:
+        raise FileNotFoundError("LC.mdb or LC.accdb was not found in the project directory.")
+
+    conn_str = (
+        r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+        rf"DBQ={os.path.abspath(selected)};"
     )
 
-    for _, labware_name, seq_name in matches:
-        labware_name = clean_lay_value(labware_name)
-        seq_name = clean_lay_value(seq_name)
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
 
-        if seq_name and labware_name:
-            seq_to_labware[seq_name] = labware_name
-            seq_to_labware[seq_name.lower()] = labware_name
+    table_candidates = [
+        "LiquidClass",
+        "LiquidClasses",
+        "Liquid Class",
+        "TADM_LiquidClass",
+    ]
 
-    return seq_to_labware
+    column_candidates = [
+        "LiquidClassName",
+        "Liquid Class Name",
+        "Name",
+        "ClassName",
+        "LiquidClass",
+    ]
+
+    found = set()
+
+    for table_name in table_candidates:
+        for column_name in column_candidates:
+            try:
+                cursor.execute(f"SELECT [{column_name}] FROM [{table_name}]")
+                for row in cursor.fetchall():
+                    if row and row[0] is not None:
+                        value = str(row[0]).strip()
+                        if value:
+                            found.add(value)
+            except Exception:
+                continue
+
+    if not found:
+        try:
+            for table in cursor.tables(tableType="TABLE"):
+                table_name = table.table_name
+                try:
+                    columns = list(cursor.columns(table=table_name))
+                except Exception:
+                    continue
+
+                possible_columns = [
+                    col.column_name
+                    for col in columns
+                    if "liquid" in col.column_name.lower()
+                    or "class" in col.column_name.lower()
+                    or col.column_name.lower() in {"name", "classname"}
+                ]
+
+                for column_name in possible_columns:
+                    try:
+                        cursor.execute(f"SELECT [{column_name}] FROM [{table_name}]")
+                        for row in cursor.fetchall():
+                            if row and row[0] is not None:
+                                value = str(row[0]).strip()
+                                if value and len(value) <= 150:
+                                    found.add(value)
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
+    conn.close()
+
+    if not found:
+        raise RuntimeError("Connected to LC database, but no liquid classes were found.")
+
+    return sorted(found, key=str.lower)
+
+
+def load_combined_liquid_classes(method_path: str, db_path: str = "") -> List[str]:
+    method_liquid_classes = extract_liquid_classes_from_method_files(method_path)
+    return sorted(set(method_liquid_classes), key=str.lower)
 
 
 def parse_lay_file(lay_path: str) -> List[str]:
-    text = normalize_lay_text(read_text_file_best_effort(lay_path))
+    text = read_text_file_best_effort(lay_path)
 
     if not text:
         return []
@@ -1362,18 +1028,31 @@ def parse_lay_file(lay_path: str) -> List[str]:
     )
 
     for seq_id in seq_ids:
-        match = re.search(
-            rf"Seq\.{seq_id}\.Name\s*(.*?)(?=\s+Seq\.{seq_id}\.ReadOnly|\s+Seq\.\d+\.|\s+Seq\.Cnt|\s+Layer\.|\s+Labware\.|$)",
-            text,
-            re.IGNORECASE,
+        pattern = re.compile(
+            rf"Seq\.{seq_id}\.Name(.*?)(?=Seq\.{seq_id}\.(?:ReadOnly|Cnt|Item)|Seq\.\d+\.Name|Seq\.Cnt|$)",
+            re.IGNORECASE | re.DOTALL,
         )
 
+        match = pattern.search(text)
         if not match:
             continue
 
-        name = clean_lay_value(match.group(1))
+        raw_name = match.group(1)
+        raw_name = raw_name.replace("\x00", " ")
+        raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
+        raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
 
-        if not name or name.lower().startswith(("readonly", "cnt", "item")):
+        name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
+        if not name_match:
+            continue
+
+        name = clean_control_chars(name_match.group(1)).strip()
+        name = re.sub(r"\s+", " ", name)
+
+        if not name:
+            continue
+
+        if name.lower().startswith(("readonly", "cnt", "item")):
             continue
 
         if name not in seen:
@@ -1383,141 +1062,118 @@ def parse_lay_file(lay_path: str) -> List[str]:
     return found
 
 
-def parse_lay_sequence_counts(lay_path: str) -> Dict[str, int]:
-    text = normalize_lay_text(read_text_file_best_effort(lay_path))
+def infer_plate_format_from_position_count(count: int) -> str:
+    return "unknown"
 
-    if not text:
-        return {}
 
-    counts_by_num = {}
-    names_by_num = {}
+def infer_plate_format_from_labware_name(name: str) -> str:
+    text = str(name or "").upper()
 
-    for seq_num, cnt in re.findall(r"Seq\.(\d+)\.Cnt[^\d]*(\d+)", text, re.IGNORECASE):
-        counts_by_num[int(seq_num)] = int(cnt)
+    if "384" in text:
+        return "384-well"
+    if "96" in text or "PLATE96" in text or "PCR96" in text:
+        return "96-well"
+    if "24" in text:
+        return "24-well"
 
-    seq_ids = sorted(
-        {int(value) for value in re.findall(r"Seq\.(\d+)\.Name", text, re.IGNORECASE)}
-    )
+    rack_patterns = [
+        (r"\b48\b|48POS|48_POS|48 POSITION|HONEYCOMB", "48-position tube/sample rack"),
+        (r"\b32\b|32POS|32_POS|32 POSITION", "32-position tube/sample rack"),
+        (r"\b24\b|24POS|24_POS|24 POSITION", "24-position tube/sample rack"),
+        (r"\b16\b|16POS|16_POS|16 POSITION", "16-position rack"),
+        (r"\b12\b|12POS|12_POS|12 POSITION", "12-position rack"),
+        (r"\b8\b|8POS|8_POS|8 POSITION", "8-position rack"),
+    ]
 
-    for seq_id in seq_ids:
-        match = re.search(
-            rf"Seq\.{seq_id}\.Name\s*(.*?)(?=\s+Seq\.{seq_id}\.ReadOnly|\s+Seq\.\d+\.|\s+Seq\.Cnt|\s+Layer\.|\s+Labware\.|$)",
-            text,
-            re.IGNORECASE,
-        )
+    if any(word in text for word in ("RACK", "TUBE", "SAMPLE", "CARRIER", "HONEYCOMB")):
+        for pattern, label in rack_patterns:
+            if re.search(pattern, text):
+                return label
+        return "rack/unknown capacity"
 
-        if match:
-            name = clean_lay_value(match.group(1))
-            if name:
-                names_by_num[seq_id] = name
+    if "WASTE" in text:
+        return "waste"
+    if "TIP" in text or "TIPRACK" in text or "SLIM" in text:
+        return "tip rack"
+    if "PLATE" in text:
+        return "plate/unknown format"
 
-    return {
-        name: counts_by_num.get(seq_num, 0)
-        for seq_num, name in names_by_num.items()
-    }
+    return "unknown"
 
 
 def parse_lay_sequence_metadata(lay_path: str) -> Dict[str, Dict[str, Any]]:
-    text = normalize_lay_text(read_text_file_best_effort(lay_path))
+    text = read_text_file_best_effort(lay_path)
     metadata = {}
 
     if not text:
         return metadata
 
-    labware_catalog = parse_lay_labware_catalog(lay_path)
-    layer_sequence_map = parse_lay_layer_sequence_map(lay_path)
-
     seq_ids = sorted(set(re.findall(r"Seq\.(\d+)\.", text)), key=lambda value: int(value))
 
     for seq_id in seq_ids:
         name_match = re.search(
-            rf"Seq\.{seq_id}\.Name\s*(.*?)(?=\s+Seq\.{seq_id}\.ReadOnly|\s+Seq\.\d+\.|\s+Seq\.Cnt|\s+Layer\.|\s+Labware\.|$)",
+            rf"Seq\.{seq_id}\.Name(.*?)(?=Seq\.{seq_id}\.(?:ReadOnly|Cnt|Item)|Seq\.\d+\.Name|Seq\.Cnt|$)",
             text,
-            re.IGNORECASE,
+            re.IGNORECASE | re.DOTALL,
         )
 
         if not name_match:
             continue
 
-        seq_name = clean_lay_value(name_match.group(1))
+        raw_name = name_match.group(1)
+        raw_name = raw_name.replace("\x00", " ")
+        raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
+        raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
 
-        if not seq_name:
+        seq_name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
+        if not seq_name_match:
             continue
 
-        cnt_match = re.search(rf"Seq\.{seq_id}\.Cnt[^\d]*(\d+)", text, re.IGNORECASE)
+        seq_name = clean_control_chars(seq_name_match.group(1)).strip()
+        seq_name = re.sub(r"\s+", " ", seq_name)
+
+        cnt_match = re.search(
+            rf"Seq\.{seq_id}\.Cnt[^\d]*(\d+)",
+            text,
+            re.IGNORECASE,
+        )
         selected_position_count = int(cnt_match.group(1)) if cnt_match else 0
 
-        item_pattern = re.compile(
-            rf"Seq\.{seq_id}\.Item\.(\d+)\.ObjId\s*(.*?)\s+Seq\.{seq_id}\.Item\.\1\.PosId\s*([A-Za-z]?\d{{1,3}})",
+        objids = re.findall(
+            rf"Seq\.{seq_id}\.Item\.\d+\.ObjId(.*?)(?=Seq\.{seq_id}\.Item\.\d+\.|Seq\.{seq_id}\.|Seq\.\d+\.|$)",
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        clean_objids = []
+        for raw_objid in objids:
+            raw_objid = raw_objid.replace("\x00", " ")
+            raw_objid = re.sub(r"[\x01-\x1f]+", " ", raw_objid)
+            match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,150})", raw_objid)
+            if match:
+                value = clean_control_chars(match.group(1)).strip()
+                value = re.sub(r"\s+", " ", value)
+                if value:
+                    clean_objids.append(value)
+
+        positions = re.findall(
+            rf"Seq\.{seq_id}\.Item\.\d+\.PosId[^A-Za-z0-9]*([A-Za-z]?\d{{1,3}})",
+            text,
             re.IGNORECASE,
         )
 
-        objids = []
-        positions = []
-
-        for _, objid, posid in item_pattern.findall(text):
-            objid = clean_lay_value(objid)
-            posid = normalize_position_text(posid)
-
-            if objid:
-                objids.append(objid)
-            if posid:
-                positions.append(posid)
-
-        layer_labware_name = (
-            layer_sequence_map.get(seq_name)
-            or layer_sequence_map.get(seq_name.lower())
-            or ""
-        )
-
-        primary_objid = max(set(objids), key=objids.count) if objids else layer_labware_name
-
-        labware_record = (
-            labware_catalog.get(primary_objid)
-            or labware_catalog.get(str(primary_objid).lower())
-            or labware_catalog.get(layer_labware_name)
-            or labware_catalog.get(str(layer_labware_name).lower())
-            or {}
-        )
-
-        labware_name = (
-            labware_record.get("labware_id")
-            or primary_objid
-            or layer_labware_name
-            or seq_name
-        )
-
-        labware_file = labware_record.get("labware_file", "")
-        labware_format = labware_record.get("labware_format", "unknown")
-
-        if labware_format == "unknown":
-            labware_format = infer_labware_format_from_labware_record(
-                labware_name,
-                labware_file,
-                labware_record.get("properties", {}),
-            )
+        labware_name = max(set(clean_objids), key=clean_objids.count) if clean_objids else seq_name
+        labware_format = infer_plate_format_from_labware_name(labware_name)
 
         metadata[seq_name] = {
             "sequence_id": seq_id,
             "sequence_name": seq_name,
             "selected_position_count": selected_position_count,
             "position_count": selected_position_count,
-            "positions": positions,
+            "positions": [normalize_position_text(position) for position in positions],
             "labware_name": labware_name,
-            "primary_objid": primary_objid,
-            "layer_labware_name": layer_labware_name,
-            "all_detected_labware_names": sorted(
-                {value for value in objids + [primary_objid, layer_labware_name, labware_name] if value},
-                key=str.lower,
-            ),
-            "labware_file": labware_file,
-            "labware_file_name": labware_record.get("labware_file_name", ""),
-            "labware_template": labware_record.get("template", ""),
-            "labware_site_id": labware_record.get("site_id", ""),
-            "labware_properties": labware_record.get("properties", {}),
-            "is_carrier": labware_record.get("is_carrier", False),
             "labware_format": labware_format,
-            "labware_format_basis": "Seq.Item.ObjId joined to Labware.N.Id/File/Template/Properties and Layer map",
+            "labware_format_basis": "method_file_objid_or_labware_name",
         }
 
     return metadata
@@ -1538,53 +1194,43 @@ def get_sequence_labware_metadata(
         if str(name).strip().lower() == target_lower:
             return metadata
 
-    inferred_format = infer_labware_format_from_labware_record(target, "", {})
+    inferred_format = infer_plate_format_from_labware_name(target)
 
     return {
         "sequence_name": target,
         "labware_name": target if target else "unknown",
-        "primary_objid": target,
-        "layer_labware_name": "",
-        "all_detected_labware_names": [target] if target else [],
-        "labware_file": "",
-        "labware_file_name": "",
-        "labware_template": "",
-        "labware_site_id": "",
-        "labware_properties": {},
-        "is_carrier": False,
         "labware_format": inferred_format,
-        "labware_format_basis": "sequence-name fallback only; method labware record not found",
+        "labware_format_basis": "sequence_name_fallback_only",
         "selected_position_count": int(sequence_count or 0),
         "position_count": int(sequence_count or 0),
         "positions": [],
     }
 
 
+
+
 def normalize_tip_type(value: str) -> str:
-    text = str(value or "").lower().replace("_", "").replace("-", "").replace(" ", "")
-
-    if text in {"1000ul", "1000", "hv", "hvt", "highvolume", "highvolumefilter"}:
+    text = str(value or "").lower().replace(" ", "").replace("_", "")
+    if text in {"1000ul", "1000"}:
         return "1000ul"
-
-    if text in {"300ul", "300", "300s", "std", "slim", "slimfilter"}:
+    if text in {"300ul", "300s", "300"}:
         return "300ul"
-
-    if text in {"50ul", "50", "lv", "lvt", "lowvolume"}:
+    if text in {"50ul", "50"}:
         return "50ul"
-
-    return ""
+    return text
 
 
 def infer_tip_type_from_text(text: str) -> str:
-    text = str(text or "").upper()
+    raw = str(text or "").upper()
+    compact = re.sub(r"[^A-Z0-9]+", "", raw)
 
-    if "SLIMTIP300" in text or "SLIM" in text or "300UL" in text or "300S" in text or re.search(r"\b300\b", text):
-        return "300ul"
-
-    if "HTF" in text or "HVT" in text or "HIGHVOLUME" in text or "HIGH_VOLUME" in text or "1000UL" in text or re.search(r"\b1000\b", text):
+    if any(token in compact for token in ("HTF", "HVT", "HV", "HIGHVOLUME", "HIGHVOL", "1000UL", "1000")):
         return "1000ul"
 
-    if "50UL" in text or "LOWVOLUME" in text or "LOW_VOLUME" in text or "LVT" in text or re.search(r"\b50\b", text):
+    if any(token in compact for token in ("SLIMTIP300", "SLIM300", "300S", "300UL", "300", "SLIM", "SVT", "STANDARD", "STD")):
+        return "300ul"
+
+    if any(token in compact for token in ("LVT", "LV", "LOWVOLUME", "LOWVOL", "50UL", "50")):
         return "50ul"
 
     return ""
@@ -1596,9 +1242,9 @@ def infer_tip_type_for_set(
     lay_metadata: Dict[str, Dict[str, Any]],
 ) -> Tuple[str, str]:
     tip_configs = [
-        config for config in configs
-        if int(config.set_order) == int(set_order)
-        and config.role == "tip pick up"
+        c for c in configs
+        if int(c.set_order) == int(set_order)
+        and c.role == "tip pick up"
     ]
 
     searched = []
@@ -1614,22 +1260,19 @@ def infer_tip_type_for_set(
             config.sequence,
             meta.get("sequence_name", ""),
             meta.get("labware_name", ""),
-            meta.get("primary_objid", ""),
-            meta.get("layer_labware_name", ""),
             meta.get("labware_format", ""),
-            meta.get("labware_file", ""),
-            meta.get("labware_file_name", ""),
-            meta.get("labware_template", ""),
-            meta.get("labware_site_id", ""),
-            " ".join(meta.get("all_detected_labware_names", []) or []),
+            meta.get("sequence_id", ""),
+            " ".join(meta.get("positions", []) or []),
         ]
 
-        for key, value in (meta.get("labware_properties", {}) or {}).items():
-            values.append(str(key))
-            values.append(str(value))
+        for key, value in meta.items():
+            if isinstance(value, str):
+                values.append(value)
+            elif isinstance(value, list):
+                values.append(" ".join(str(v) for v in value))
 
         for value in values:
-            text = str(value or "").strip()
+            text = str(value or "")
             if not text:
                 continue
 
@@ -1639,16 +1282,14 @@ def infer_tip_type_for_set(
             if tip_type in {"1000ul", "300ul", "50ul"}:
                 return tip_type, text
 
-    return "", " | ".join(dict.fromkeys(searched)) if searched else "no tip pick up sequence selected"
+    return "", " | ".join(searched) if searched else "no tip pick up sequence selected"
 
 
-def tip_volume_allowed(tip_type: str, hardware_mode: str) -> Optional[Tuple[float, float]]:
-    tip_type = normalize_tip_type(tip_type)
-    mode = normalize_hardware_mode(hardware_mode)
+def tip_volume_allowed(tip_type: str, hardware_mode: str, volume_ul: float) -> bool:
+    tip = normalize_tip_type(tip_type)
+    mode = str(hardware_mode or "channels").lower()
 
-    is_head = mode in {"head96", "head384"}
-
-    if is_head:
+    if mode == "head":
         ranges = {
             "1000ul": (100.0, 1000.0),
             "300ul": (20.0, 300.0),
@@ -1661,7 +1302,11 @@ def tip_volume_allowed(tip_type: str, hardware_mode: str) -> Optional[Tuple[floa
             "50ul": (10.0, 50.0),
         }
 
-    return ranges.get(tip_type)
+    if tip not in ranges:
+        return False
+
+    low, high = ranges[tip]
+    return low <= float(volume_ul) <= high
 
 
 def validate_tip_volume_rules(
@@ -1669,13 +1314,12 @@ def validate_tip_volume_rules(
     lay_metadata: Dict[str, Dict[str, Any]],
 ) -> List[ValidationIssue]:
     issues = []
-    grouped = defaultdict(list)
 
-    for config in configs:
-        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
+    set_numbers = sorted({int(c.set_order) for c in configs})
 
-    for set_order, items in sorted(grouped.items()):
-        liquid_steps = [item for item in items if item.role in ("aspirate", "dispense")]
+    for set_order in set_numbers:
+        set_configs = [c for c in configs if int(c.set_order) == int(set_order)]
+        liquid_steps = [c for c in set_configs if c.role in ("aspirate", "dispense")]
 
         if not liquid_steps:
             continue
@@ -1684,45 +1328,269 @@ def validate_tip_volume_rules(
 
         if not tip_type:
             issues.append(ValidationIssue(
-                "major",
-                "tip_type",
-                f"Could not identify tip type for Set {set_order}. Checked method/deck metadata: {evidence}",
-                {"set_order": set_order, "checked_metadata": evidence},
+                "critical",
+                "tip_volume_rule",
+                f"Could not identify tip type for Set {set_order}. Checked tip sequence/labware metadata: {evidence}",
+                {"set_order": set_order, "evidence": evidence},
             ))
             continue
 
-        hardware_mode = normalize_hardware_mode(liquid_steps[0].hardware_mode)
-        allowed_range = tip_volume_allowed(tip_type, hardware_mode)
-
-        if not allowed_range:
-            continue
-
-        min_ul, max_ul = allowed_range
-
-        for step in liquid_steps:
-            volume = float(step.volume_ul)
-
-            if volume < min_ul or volume > max_ul:
+        for config in liquid_steps:
+            if not tip_volume_allowed(tip_type, config.hardware_mode, config.volume_ul):
                 issues.append(ValidationIssue(
                     "critical",
-                    "tip_volume_range",
+                    "tip_volume_rule",
                     (
-                        f"Set {set_order} volume {volume} uL is outside allowed range "
-                        f"{min_ul}-{max_ul} uL for {hardware_mode} {tip_type} tips."
+                        f"Volume {config.volume_ul} uL is not valid for {tip_type} tips "
+                        f"in {config.hardware_mode} mode for Set {set_order}."
                     ),
                     {
                         "set_order": set_order,
-                        "sequence": step.sequence,
+                        "sequence": config.sequence,
                         "tip_type": tip_type,
+                        "volume_ul": config.volume_ul,
+                        "hardware_mode": config.hardware_mode,
                         "tip_evidence": evidence,
-                        "hardware_mode": hardware_mode,
-                        "volume_ul": volume,
-                        "allowed_min_ul": min_ul,
-                        "allowed_max_ul": max_ul,
                     },
                 ))
 
     return issues
+
+
+def resolve_pyhamilton_resource_class(labware_name: str):
+    text = str(labware_name or "").upper()
+
+    if "384" in text:
+        preferred_names = ["Plate384", "Plate96"]
+    elif "24" in text:
+        preferred_names = ["Plate24", "Plate96"]
+    elif "96" in text or "PLATE" in text:
+        preferred_names = ["Plate96"]
+    elif "TIP" in text or "TIPRACK" in text or "SLIM" in text:
+        preferred_names = ["Tip96", "TipRack", "Plate96"]
+    elif "RACK" in text or "TUBE" in text or "HONEYCOMB" in text or "CARRIER" in text:
+        preferred_names = ["Plate96", "Tip96"]
+    elif "WASTE" in text:
+        preferred_names = ["Plate96"]
+    else:
+        preferred_names = ["Plate96"]
+
+    for class_name in preferred_names:
+        for module in PYHAMILTON_MODULES:
+            if module is not None and hasattr(module, class_name):
+                return getattr(module, class_name)
+
+    return Plate96
+
+
+def assign_sequence_labware_resource(layout_manager, labware_name: str):
+    labware_name = str(labware_name or "").strip()
+
+    if not labware_name:
+        return None
+
+    resource_class = resolve_pyhamilton_resource_class(labware_name)
+    attempts = []
+
+    if hasattr(layout_manager, "assign_resource"):
+        attempts.append(
+            (
+                f"assign_resource({labware_name!r})",
+                lambda: layout_manager.assign_resource(labware_name),
+            )
+        )
+
+    if ResourceType is not None and resource_class is not None:
+        resource_type_with_name = ResourceType(resource_class, labware_name)
+        resource_type_blank = ResourceType(resource_class, "")
+
+        if hasattr(layout_manager, "assign_resource"):
+            attempts.append(
+                (
+                    f"assign_resource(ResourceType({resource_class.__name__}, {labware_name!r}))",
+                    lambda: layout_manager.assign_resource(resource_type_with_name),
+                )
+            )
+
+        if hasattr(layout_manager, "assign_unused_resource"):
+            attempts.append(
+                (
+                    f"assign_unused_resource(ResourceType({resource_class.__name__}, {labware_name!r}))",
+                    lambda: layout_manager.assign_unused_resource(resource_type_with_name),
+                )
+            )
+
+            attempts.append(
+                (
+                    f"assign_unused_resource(ResourceType({resource_class.__name__}, ''))",
+                    lambda: layout_manager.assign_unused_resource(resource_type_blank),
+                )
+            )
+
+    last_error = None
+    attempted = []
+
+    for label, attempt in attempts:
+        attempted.append(label)
+
+        try:
+            resource = attempt()
+
+            if resource is not None:
+                return resource
+
+        except Exception as exc:
+            last_error = exc
+
+    raise RuntimeError(
+        f"Could not assign labware resource for '{labware_name}'. "
+        f"Attempts: {attempted}. Last error: {last_error}"
+    )
+
+
+def parse_lay_sequence_counts(lay_path: str) -> Dict[str, int]:
+    text = read_text_file_best_effort(lay_path)
+
+    if not text:
+        return {}
+
+    counts_by_num = {}
+    names_by_num = {}
+
+    for seq_num, cnt in re.findall(r"Seq\.(\d+)\.Cnt[^\d]*(\d+)", text, re.IGNORECASE):
+        try:
+            counts_by_num[int(seq_num)] = int(cnt)
+        except Exception:
+            pass
+
+    seq_ids = sorted(
+        {int(value) for value in re.findall(r"Seq\.(\d+)\.Name", text, re.IGNORECASE)}
+    )
+
+    for seq_id in seq_ids:
+        pattern = re.compile(
+            rf"Seq\.{seq_id}\.Name(.*?)(?=Seq\.{seq_id}\.(?:ReadOnly|Cnt|Item)|Seq\.\d+\.Name|Seq\.Cnt|$)",
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        match = pattern.search(text)
+        if not match:
+            continue
+
+        raw_name = match.group(1)
+        raw_name = raw_name.replace("\x00", " ")
+        raw_name = re.sub(r"[\x01-\x1f]+", " ", raw_name)
+        raw_name = re.sub(r"^[^A-Za-z0-9_]+", "", raw_name)
+
+        name_match = re.search(r"([A-Za-z][A-Za-z0-9_ .\-]{0,119})", raw_name)
+        if not name_match:
+            continue
+
+        name = clean_control_chars(name_match.group(1)).strip()
+        name = re.sub(r"\s+", " ", name)
+
+        if name:
+            names_by_num[seq_id] = name
+
+    return {
+        name: counts_by_num.get(seq_num, 0)
+        for seq_num, name in names_by_num.items()
+    }
+
+
+def detect_hardware_mode(sequence_name: str, selected_role: str = "") -> str:
+    seq_upper = str(sequence_name).upper()
+    role_upper = str(selected_role).upper()
+
+    if "CO-RE" in seq_upper or "CORE" in seq_upper or "96" in seq_upper or "HEAD" in seq_upper:
+        return "head"
+
+    if "CO-RE" in role_upper or "CORE" in role_upper or "96" in role_upper or "HEAD" in role_upper:
+        return "head"
+
+    return "channels"
+
+
+def infer_channel_pattern(sequence_name: str, role: str, hardware_mode: str) -> str:
+    if hardware_mode == "head":
+        return "1" * 96
+
+    upper = sequence_name.upper()
+
+    if "8" in upper and "12" not in upper and "16" not in upper:
+        return "11111111"
+
+    if "16" in upper:
+        return "1111111111111111"
+
+    return "111111111111"
+
+
+def validate_step_sets(
+    configs: List[SequenceStepConfig],
+    variant_mode: bool,
+    use_set_order: bool,
+) -> str:
+    if not use_set_order:
+        return ""
+
+    grouped = defaultdict(list)
+    for config in configs:
+        grouped[int(config.set_order)].append(config)
+
+    if variant_mode:
+        tip_orders = [
+            int(config.set_order)
+            for config in configs
+            if config.role == "tip pick up"
+        ]
+
+        if tip_orders and min(tip_orders) != 1:
+            return "In Variant mode, the first tip pick up step must have Set 1."
+
+        return ""
+
+    for set_order, items in sorted(grouped.items()):
+        roles = [item.role for item in items]
+
+        for required_role in ROLE_OPTIONS:
+            if roles.count(required_role) != 1:
+                return (
+                    f"Set {set_order} must contain exactly one tip pick up, "
+                    f"one aspirate, and one dispense sequence."
+                )
+
+    return ""
+
+
+def parse_volume_by_set(volume_text: str, set_count: int) -> Dict[int, float]:
+    raw_values = [item.strip() for item in str(volume_text or "").split(",") if item.strip()]
+
+    if not raw_values:
+        raise ValueError("Volume is required.")
+
+    volumes = []
+    for raw in raw_values:
+        try:
+            value = float(raw)
+        except Exception:
+            raise ValueError(f"Invalid volume value: {raw}")
+
+        if value <= 0 or value > 1000:
+            raise ValueError(f"Volume must be between 1 and 1000 uL: {value}")
+
+        volumes.append(value)
+
+    if len(volumes) == 1:
+        return {set_num: volumes[0] for set_num in range(1, set_count + 1)}
+
+    if len(volumes) < set_count:
+        raise ValueError(
+            f"You entered {len(volumes)} volume value(s), but there are {set_count} set(s). "
+            "Enter one volume or one comma-separated volume per set."
+        )
+
+    return {set_num: volumes[set_num - 1] for set_num in range(1, set_count + 1)}
 
 
 def unique_issue_messages(issues: List[ValidationIssue]) -> List[str]:
@@ -1769,16 +1637,11 @@ def validate_step_configs(configs: List[SequenceStepConfig]) -> List[ValidationI
 
 
 def get_sequence_batch_size(config: SequenceStepConfig) -> int:
-    mode = normalize_hardware_mode(config.hardware_mode)
-
-    if mode == "head384":
-        return 384
-
-    if mode == "head96":
+    if str(config.hardware_mode).lower() == "head":
         return 96
 
-    pattern = normalize_assigned_channel_pattern(config.channel_pattern, "channels")
-    return max(pattern.count("1"), 1)
+    active = sum(1 for char in str(config.channel_pattern or "") if char == "1")
+    return max(active, 1)
 
 
 def get_sequence_iterations(config: SequenceStepConfig) -> int:
@@ -2144,165 +2007,58 @@ def parse_plate_layout_file(layout_path: str, marker: str) -> Dict[str, List[Dic
     return dict(plate_layout)
 
 
-def build_labware_validation_summary(
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-    trace_findings: List[Dict[str, Any]],
-    configs: List[SequenceStepConfig],
-    lay_metadata: Dict[str, Dict[str, Any]],
-) -> List[Dict[str, Any]]:
-    summary = []
-    layout_summary = summarize_layout_format(layout_matches)
-    expected_format = layout_summary.get("inferred_plate_format", "unknown")
-
-    for config in configs:
-        seq_meta = get_sequence_labware_metadata(
-            config.sequence,
-            lay_metadata,
-            getattr(config, "sequence_count", 0),
-        )
-
-        sequence_format = seq_meta.get("labware_format", "unknown")
-        labware_name = seq_meta.get("labware_name", "unknown")
-
-        status = "pass"
-        comparison = "Not compared to uploaded destination layout."
-
-        if config.role == "dispense":
-            comparison = f"Uploaded layout appears to be {expected_format}."
-
-            if expected_format != "unknown" and sequence_format != "unknown" and sequence_format != expected_format:
-                status = "fail"
-
-        if config.role == "aspirate":
-            comparison = "Aspirate/source labware is reported, but not compared to destination layout format."
-
-        if config.role == "tip pick up":
-            comparison = "Tip-pick labware is reported for tip type and volume rule checking."
-
-        message = (
-            f"{config.role.title()} sequence '{config.sequence}' resolved to labware "
-            f"'{labware_name}' from method/deck metadata. Detected format/type: {sequence_format}. {comparison}"
-        )
-
-        if status == "fail":
-            message = (
-                f"URGENT ERROR: Destination labware mismatch. Dispense sequence '{config.sequence}' "
-                f"uses labware '{labware_name}' detected as {sequence_format}, but uploaded "
-                f"layout appears to be {expected_format}."
-            )
-
-        summary.append({
-            "type": "Labware Check",
-            "status": status,
-            "set_order": config.set_order,
-            "step_role": config.role,
-            "sequence": config.sequence,
-            "resolved_labware_name": labware_name,
-            "detected_labware_format_or_type": sequence_format,
-            "labware_file": seq_meta.get("labware_file", ""),
-            "labware_template_or_carrier": seq_meta.get("labware_template", ""),
-            "deck_site_id": seq_meta.get("labware_site_id", ""),
-            "primary_sequence_objid": seq_meta.get("primary_objid", ""),
-            "layer_labware_name": seq_meta.get("layer_labware_name", ""),
-            "all_detected_labware_names": seq_meta.get("all_detected_labware_names", []),
-            "selected_position_count": seq_meta.get("selected_position_count", 0),
-            "position_count_note": "Selected sequence positions are context only and are not used as labware capacity proof.",
-            "expected_uploaded_layout_format": expected_format if config.role == "dispense" else "not applicable",
-            "method_metadata_basis": seq_meta.get("labware_format_basis", ""),
-            "message": message,
-        })
-
-    return summary
-
-
-def validate_layout_matches(
-    layout_matches: Dict[str, List[Dict[str, Any]]],
-    pairs: List[TransferPair],
-    marker: str,
-) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
+def validate_layout_matches(layout_matches: Dict[str, List[Dict[str, Any]]], pairs: List[TransferPair], marker: str) -> Tuple[List[Dict[str, Any]], List[ValidationIssue]]:
     findings = []
     issues = []
 
-    marker = str(marker or "").upper().strip()
-
     all_layout_positions = []
-    position_to_markers = defaultdict(list)
-    marker_replicate_counts = {}
+    seen_positions = defaultdict(list)
 
     for marker_label, entries in layout_matches.items():
-        normalized_positions = []
-
         for entry in entries:
             pos = normalize_position_text(entry.get("dest_value", ""))
-            if not pos:
-                continue
-
             all_layout_positions.append(pos)
-            position_to_markers[pos].append(marker_label)
-            normalized_positions.append(pos)
+            seen_positions[pos].append(marker_label)
 
-        marker_replicate_counts[marker_label] = len(normalized_positions)
+    for pos, labels in seen_positions.items():
+        if len(labels) > 1:
+            issues.append(ValidationIssue("major", "layout", f"Duplicate destination well found in layout: {pos}", {"markers": labels}))
 
-    true_duplicate_wells = {
-        pos: sorted(set(labels))
-        for pos, labels in position_to_markers.items()
-        if len(set(labels)) > 1
-    }
+    pair_positions = [normalize_position_text(pair.destination_position) for pair in pairs if pair.destination_position]
+    pair_position_set = set(pair_positions)
 
-    for pos, labels in true_duplicate_wells.items():
-        issues.append(ValidationIssue(
-            "major",
-            "layout",
-            f"Layout well {pos} contains more than one distinct marker/sample: {labels}",
-            {"well": pos, "markers": labels},
-        ))
-
-    pair_positions = [
-        normalize_position_text(pair.destination_position)
-        for pair in pairs
-        if pair.destination_position
-    ]
-
-    missing_from_pairs = sorted(set(all_layout_positions) - set(pair_positions))
-
+    missing_from_pairs = sorted(set(all_layout_positions) - pair_position_set)
     for pos in missing_from_pairs:
-        issues.append(ValidationIssue(
-            "major",
-            "layout",
-            f"Layout destination {pos} is present in uploaded layout but not represented in deterministic transfer pairs.",
-        ))
+        issues.append(ValidationIssue("major", "layout", f"Layout position is not represented in deterministic transfer pairs: {pos}"))
 
-    duplicate_pair_positions = sorted(pos for pos in set(pair_positions) if pair_positions.count(pos) > 1)
-
+    duplicate_pair_positions = sorted([pos for pos in set(pair_positions) if pair_positions.count(pos) > 1])
     for pos in duplicate_pair_positions:
-        issues.append(ValidationIssue(
-            "major",
-            "mapping",
-            f"Transfer plan uses destination well {pos} more than once.",
-        ))
+        issues.append(ValidationIssue("major", "mapping", f"Duplicate destination well in transfer pairs: {pos}"))
 
     expected_marker_labels = {pair.marker_label for pair in pairs if pair.marker_label}
     actual_marker_labels = set(layout_matches.keys())
 
+    missing_markers = sorted(expected_marker_labels - actual_marker_labels)
+    extra_markers = sorted(actual_marker_labels - expected_marker_labels)
+
+    for label in missing_markers:
+        issues.append(ValidationIssue("major", "marker", f"Expected marker not found in layout: {label}"))
+
+    for label in extra_markers:
+        findings.append({
+            "type": "extra_layout_marker",
+            "marker": label,
+            "message": f"Layout marker exists but was not selected in transfer pairs: {label}",
+        })
+
     findings.append({
-        "type": "Layout Summary",
-        "marker_prefix": marker,
-        "sample_marker_count": len(layout_matches),
-        "total_layout_destinations": len(all_layout_positions),
-        "unique_destination_wells": len(set(all_layout_positions)),
-        "replicate_counts_by_marker": marker_replicate_counts,
-        "markers_with_replicates": {
-            label: count
-            for label, count in marker_replicate_counts.items()
-            if count > 1
-        },
-        "replicate_explanation": (
-            "Repeated occurrences of the same marker are treated as replicates. "
-            "They are not duplicate errors unless different markers share the same exact well."
-        ),
-        "true_duplicate_wells": true_duplicate_wells,
-        "missing_layout_wells_from_transfer_plan": missing_from_pairs,
-        "extra_layout_markers_not_in_transfer_plan": sorted(actual_marker_labels - expected_marker_labels),
+        "type": "layout_summary",
+        "marker": marker,
+        "marker_count": len(layout_matches),
+        "layout_position_count": len(all_layout_positions),
+        "unique_layout_position_count": len(set(all_layout_positions)),
+        "missing_positions_from_pairs": missing_from_pairs,
+        "duplicate_layout_positions": [pos for pos, labels in seen_positions.items() if len(labels) > 1],
     })
 
     return findings, issues
@@ -2772,10 +2528,8 @@ def analyze_orientation_and_tip_usage(
         pattern = str(tip_step.get("channel_pattern") or "")
         picked_tip_count = count_active_channels(pattern)
 
-        mode = normalize_hardware_mode(tip_step.get("hardware_mode", "channels"))
-        head_size = get_head_size_from_mode(mode)
-        if head_size:
-            picked_tip_count = head_size
+        if str(tip_step.get("hardware_mode", "")).lower() == "head":
+            picked_tip_count = 96
 
         used_aspirate_count = len(aspirate_channels)
         used_dispense_count = len(dispense_channels)
@@ -2854,43 +2608,9 @@ def generate_pyhamilton_review_script(
 
     lines = [
         "from pyhamilton import *",
-        "import inspect",
         "",
         "REVIEW_REQUIRED = True",
         f"DEV_PAL_LITE_PLAN = {json.dumps(payload, indent=4)}",
-        "",
-        "def _normalize_hardware_mode(value):",
-        "    text = str(value or '').strip().lower().replace(' ', '').replace('_', '-').replace('-', '')",
-        "    if text in {'head384', '384head', '384', 'mph384', '384mph'}:",
-        "        return 'head384'",
-        "    if text in {'head96', '96head', 'head', '96', 'mph96', '96mph'}:",
-        "        return 'head96'",
-        "    return 'channels'",
-        "",
-        "def _head_size(mode):",
-        "    mode = _normalize_hardware_mode(mode)",
-        "    if mode == 'head384':",
-        "        return 384",
-        "    if mode == 'head96':",
-        "        return 96",
-        "    return 0",
-        "",
-        "def _get_function(*names):",
-        "    for name in names:",
-        "        func = globals().get(name)",
-        "        if func is not None:",
-        "            return func",
-        "    return None",
-        "",
-        "def _call_best_effort(func, *args, **kwargs):",
-        "    if func is None:",
-        "        raise RuntimeError('Required PyHamilton function is unavailable.')",
-        "    try:",
-        "        signature = inspect.signature(func)",
-        "        allowed = {k: v for k, v in kwargs.items() if k in signature.parameters}",
-        "        return func(*args, **allowed)",
-        "    except TypeError:",
-        "        return func(*args)",
         "",
         "def _resolve_resource_class(labware_name):",
         "    text = str(labware_name or '').upper()",
@@ -2901,31 +2621,37 @@ def generate_pyhamilton_review_script(
         "        preferred_names = ['Plate24', 'Plate96']",
         "    elif '96' in text or 'PLATE' in text:",
         "        preferred_names = ['Plate96']",
-        "    elif 'TIP' in text or 'TIPRACK' in text or 'SLIM' in text or 'HTF' in text:",
+        "    elif 'TIP' in text or 'TIPRACK' in text or 'SLIM' in text:",
         "        preferred_names = ['Tip96', 'TipRack', 'Plate96']",
         "    elif 'RACK' in text or 'TUBE' in text or 'HONEYCOMB' in text or 'CARRIER' in text:",
         "        preferred_names = ['Plate96', 'Tip96']",
         "    else:",
         "        preferred_names = ['Plate96']",
+        "",
         "    for class_name in preferred_names:",
         "        if class_name in globals():",
         "            return globals()[class_name]",
+        "",
         "    return Plate96",
         "",
         "def _assign_sequence_resource(layout_manager, labware_name):",
         "    labware_name = str(labware_name or '').strip()",
         "    if not labware_name:",
         "        return None",
+        "",
         "    resource_class = _resolve_resource_class(labware_name)",
         "    attempts = []",
+        "",
         "    if hasattr(layout_manager, 'assign_resource'):",
         "        attempts.append(lambda: layout_manager.assign_resource(labware_name))",
+        "",
         "    if 'ResourceType' in globals() and resource_class is not None:",
         "        if hasattr(layout_manager, 'assign_resource'):",
         "            attempts.append(lambda: layout_manager.assign_resource(ResourceType(resource_class, labware_name)))",
         "        if hasattr(layout_manager, 'assign_unused_resource'):",
         "            attempts.append(lambda: layout_manager.assign_unused_resource(ResourceType(resource_class, labware_name)))",
         "            attempts.append(lambda: layout_manager.assign_unused_resource(ResourceType(resource_class, '')))",
+        "",
         "    last_error = None",
         "    for attempt in attempts:",
         "        try:",
@@ -2934,43 +2660,13 @@ def generate_pyhamilton_review_script(
         "                return resource",
         "        except Exception as exc:",
         "            last_error = exc",
-        "    raise RuntimeError(f'Could not assign labware resource for {labware_name!r}. Last error: {last_error}')",
         "",
-        "def _tip_pick_head(ham_int, seq, head_size):",
-        "    func = _get_function('tip_pick_up_head_seq', 'tip_pick_up_384_seq' if head_size == 384 else 'tip_pick_up_96_seq')",
-        "    if func:",
-        "        return _call_best_effort(func, ham_int, tip_seq=seq, tip384_seq=seq, tip96_seq=seq, sequence=seq, head_size=head_size)",
-        "    command = globals().get('PICKUP384' if head_size == 384 else 'PICKUP96', 'PICKUP384' if head_size == 384 else 'PICKUP96')",
-        "    tid = ham_int.send_command(command, tipSequence=seq, channelVariable='1' * head_size, sequenceCounting=1)",
-        "    return ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)",
-        "",
-        "def _aspirate_head(ham_int, resource, seq, volume, liquid_class, head_size):",
-        "    func = _get_function('aspirate_head_seq', 'aspirate_384_seq' if head_size == 384 else 'aspirate_96_seq')",
-        "    if func:",
-        "        return _call_best_effort(func, ham_int, resource, plate=resource, plate384=resource, plate96=resource, head_asp_seq=seq, asp_seq=seq, sequence=seq, vols=volume, volume=volume, liq_class=liquid_class, liquid_class=liquid_class, liq_class2=liquid_class, head_size=head_size)",
-        "    command = globals().get('ASPIRATE384' if head_size == 384 else 'ASPIRATE96', 'ASPIRATE384' if head_size == 384 else 'ASPIRATE96')",
-        "    tid = ham_int.send_command(command, aspirateSequence=seq, labwarePositions='', aspirateVolume=volume, volumes=volume, channelVariable='1' * head_size, liquidClass=liquid_class, sequenceCounting=0, capacitiveLLD=2)",
-        "    return ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)",
-        "",
-        "def _dispense_head(ham_int, resource, seq, volume, liquid_class, head_size):",
-        "    func = _get_function('dispense_head_seq', 'dispense_384_seq' if head_size == 384 else 'dispense_96_seq2', 'dispense_96_seq')",
-        "    if func:",
-        "        return _call_best_effort(func, ham_int, resource, plate=resource, plate384=resource, plate96=resource, head_disp_seq=seq, disp_seq=seq, sequence=seq, vols=volume, volume=volume, liq_class=liquid_class, liquid_class=liquid_class, liq_class2=liquid_class, head_size=head_size)",
-        "    command = globals().get('DISPENSE384' if head_size == 384 else 'DISPENSE96', 'DISPENSE384' if head_size == 384 else 'DISPENSE96')",
-        "    tid = ham_int.send_command(command, dispenseSequence=seq, labwarePositions='', dispenseVolume=volume, volumes=volume, channelVariable='1' * head_size, liquidClass=liquid_class, sequenceCounting=0)",
-        "    return ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)",
-        "",
-        "def _eject_head(ham_int, head_size):",
-        "    func = _get_function('tip_eject_head', 'tip_eject_384' if head_size == 384 else 'tip_eject_96')",
-        "    if func:",
-        "        return _call_best_effort(func, ham_int, head_size=head_size)",
-        "    command = globals().get('EJECT384' if head_size == 384 else 'EJECT96', 'EJECT384' if head_size == 384 else 'EJECT96')",
-        "    tid = ham_int.send_command(command, labwarePositions='', channelVariable='1' * head_size, tipEjectToKnownPosition=2)",
-        "    return ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)",
+        "    raise RuntimeError(f\"Could not assign labware resource for {labware_name!r}. Last error: {last_error}\")",
         "",
         "def run_review_required_plan(ham_int, layout_manager):",
         "    if REVIEW_REQUIRED:",
         "        raise RuntimeError('Review required before running generated PyHamilton script. Set REVIEW_REQUIRED = False only after human review.')",
+        "",
         "    resource_cache = {}",
         "    initialize(ham_int)",
     ]
@@ -2978,9 +2674,16 @@ def generate_pyhamilton_review_script(
     for item in execution_plan:
         action = str(item.get("action") or "").strip()
         seq = str(item.get("sequence") or "").strip()
-        hardware_mode = normalize_hardware_mode(item.get("hardware_mode") or "channels")
-        head_size = get_head_size_from_mode(hardware_mode)
-        channel = normalize_assigned_channel_pattern(item.get("channel_pattern") or "", hardware_mode)
+        hardware_mode = str(item.get("hardware_mode") or "channels").strip().lower()
+
+        if hardware_mode == "stamp":
+            hardware_mode = "head"
+
+        channel = normalize_assigned_channel_pattern(
+            item.get("channel_pattern") or "111111111111",
+            hardware_mode,
+        )
+
         volume = float(item.get("volume_ul") or 0)
         liquid_class = str(item.get("liquid_class") or "").strip()
         increment = int(item.get("increment") or 0)
@@ -2988,63 +2691,75 @@ def generate_pyhamilton_review_script(
         cache_key = str(labware_name or seq).strip().lower()
 
         lines.append("")
-        lines.append(f"    print({('RUNNING order=' + str(item.get('order')) + ' set=' + str(item.get('set_order')) + ' action=' + action + ' sequence=' + seq + ' hardware=' + hardware_mode)!r})")
+        lines.append(f"    # Order {item.get('order')} | Set {item.get('set_order')} | {action} | {seq}")
 
         if (
-            item.get("autoincrement")
-            and action in {"aspirate", "dispense"}
-            and not bool(item.get("manual"))
-            and seq
-            and increment > 0
+                item.get("autoincrement")
+                and item.get("action") in {"aspirate", "dispense"}
+                and not bool(item.get("manual"))
+                and seq
+                and increment > 0
         ):
-            lines.append(f"    inc_sequence(ham_int, sequence={seq!r}, increment={increment!r})")
+            lines.append(
+                f"    inc_sequence(ham_int, sequence={seq!r}, increment={increment!r})"
+            )
 
         if action == "tip_pick":
-            if head_size:
-                lines.append(f"    _tip_pick_head(ham_int, {seq!r}, {head_size!r})")
+            if hardware_mode == "head":
+                lines.append(
+                    f"    tip_pick_up_96_seq(ham_int, tip96_seq={seq!r})"
+                )
             else:
-                lines.append(f"    tip_pick_up_seq(ham_int, tipseq={seq!r}, channel={channel!r})")
+                lines.append(
+                    f"    tip_pick_up_seq(ham_int, tipseq={seq!r}, channel={channel!r})"
+                )
 
         elif action == "aspirate":
-            if head_size:
-                lines.append(f"    if {cache_key!r} not in resource_cache:")
-                lines.append(f"        resource_cache[{cache_key!r}] = _assign_sequence_resource(layout_manager, {labware_name!r})")
-                lines.append(f"    _aspirate_head(ham_int, resource_cache[{cache_key!r}], {seq!r}, {volume!r}, {liquid_class!r}, {head_size!r})")
+            if hardware_mode == "head":
+                lines.append(
+                    f"    if {cache_key!r} not in resource_cache:"
+                )
+                lines.append(
+                    f"        resource_cache[{cache_key!r}] = _assign_sequence_resource(layout_manager, {labware_name!r})"
+                )
+                lines.append(
+                    f"    aspirate_96_seq(ham_int, plate96=resource_cache[{cache_key!r}], head_asp_seq={seq!r}, vols={volume!r}, liq_class={liquid_class!r})"
+                )
             else:
-                lines.append(f"    aspirate_seq(ham_int, asp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})")
+                lines.append(
+                    f"    aspirate_seq(ham_int, asp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})"
+                )
 
         elif action == "dispense":
-            if head_size:
-                lines.append(f"    if {cache_key!r} not in resource_cache:")
-                lines.append(f"        resource_cache[{cache_key!r}] = _assign_sequence_resource(layout_manager, {labware_name!r})")
-                lines.append(f"    _dispense_head(ham_int, resource_cache[{cache_key!r}], {seq!r}, {volume!r}, {liquid_class!r}, {head_size!r})")
+            if hardware_mode == "head":
+                lines.append(
+                    f"    if {cache_key!r} not in resource_cache:"
+                )
+                lines.append(
+                    f"        resource_cache[{cache_key!r}] = _assign_sequence_resource(layout_manager, {labware_name!r})"
+                )
+                lines.append(
+                    f"    dispense_96_seq2(ham_int, plate96=resource_cache[{cache_key!r}], head_disp_seq={seq!r}, vols={volume!r}, liq_class={liquid_class!r})"
+                )
             else:
-                lines.append(f"    dispense_seq(ham_int, disp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})")
+                lines.append(
+                    f"    dispense_seq(ham_int, disp_seq={seq!r}, vols={volume!r}, channel={channel!r}, liq_class={liquid_class!r})"
+                )
 
         elif action == "tip_eject":
-            if head_size:
-                lines.append(f"    _eject_head(ham_int, {head_size!r})")
+            if hardware_mode == "head":
+                lines.append("    tip_eject_96(ham_int)")
             else:
-                lines.append(f"    tip_eject_seq2(ham_int, waste_seq={seq!r}, channel={channel!r})")
+                lines.append(
+                    f"    tip_eject_seq2(ham_int, waste_seq={seq!r}, channel={channel!r})"
+                )
 
     Path(script_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
     return script_path
 
+
 def humanize_key(key: str) -> str:
     return str(key).replace("_", " ").replace("-", " ").title()
-
-
-def humanize_type(value: Any) -> str:
-    return humanize_key(str(value or "")).strip()
-
-
-def sort_position_key(value: Any):
-    text = str(value or "").strip().upper()
-    match = re.match(r"^([A-Z]*)(\d+)$", text)
-    if match:
-        return (match.group(1), int(match.group(2)))
-    return (text, 0)
-
 
 def is_error_record(value: Any) -> bool:
     text = str(value).lower()
@@ -3064,75 +2779,12 @@ def safe_text(value: Any) -> str:
     return str(value)
 
 
-def format_report_value(value: Any) -> str:
-    if isinstance(value, dict):
-        if not value:
-            return "None"
-        return "; ".join(
-            f"{humanize_key(key)}: {format_report_value(val)}"
-            for key, val in value.items()
-        )
-
-    if isinstance(value, list):
-        if not value:
-            return "None"
-        if len(value) > 30:
-            shown = ", ".join(safe_text(item) for item in value[:30])
-            return f"{shown} ... ({len(value)} total)"
-        return ", ".join(safe_text(item) for item in value)
-
-    return safe_text(value)
-
-
-def readable_record_title(section_title: str, item: Any, index: int) -> str:
-    section = str(section_title or "").lower()
-
-    if not isinstance(item, dict):
-        return f"{section_title} {index}"
-
-    if "selected sequence" in section:
-        return (
-            f"Sequence: {item.get('sequence', 'Unknown')} | "
-            f"Role: {item.get('role', item.get('step_role', 'Unknown'))} | "
-            f"Set: {item.get('set_order', 'N/A')}"
-        )
-
-    if "execution plan" in section:
-        return (
-            f"Plan Step {item.get('order', index)}: "
-            f"{humanize_type(item.get('action', 'Step'))} | "
-            f"{item.get('sequence', 'Unknown')} | "
-            f"Set {item.get('set_order', 'N/A')}"
-        )
-
-    if "transfer pair" in section:
-        return (
-            f"{item.get('pair_id', f'Transfer Pair {index}')}: "
-            f"{item.get('source_sequence', '')} → {item.get('destination_sequence', '')}"
-        )
-
-    if "layout finding" in section:
-        return humanize_type(item.get("type", f"Layout Finding {index}"))
-
-    if "trace finding" in section:
-        return humanize_type(item.get("type", f"Trace Finding {index}"))
-
-    if "validation" in section or "issue" in section:
-        return (
-            f"{humanize_type(item.get('severity', 'Issue'))} | "
-            f"{humanize_type(item.get('category', 'Validation'))}"
-        )
-
-    return f"{section_title} {index}"
-
-
 def docx_add_line(doc, text: str, force_red: bool = False) -> None:
     paragraph = doc.add_paragraph()
     run = paragraph.add_run(str(text))
 
     if RGBColor is not None and (force_red or is_error_record(text)):
         run.font.color.rgb = RGBColor(255, 0, 0)
-
 
 def write_human_section_docx(doc, title: str, data: Any) -> None:
     doc.add_heading(title, level=1)
@@ -3143,19 +2795,18 @@ def write_human_section_docx(doc, title: str, data: Any) -> None:
 
     if isinstance(data, dict):
         for key, value in data.items():
-            docx_add_line(doc, f"{humanize_key(key)}: {format_report_value(value)}")
+            line = f"{humanize_key(key)}: {safe_text(value)}"
+            docx_add_line(doc, line)
         return
 
     if isinstance(data, list):
         for index, item in enumerate(data, start=1):
-            heading = readable_record_title(title, item, index)
-            docx_add_line(doc, heading, force_red=is_error_record(item))
+            docx_add_line(doc, f"Item {index}", force_red=is_error_record(item))
 
             if isinstance(item, dict):
                 for key, value in item.items():
-                    if key == "type":
-                        continue
-                    docx_add_line(doc, f"{humanize_key(key)}: {format_report_value(value)}")
+                    line = f"{humanize_key(key)}: {safe_text(value)}"
+                    docx_add_line(doc, line)
             else:
                 docx_add_line(doc, safe_text(item))
         return
@@ -3173,23 +2824,20 @@ def write_human_text_section(handle, title: str, data: Any) -> None:
 
     if isinstance(data, dict):
         for key, value in data.items():
-            handle.write(f"{humanize_key(key)}: {format_report_value(value)}\n")
+            handle.write(f"{humanize_key(key)}: {value}\n")
         return
 
     if isinstance(data, list):
         for index, item in enumerate(data, start=1):
-            handle.write(f"\n{readable_record_title(title, item, index)}\n")
-
+            handle.write(f"\nItem {index}\n")
             if isinstance(item, dict):
                 for key, value in item.items():
-                    if key == "type":
-                        continue
-                    handle.write(f"{humanize_key(key)}: {format_report_value(value)}\n")
+                    handle.write(f"{humanize_key(key)}: {value}\n")
             else:
-                handle.write(f"{safe_text(item)}\n")
+                handle.write(f"{item}\n")
         return
 
-    handle.write(f"{safe_text(data)}\n")
+    handle.write(f"{data}\n")
 
 def write_docx_report(output: DevPalLiteOutput, output_dir: str) -> str:
     if Document is None:
@@ -3427,92 +3075,31 @@ def create_output_model(
     review_script_path: str,
     report_path: str = "",
 ) -> DevPalLiteOutput:
-    source_positions = sorted(
-        {pair.source_position for pair in pairs if pair.source_position},
-        key=sort_position_key,
-    )
-
-    destination_positions = sorted(
-        {pair.destination_position for pair in pairs if pair.destination_position},
-        key=sort_position_key,
-    )
+    source_positions = sorted({pair.source_position for pair in pairs if pair.source_position})
+    destination_positions = sorted({pair.destination_position for pair in pairs if pair.destination_position})
 
     validation_findings = [
         {
             "severity": issue.severity,
-            "category": humanize_type(issue.category),
+            "category": issue.category,
             "message": issue.message,
             "evidence": issue.evidence,
         }
         for issue in issues
     ]
 
-    selected_sequences = []
-
-    for config in configs:
-        selected_sequences.append({
-            "sequence": config.sequence,
-            "step_role": config.role,
-            "set_order": config.set_order,
-            "manual": bool(getattr(config, "manual", False)),
-            "control": bool(getattr(config, "control", False)),
-            "hardware_mode": normalize_hardware_mode(config.hardware_mode),
-            "channel_count": get_sequence_batch_size(config),
-            "channel_pattern": config.channel_pattern,
-            "sequence_count": config.sequence_count,
-            "volume_ul": config.volume_ul if config.role in ("aspirate", "dispense") else "",
-            "liquid_class": config.liquid_class if config.role in ("aspirate", "dispense") else "",
-            "transfer_type": config.transfer_type,
-            "replicate": config.replicate,
-            "marker": config.marker,
-        })
-
-    normalized_execution_plan = []
-
-    for item in execution_plan:
-        normalized_item = dict(item)
-        normalized_item["action"] = humanize_type(normalized_item.get("action", ""))
-        normalized_item["hardware_mode"] = normalize_hardware_mode(normalized_item.get("hardware_mode", "channels"))
-
-        if "labware_format" in normalized_item:
-            normalized_item["labware_format"] = humanize_type(normalized_item.get("labware_format", ""))
-
-        normalized_execution_plan.append(normalized_item)
-
-    normalized_layout_findings = []
-
-    for item in layout_findings:
-        if isinstance(item, dict):
-            normalized_item = dict(item)
-            if "type" in normalized_item:
-                normalized_item["type"] = humanize_type(normalized_item["type"])
-            normalized_layout_findings.append(normalized_item)
-        else:
-            normalized_layout_findings.append(item)
-
-    normalized_trace_findings = []
-
-    for item in trace_findings:
-        if isinstance(item, dict):
-            normalized_item = dict(item)
-            if "type" in normalized_item:
-                normalized_item["type"] = humanize_type(normalized_item["type"])
-            normalized_trace_findings.append(normalized_item)
-        else:
-            normalized_trace_findings.append(item)
-
     return DevPalLiteOutput(
         lay_file=lay_file,
         layout_file=layout_file,
         trace_file=trace_file,
-        selected_sequences=selected_sequences,
+        selected_sequences=[asdict(config) for config in configs],
         source_positions=source_positions,
         destination_positions=destination_positions,
         transfer_pairs=[asdict(pair) for pair in pairs],
-        execution_plan=normalized_execution_plan,
+        execution_plan=execution_plan,
         marker_matches=marker_matches,
-        layout_findings=normalized_layout_findings,
-        trace_findings=normalized_trace_findings,
+        layout_findings=layout_findings,
+        trace_findings=trace_findings,
         validation_findings=validation_findings,
         issues=validation_findings,
         limitations=limitations,
@@ -3540,7 +3127,7 @@ def run_pyhamilton_simulation(
         item: Dict[str, Any],
         lay_metadata: Dict[str, Dict[str, Any]],
     ) -> str:
-        for key in ("labware_name", "resolved_labware_name", "trace_or_method_labware", "deck_resource", "resource_name"):
+        for key in ("labware_name", "trace_or_method_labware", "deck_resource", "resource_name"):
             value = str(item.get(key) or "").strip()
             if value and value.lower() not in {"unknown", "none", "nan"}:
                 return value
@@ -3560,9 +3147,6 @@ def run_pyhamilton_simulation(
 
         return seq
 
-    def should_assign_labware_for_action(action: str, head_size: int) -> bool:
-        return action in {"aspirate", "dispense"} and bool(head_size)
-
     run_start_time = time.time()
     lay_metadata = parse_lay_sequence_metadata(lay_path)
     resource_cache = {}
@@ -3577,29 +3161,25 @@ def run_pyhamilton_simulation(
             for item in execution_plan:
                 action = str(item.get("action") or "").strip()
                 seq = str(item.get("sequence") or "").strip()
-                mode = normalize_hardware_mode(item.get("hardware_mode") or "channels")
-                head_size = get_head_size_from_mode(mode)
+                mode = str(item.get("hardware_mode") or "channels").strip().lower()
 
-                try:
-                    channel = normalize_assigned_channel_pattern(
-                        item.get("channel_pattern") or "",
-                        mode,
-                    )
-                except Exception:
-                    channel = normalize_assigned_channel_pattern(
-                        "111111111111",
-                        "channels",
-                    )
+                if mode == "stamp":
+                    mode = "head"
+
+                channel = normalize_assigned_channel_pattern(
+                    item.get("channel_pattern") or "111111111111",
+                    mode,
+                )
 
                 volume = float(item.get("volume_ul") or 0)
                 liquid_class = str(item.get("liquid_class") or "").strip()
+
                 labware_name = get_plan_labware_name(item, lay_metadata)
 
+                resource_cache_key = str(labware_name or seq).strip().lower()
                 labware_resource = None
 
-                if should_assign_labware_for_action(action, head_size):
-                    resource_cache_key = str(labware_name or seq).strip().lower()
-
+                if action in {"aspirate", "dispense"}:
                     if resource_cache_key not in resource_cache:
                         resource_cache[resource_cache_key] = assign_sequence_labware_resource(
                             layout_manager,
@@ -3614,34 +3194,31 @@ def run_pyhamilton_simulation(
                     f"action={action} "
                     f"sequence={seq} "
                     f"hardware={mode} "
-                    f"head_size={head_size or 'n/a'} "
                     f"labware={labware_name or 'unknown'} "
-                    f"channel_count={channel.count('1') if channel else 0} "
+                    f"channel={channel} "
                     f"liquid_class={liquid_class}"
                 )
 
                 if (
-                    item.get("autoincrement")
-                    and action in {"aspirate", "dispense"}
-                    and not bool(item.get("manual"))
+                        item.get("autoincrement")
+                        and action in {"aspirate", "dispense"}
+                        and not bool(item.get("manual"))
                 ):
-                    increment_amount = int(item.get("increment") or channel.count("1") or 1)
+                    increment_amount = int(item.get("increment") or count_active_channels(channel))
                     print(f"AUTO-INCREMENTING SEQUENCE {seq} BY {increment_amount}")
                     ph_inc_sequence(
                         ham_int,
                         sequence=seq,
                         increment=increment_amount,
                     )
-
                 elif bool(item.get("manual")):
                     print(f"MANUAL SEQUENCE MODE: {seq} will not auto-increment.")
 
                 if action == "tip_pick":
-                    if head_size:
-                        ph_tip_pick_up_head_seq(
+                    if mode == "head":
+                        ph_tip_pick_up_96_seq(
                             ham_int,
-                            tip_seq=seq,
-                            head_size=head_size,
+                            tip96_seq=seq,
                         )
                     else:
                         ph_tip_pick_up_seq(
@@ -3651,21 +3228,21 @@ def run_pyhamilton_simulation(
                         )
 
                 elif action == "aspirate":
-                    if head_size:
+                    if mode == "head":
                         if labware_resource is None:
                             raise RuntimeError(
                                 f"Could not assign head aspirate labware resource for sequence '{seq}' "
                                 f"using labware '{labware_name}'."
                             )
 
-                        ph_aspirate_head_seq(
+                        ph_aspirate_96_seq(
                             ham_int,
-                            plate=labware_resource,
+                            plate96=labware_resource,
                             head_asp_seq=seq,
                             vols=volume,
                             liq_class=liquid_class,
-                            head_size=head_size,
                         )
+
                     else:
                         ph_aspirate_seq(
                             ham_int,
@@ -3676,21 +3253,21 @@ def run_pyhamilton_simulation(
                         )
 
                 elif action == "dispense":
-                    if head_size:
+                    if mode == "head":
                         if labware_resource is None:
                             raise RuntimeError(
                                 f"Could not assign head dispense labware resource for sequence '{seq}' "
                                 f"using labware '{labware_name}'."
                             )
 
-                        ph_dispense_head_seq(
+                        ph_dispense_96_seq2(
                             ham_int,
-                            plate=labware_resource,
+                            plate96=labware_resource,
                             head_disp_seq=seq,
                             vols=volume,
                             liq_class=liquid_class,
-                            head_size=head_size,
                         )
+
                     else:
                         ph_dispense_seq(
                             ham_int,
@@ -3701,11 +3278,8 @@ def run_pyhamilton_simulation(
                         )
 
                 elif action == "tip_eject":
-                    if head_size:
-                        ph_tip_eject_head(
-                            ham_int,
-                            head_size=head_size,
-                        )
+                    if mode == "head":
+                        ph_tip_eject_96(ham_int)
                     else:
                         ph_tip_eject_seq2(
                             ham_int,
@@ -4340,10 +3914,10 @@ class DevPalLiteApp:
             sequence_count = int(sequence_counts.get(sequence_name, 0) or 0)
 
             default_hardware = detect_hardware_mode(sequence_name, "").lower()
-            if default_hardware not in CHANNEL_MODE_OPTIONS:
+            if default_hardware not in ("channels", "head"):
                 default_hardware = "channels"
 
-            default_channel_pattern = normalize_assigned_channel_pattern("", default_hardware) if default_hardware in {"head96", "head384"} else "111111111111"
+            default_channel_pattern = "1" * 96 if default_hardware == "head" else "111111111111"
 
             use_var = tk.IntVar(value=0)
             control_var = tk.IntVar(value=0)
@@ -4426,7 +4000,7 @@ class DevPalLiteApp:
             hardware_combo = ttk.Combobox(
                 sequence_frame,
                 textvariable=hardware_var,
-                values=CHANNEL_MODE_OPTIONS,
+                values=["channels", "head"],
                 width=10,
                 state="readonly",
             )
@@ -4446,19 +4020,17 @@ class DevPalLiteApp:
                 hardware = self.sequence_hardware_vars[seq].get().strip().lower()
 
                 detected = detect_hardware_mode(seq, role).lower()
-                if detected in CHANNEL_MODE_OPTIONS:
+                if detected in ("channels", "head"):
                     hardware = detected
                     self.sequence_hardware_vars[seq].set(hardware)
 
                 current_pattern = self.sequence_channel_vars[seq].get().strip()
 
-                mode = normalize_hardware_mode(hardware)
-                if mode in {"head96", "head384"}:
-                    expected_pattern = normalize_assigned_channel_pattern("", mode)
-                    if current_pattern != expected_pattern:
-                        self.sequence_channel_vars[seq].set(expected_pattern)
+                if hardware == "head":
+                    if not current_pattern or len(current_pattern) != 96:
+                        self.sequence_channel_vars[seq].set("1" * 96)
                 else:
-                    if not current_pattern or len(current_pattern) not in VALID_CHANNEL_PATTERN_LENGTHS:
+                    if not current_pattern or len(current_pattern) == 96:
                         self.sequence_channel_vars[seq].set("111111111111")
 
             role_combo.bind("<<ComboboxSelected>>", on_role_or_hardware_change)
@@ -4505,7 +4077,7 @@ class DevPalLiteApp:
         except Exception:
             pass
 
-    def collect_configs(self) -> Optional[List[SequenceStepConfig]]:
+    def collect_configs(self) -> List[SequenceStepConfig]:
         configs = []
 
         marker = self.marker_var.get().strip().upper()
@@ -4520,40 +4092,9 @@ class DevPalLiteApp:
         ]
 
         if not selected_sequences:
-            return []
+            return None
 
         use_set_order = len(selected_sequences) > 3 or variant_mode
-
-        raw_volume_text = self.volume_var.get().strip()
-
-        if not raw_volume_text:
-            messagebox.showerror("Invalid Volume", "Volume is required.")
-            return None
-
-        try:
-            volume_values = [
-                float(value.strip())
-                for value in raw_volume_text.split(",")
-                if value.strip()
-            ]
-        except Exception:
-            messagebox.showerror(
-                "Invalid Volume",
-                "Volume must be numeric. For multiple sets, separate volumes with commas, such as 100, 200.",
-            )
-            return None
-
-        if not volume_values:
-            messagebox.showerror("Invalid Volume", "Volume is required.")
-            return None
-
-        for volume in volume_values:
-            if volume <= 0 or volume > 1000:
-                messagebox.showerror(
-                    "Invalid Volume",
-                    f"Volume must be between 1 and 1000 uL. Invalid value: {volume}",
-                )
-                return None
 
         selected_set_numbers = []
 
@@ -4588,40 +4129,89 @@ class DevPalLiteApp:
 
         required_set_count = max(selected_set_numbers) if selected_set_numbers else 1
 
-        if len(volume_values) not in {1, required_set_count}:
-            messagebox.showerror(
-                "Volume / Set Mismatch",
-                (
-                    f"You entered {len(volume_values)} volume value(s), but the selected sequences use "
-                    f"{required_set_count} set(s).\n\n"
-                    "Enter one volume to use for all sets, or enter one comma-separated volume per set."
-                ),
-            )
+        raw_volume_text = self.volume_var.get().strip()
+
+        if not raw_volume_text:
+            messagebox.showerror("Missing Volume", "Enter a volume.")
             return None
 
-        if required_set_count > 1 and len(self.set_liquid_classes) < required_set_count:
+        volume_parts = [
+            part.strip()
+            for part in raw_volume_text.split(",")
+            if part.strip()
+        ]
+
+        if not volume_parts:
+            messagebox.showerror("Missing Volume", "Enter at least one volume.")
+            return None
+
+        set_volumes = []
+
+        for part in volume_parts:
+            try:
+                volume_value = float(part)
+            except Exception:
+                messagebox.showerror(
+                    "Invalid Volume",
+                    f"Volume must be numeric. Invalid value: {part}",
+                )
+                return None
+
+            if volume_value <= 0 or volume_value > 1000:
+                messagebox.showerror(
+                    "Invalid Volume",
+                    f"Volume must be between 1 and 1000 uL. Invalid value: {volume_value}",
+                )
+                return None
+
+            set_volumes.append(volume_value)
+
+        if len(set_volumes) == 1:
+            set_volumes = set_volumes * required_set_count
+        elif len(set_volumes) < required_set_count:
             messagebox.showerror(
-                "Missing Set Liquid Classes",
+                "Missing Set Volumes",
                 (
                     f"You have {required_set_count} set(s), but only "
-                    f"{len(self.set_liquid_classes)} liquid class assignment(s).\n\n"
-                    "Select each liquid class in order and click 'Add LC to Next Set'."
+                    f"{len(set_volumes)} volume value(s).\n\n"
+                    "Enter one volume to use for all sets, or enter one comma-separated "
+                    "volume per set in order, such as: 100, 200."
+                ),
+            )
+            return None
+        elif len(set_volumes) > required_set_count:
+            messagebox.showerror(
+                "Too Many Set Volumes",
+                (
+                    f"You entered {len(set_volumes)} volume value(s), but only "
+                    f"{required_set_count} set(s) were detected.\n\n"
+                    "Enter one volume to use for all sets, or enter one comma-separated "
+                    "volume per set in order."
                 ),
             )
             return None
 
-        lay_metadata = parse_lay_sequence_metadata(self.lay_path) if self.lay_path else {}
+        if required_set_count > 1:
+            if len(self.set_liquid_classes) < required_set_count:
+                messagebox.showerror(
+                    "Missing Set Liquid Classes",
+                    (
+                        f"You have {required_set_count} set(s), but only "
+                        f"{len(self.set_liquid_classes)} liquid class assignment(s).\n\n"
+                        "Select each liquid class in order and click 'Add LC to Next Set'."
+                    ),
+                )
+                return None
 
         for selected_index, sequence_name in enumerate(selected_sequences):
             role = self.sequence_role_vars[sequence_name].get().strip()
-            raw_channel_pattern = self.sequence_channel_vars[sequence_name].get().strip()
-            hardware_mode = normalize_hardware_mode(self.sequence_hardware_vars[sequence_name].get())
+            channel_pattern = self.sequence_channel_vars[sequence_name].get().strip()
+            hardware_mode = self.sequence_hardware_vars[sequence_name].get().strip().lower()
             manual = bool(self.sequence_manual_vars[sequence_name].get())
 
-            if hasattr(self, "sequence_control_vars") and sequence_name in self.sequence_control_vars:
-                control = bool(self.sequence_control_vars[sequence_name].get())
-            else:
-                control = False
+            control = False
+            if hasattr(self, "sequence_control_vars"):
+                control = bool(self.sequence_control_vars.get(sequence_name, tk.IntVar(value=0)).get())
 
             try:
                 sequence_count = int(self.sequence_count_vars[sequence_name].get())
@@ -4633,10 +4223,7 @@ class DevPalLiteApp:
             if use_set_order:
                 set_order = int(self.sequence_set_vars[sequence_name].get().strip())
 
-            if len(volume_values) == 1:
-                volume_ul = volume_values[0]
-            else:
-                volume_ul = volume_values[set_order - 1]
+            volume_ul = set_volumes[set_order - 1] if set_order <= len(set_volumes) else set_volumes[0]
 
             if role in ("aspirate", "dispense"):
                 if self.set_liquid_classes:
@@ -4667,36 +4254,55 @@ class DevPalLiteApp:
             else:
                 liquid_class = ""
 
-            try:
-                if hardware_mode in {"head96", "head384"}:
-                    channel_pattern = normalize_assigned_channel_pattern("", hardware_mode)
-                else:
-                    channel_pattern = normalize_assigned_channel_pattern(raw_channel_pattern, "channels")
-            except Exception as exc:
+            if hardware_mode == "stamp":
+                hardware_mode = "head"
+
+            if hardware_mode == "head":
+                if not channel_pattern or len(channel_pattern) != 96:
+                    channel_pattern = "1" * 96
+            else:
+                if not re.match(r"^(?:[01]{8}|[01]{12}|[01]{14}|[01]{16})$", channel_pattern):
+                    messagebox.showerror(
+                        "Invalid Channel Pattern",
+                        f"{sequence_name} has invalid channel pattern.\nUse 8, 12, 14, or 16 digits of 0/1.",
+                    )
+                    return None
+
+            config = SequenceStepConfig(
+                sequence=sequence_name,
+                role=role,
+                liquid_class=liquid_class,
+                transfer_type=transfer_type,
+                replicate=replicate,
+                volume_ul=volume_ul,
+                marker=marker,
+                channel_pattern=channel_pattern,
+                hardware_mode=hardware_mode,
+                selected_index=selected_index,
+                sequence_count=sequence_count,
+                manual=manual,
+                set_order=set_order,
+                control=control,
+            )
+
+            configs.append(config)
+
+        control_by_set = defaultdict(list)
+
+        for config in configs:
+            if bool(getattr(config, "control", False)):
+                control_by_set[int(config.set_order)].append(config)
+
+        for set_order, controls in sorted(control_by_set.items()):
+            if len(controls) > 1:
                 messagebox.showerror(
-                    "Invalid Channel Pattern",
-                    f"{sequence_name} has invalid channel pattern.\n\n{exc}",
+                    "Invalid Control Selection",
+                    (
+                        f"Set {set_order} has more than one Control sequence checked.\n\n"
+                        "Only one sequence per set can be the controlling loop sequence."
+                    ),
                 )
                 return None
-
-            configs.append(
-                SequenceStepConfig(
-                    sequence=sequence_name,
-                    role=role,
-                    liquid_class=liquid_class,
-                    transfer_type=transfer_type,
-                    replicate=replicate,
-                    volume_ul=volume_ul,
-                    marker=marker,
-                    channel_pattern=channel_pattern,
-                    hardware_mode=hardware_mode,
-                    selected_index=selected_index,
-                    sequence_count=sequence_count,
-                    manual=manual,
-                    set_order=set_order,
-                    control=control,
-                )
-            )
 
         validation_error = validate_step_sets(configs, variant_mode, use_set_order)
 
@@ -4704,7 +4310,12 @@ class DevPalLiteApp:
             messagebox.showerror("Invalid Step Sets", validation_error)
             return None
 
-        tip_issues = validate_tip_volume_rules(configs, lay_metadata)
+        lay_metadata = parse_lay_sequence_metadata(self.lay_path)
+
+        tip_issues = validate_tip_volume_rules(
+            configs,
+            lay_metadata,
+        )
 
         if tip_issues:
             messagebox.showerror(
