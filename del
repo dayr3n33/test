@@ -1,1 +1,1135 @@
+import sys
+import os
+import re
+import logging
+from threading import Thread
 
+from .interface import HamiltonInterface
+from .deckresource import LayoutManager, ResourceType, Plate24, Plate96, Tip96
+from .oemerr import PositionError
+from .interface import (
+    INITIALIZE,
+    PICKUP,
+    EJECT,
+    ASPIRATE,
+    DISPENSE,
+    ISWAP_GET,
+    ISWAP_PLACE,
+    HEPA,
+    WASH96_EMPTY,
+    PICKUP96,
+    EJECT96,
+    ASPIRATE96,
+    DISPENSE96,
+    ISWAP_MOVE,
+    MOVE_SEQ,
+    SEQINCREMENT,
+    TILT_INIT,
+    TILT_MOVE,
+    GRIP_GET,
+    GRIP_MOVE,
+    GRIP_PLACE,
+    SET_ASP_PARAM,
+    SET_DISP_PARAM,
+)
+from .liquid_class_dict import liquidclass_params_asp, liquidclass_params_dsp
+
+
+max_channels = 16
+
+_channel_patt_8 = "1" * 8
+_channel_patt_12 = "1" * 12
+_channel_patt_14 = "1" * 14
+_channel_patt_16 = "1" * 16
+_channel_patt_96 = "1" * 96
+_channel_patt_384 = "1" * 384
+_channel_patt_6 = "1" * 6 + "0" * 6
+
+default_liq_class = "HighVolumeFilter_Water_DispenseJet_Empty_with_transport_vol"
+
+
+def _get_optional_interface_command(name, fallback=None):
+    try:
+        import pyhamilton.interface as interface_module
+        return getattr(interface_module, name, fallback or name)
+    except Exception:
+        return fallback or name
+
+
+PICKUP384 = _get_optional_interface_command("PICKUP384", "PICKUP384")
+EJECT384 = _get_optional_interface_command("EJECT384", "EJECT384")
+ASPIRATE384 = _get_optional_interface_command("ASPIRATE384", "ASPIRATE384")
+DISPENSE384 = _get_optional_interface_command("DISPENSE384", "DISPENSE384")
+
+
+def normalize_channel_pattern(channel, allowed=(8, 12, 14, 16)):
+    pattern = str(channel or "").strip()
+
+    if not pattern:
+        raise ValueError("Channel pattern is required.")
+
+    if not re_match_binary(pattern):
+        raise ValueError(f"Invalid channel pattern: {pattern}")
+
+    if len(pattern) not in allowed:
+        raise ValueError(
+            f"Invalid channel pattern length {len(pattern)}. "
+            f"Allowed channel-mode lengths are {allowed}."
+        )
+
+    if "1" not in pattern:
+        raise ValueError("Channel pattern must contain at least one active channel.")
+
+    return pattern
+
+
+def re_match_binary(pattern):
+    return all(char in {"0", "1"} for char in str(pattern))
+
+
+def normalize_head_size(head_size):
+    try:
+        head_size = int(head_size)
+    except Exception:
+        head_size = 96
+
+    if head_size not in {96, 384}:
+        raise ValueError(f"Unsupported head size: {head_size}. Use 96 or 384.")
+
+    return head_size
+
+
+def normalize_head_pattern(head_size):
+    head_size = normalize_head_size(head_size)
+
+    if head_size == 96:
+        return _channel_patt_96
+
+    if head_size == 384:
+        return _channel_patt_384
+
+    raise ValueError(f"Unsupported head size: {head_size}")
+
+
+def command_for_head(base_command, head_size):
+    head_size = normalize_head_size(head_size)
+
+    if head_size == 96:
+        if base_command == "pickup":
+            return PICKUP96
+        if base_command == "eject":
+            return EJECT96
+        if base_command == "aspirate":
+            return ASPIRATE96
+        if base_command == "dispense":
+            return DISPENSE96
+
+    if head_size == 384:
+        if base_command == "pickup":
+            return PICKUP384
+        if base_command == "eject":
+            return EJECT384
+        if base_command == "aspirate":
+            return ASPIRATE384
+        if base_command == "dispense":
+            return DISPENSE384
+
+    raise ValueError(f"Unsupported head command: {base_command}, head_size={head_size}")
+
+
+def resource_list_with_prefix(layout_manager, prefix, res_class, num_ress, order_key=None, reverse=False):
+    def name_from_line(line):
+        field = LayoutManager.layline_objid(line)
+        if field:
+            return field
+        return LayoutManager.layline_first_field(line)
+
+    layline_test = lambda line: LayoutManager.field_starts_with(name_from_line(line), prefix)
+    res_type = ResourceType(res_class, layline_test, name_from_line)
+    return [
+        layout_manager.assign_unused_resource(res_type, order_key=order_key, reverse=reverse)
+        for _ in range(num_ress)
+    ]
+
+
+def layout_item(lmgr, item_class, item_name):
+    return lmgr.assign_unused_resource(ResourceType(item_class, item_name))
+
+
+def labware_pos_str(labware, idx):
+    return labware.layout_name() + ", " + labware.position_id(idx)
+
+
+def compound_pos_str(pos_tuples):
+    present_pos_tups = [pt for pt in pos_tuples if pt is not None]
+    return ";".join((labware_pos_str(labware, idx) for labware, idx in present_pos_tups))
+
+
+def compound_pos_str_head(labware, head_size=96):
+    head_size = normalize_head_size(head_size)
+    return ";".join((labware_pos_str(labware, idx) for idx in range(head_size)))
+
+
+def compound_pos_str_96(labware96):
+    return compound_pos_str_head(labware96, 96)
+
+
+def initialize(ham, asynch=False):
+    logging.info("initialize: " + ("a" if asynch else "") + "synchronously initialize the robot")
+    cmd = ham.send_command(INITIALIZE)
+    if not asynch:
+        ham.wait_on_response(cmd, raise_first_exception=True, timeout=300)
+    return cmd
+
+
+def hepa_on(ham, speed=15, asynch=False, **more_options):
+    logging.info(
+        "hepa_on: turn on HEPA filter at "
+        + str(speed)
+        + "% capacity"
+        + ("" if not more_options else " with extra options " + str(more_options))
+    )
+    cmd = ham.send_command(HEPA, fanSpeed=speed, **more_options)
+    if not asynch:
+        ham.wait_on_response(cmd, raise_first_exception=True)
+    return cmd
+
+
+def wash_empty_refill(ham, asynch=False, **more_options):
+    logging.info(
+        "wash_empty_refill: empty the washer"
+        + ("" if not more_options else " with extra options " + str(more_options))
+    )
+    cmd = ham.send_command(WASH96_EMPTY, **more_options)
+    if not asynch:
+        ham.wait_on_response(cmd, raise_first_exception=True)
+    return cmd
+
+
+def move_plate(ham, source_plate, target_plate, CmplxGetDict=None, CmplxPlaceDict=None, **more_options):
+    logging.info("move_plate: Moving plate " + source_plate.layout_name() + " to " + target_plate.layout_name())
+
+    src_pos = labware_pos_str(source_plate, 0)
+    trgt_pos = labware_pos_str(target_plate, 0)
+    try_inversions = (0, 1)
+
+    getCmplxMvmnt, getRetractDist, getLiftUpHeight, getOrientation = (0, 0.0, 20.0, 1)
+    placeCmplxMvmnt, placeRetractDist, placeLiftUpHeight, placeOrientation = (0, 0.0, 20.0, 1)
+
+    if CmplxGetDict:
+        getCmplxMvmnt = 1
+        getRetractDist = CmplxGetDict["retractDist"]
+        getLiftUpHeight = CmplxGetDict["liftUpHeight"]
+        getOrientation = CmplxGetDict["labwareOrientation"]
+
+    if CmplxPlaceDict:
+        placeCmplxMvmnt = 1
+        placeRetractDist = CmplxPlaceDict["retractDist"]
+        placeLiftUpHeight = CmplxPlaceDict["liftUpHeight"]
+        placeOrientation = CmplxPlaceDict["labwareOrientation"]
+
+    for inv in try_inversions:
+        cid = ham.send_command(
+            ISWAP_GET,
+            plateLabwarePositions=src_pos,
+            inverseGrip=inv,
+            movementType=getCmplxMvmnt,
+            retractDistance=getRetractDist,
+            liftUpHeight=getLiftUpHeight,
+            labwareOrientation=getOrientation,
+            **more_options,
+        )
+        try:
+            ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+            break
+        except PositionError:
+            print("trying inverse")
+            pass
+
+    cid = ham.send_command(
+        ISWAP_PLACE,
+        plateLabwarePositions=trgt_pos,
+        movementType=placeCmplxMvmnt,
+        retractDistance=placeRetractDist,
+        liftUpHeight=placeLiftUpHeight,
+        labwareOrientation=placeOrientation,
+    )
+
+    try:
+        ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+    except PositionError:
+        raise IOError
+
+
+def move_by_seq(ham, source_plate_seq, target_plate_seq, grip_height=0, try_inversions=None, gripForce=2):
+    logging.info("move_lid_by_seq: Moving plate " + source_plate_seq + " to " + target_plate_seq)
+
+    if try_inversions is None:
+        try_inversions = (0, 1)
+
+    for inv in try_inversions:
+        cid = ham.send_command(
+            ISWAP_GET,
+            plateSequence=source_plate_seq,
+            gripHeight=grip_height,
+            gripForce=gripForce,
+            inverseGrip=inv,
+            transportMode=0,
+            widthBefore=132,
+        )
+        try:
+            ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+            break
+        except PositionError:
+            pass
+    else:
+        raise IOError
+
+    cid = ham.send_command(ISWAP_PLACE, plateSequence=target_plate_seq)
+
+    try:
+        ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+    except PositionError:
+        raise IOError
+
+
+def channel_var(pos_tuples):
+    if len(pos_tuples) > max_channels:
+        raise ValueError(f"Can only use up to {max_channels} channels.")
+
+    ch_var = ["0"] * len(pos_tuples)
+
+    for i, pos_tup in enumerate(pos_tuples):
+        if pos_tup is not None:
+            ch_var[i] = "1"
+
+    pattern = "".join(ch_var)
+    return normalize_channel_pattern(pattern)
+
+
+def _volumes_for_present_positions(pos_tuples, vols):
+    if isinstance(vols, (int, float, str)):
+        return vols
+
+    return [v for pt, v in zip(pos_tuples, vols) if pt is not None and v is not None]
+
+
+def tip_pick_up(ham_int, pos_tuples, ch_patt=None, **more_options):
+    if len(pos_tuples) > max_channels:
+        raise ValueError(f"Can only pick up {max_channels} tips at a time")
+
+    ch_patt = normalize_channel_pattern(ch_patt or channel_var(pos_tuples))
+    labware_poss = compound_pos_str(pos_tuples)
+
+    logging.info(
+        "tip_pick_up: Pick up tips at "
+        + "; ".join((labware_pos_str(*pt) if pt else "(skip)" for pt in pos_tuples))
+        + ("" if not more_options else " with extra options " + str(more_options))
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            PICKUP,
+            labwarePositions=labware_poss,
+            channelVariable=ch_patt,
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_pick_up2(ham_int, pos_tuples, **more_options):
+    return tip_pick_up(ham_int, pos_tuples, None, **more_options)
+
+
+def tip_pick_up_seq(ham_int, tipseq, channel=_channel_patt_12, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("tip_seq" + str(tipseq))
+    tid = ham_int.send_command(
+        PICKUP,
+        tipSequence=tipseq,
+        channelVariable=channel,
+        sequenceCounting=1,
+        **more_options,
+    )
+    ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)
+
+
+def tip_pick_up_seq2(ham_int, tipseq, channel, **more_options):
+    return tip_pick_up_seq(ham_int, tipseq, channel=channel, **more_options)
+
+
+def tip_eject_seq(ham_int, waste_seq, channel=_channel_patt_12, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("waste_seq" + str(waste_seq))
+    jid = ham_int.send_command(
+        EJECT,
+        wasteSequence=waste_seq,
+        channelVariable=channel,
+        sequenceCounting=1,
+        **more_options,
+    )
+    ham_int.wait_on_response(jid, raise_first_exception=True, timeout=120)
+
+
+def tip_eject_seq2(ham_int, waste_seq, channel=_channel_patt_12, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("waste_seq" + str(waste_seq))
+    jid = ham_int.send_command(
+        EJECT,
+        wasteSequence=waste_seq,
+        channelVariable=channel,
+        sequenceCounting=0,
+        **more_options,
+    )
+    ham_int.wait_on_response(jid, raise_first_exception=True, timeout=120)
+
+
+def tip_eject(ham_int, pos_tuples=None, **more_options):
+    if pos_tuples is None:
+        logging.info(
+            "tip_eject: Eject tips to default waste"
+            + ("" if not more_options else " with extra options " + str(more_options))
+        )
+        more_options["useDefaultWaste"] = 1
+        dummy = Tip96("")
+        pos_tuples = [(dummy, 0)] * 8
+    else:
+        logging.info(
+            "tip_eject: Eject tips to "
+            + "; ".join((labware_pos_str(*pt) if pt else "(skip)" for pt in pos_tuples))
+            + ("" if not more_options else " with extra options " + str(more_options))
+        )
+
+    if len(pos_tuples) > max_channels:
+        raise ValueError(f"Can only eject up to {max_channels} tips")
+
+    ch_patt = channel_var(pos_tuples)
+    labware_poss = compound_pos_str(pos_tuples)
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            EJECT,
+            labwarePositions=labware_poss,
+            channelVariable=ch_patt,
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_eject2(ham_int, waste_seq, pos_tuples=None, **more_options):
+    if pos_tuples is None:
+        more_options["useDefaultWaste"] = 0
+        dummy = Tip96("")
+        pos_tuples = [(dummy, 0)] * 12
+
+    channel = channel_var(pos_tuples)
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            EJECT,
+            wasteSequence=waste_seq,
+            labwarePositions="",
+            channelVariable=channel,
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_eject3(ham_int, waste_seq, channels, pos_tuples=None, **more_options):
+    channels = normalize_channel_pattern(channels)
+
+    if pos_tuples is None:
+        more_options["useDefaultWaste"] = 0
+        dummy = Tip96("")
+        pos_tuples = [(dummy, 0)] * channels.count("1")
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            EJECT,
+            wasteSequence=waste_seq,
+            labwarePositions="",
+            channelVariable=channels,
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_eject4(ham_int, waste_seq, **more_options):
+    jid = ham_int.send_command(EJECT, wasteSequence=waste_seq, sequenceCounting=1, **more_options)
+    ham_int.wait_on_response(jid, raise_first_exception=True, timeout=120)
+
+
+def assert_parallel_nones(list1, list2):
+    if isinstance(list2, (int, float, str)):
+        return
+
+    if not (
+        len(list1) == len(list2)
+        and all([(i1 is None) == (i2 is None) for i1, i2 in zip(list1, list2)])
+    ):
+        raise ValueError("Lists must have parallel None entries")
+
+
+def aspirate(ham_int, pos_tuples, vols, **more_options):
+    assert_parallel_nones(pos_tuples, vols)
+
+    if len(pos_tuples) > max_channels:
+        raise ValueError(f"Can only aspirate with {max_channels} channels at a time")
+
+    if "liquidClass" not in more_options:
+        more_options.update({"liquidClass": default_liq_class})
+
+    logging.info(
+        "aspirate: Aspirate volumes "
+        + str(vols)
+        + " from positions ["
+        + "; ".join((labware_pos_str(*pt) if pt else "(skip)" for pt in pos_tuples))
+        + ("]" if not more_options else "] with extra options " + str(more_options))
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            ASPIRATE,
+            channelVariable=channel_var(pos_tuples),
+            labwarePositions=compound_pos_str(pos_tuples),
+            volumes=_volumes_for_present_positions(pos_tuples, vols),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def aspirate_seq(ham_int, asp_seq, vols, liq_class, channel=_channel_patt_12, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("aspirate: Aspirate volumes " + str(asp_seq) + " " + str(vols))
+
+    aid = ham_int.send_command(
+        ASPIRATE,
+        aspirateSequence=asp_seq,
+        labwarePositions="",
+        volumes=vols,
+        channelVariable=channel,
+        liquidClass=liq_class,
+        sequenceCounting=0,
+        capacitiveLLD=2,
+        **more_options,
+    )
+    ham_int.wait_on_response(aid, raise_first_exception=True, timeout=120)
+
+
+def aspirate_seq2(ham_int, asp_seq, vols, **more_options):
+    liq_class = more_options.pop("liq_class", "12C_SVT_Water_DispenseJet_Empty_V2_TADM")
+    return aspirate_seq(
+        ham_int,
+        asp_seq=asp_seq,
+        vols=vols,
+        liq_class=liq_class,
+        channel=_channel_patt_6,
+        **more_options,
+    )
+
+
+def aspirate_ch_seq(ham_int, asp_seq, vols, channel, lc, **more_options):
+    return aspirate_seq(
+        ham_int,
+        asp_seq=asp_seq,
+        vols=vols,
+        liq_class=lc,
+        channel=channel,
+        **more_options,
+    )
+
+
+def aspirate_ch_seq2(ham_int, asp_seq, vols, channel, lc, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("aspirate: Aspirate volumes " + str(asp_seq) + " " + str(vols))
+
+    aid = ham_int.send_command(
+        ASPIRATE,
+        aspirateSequence=asp_seq,
+        labwarePositions="",
+        volumes=vols,
+        channelVariable=channel,
+        liquidClass=lc,
+        sequenceCounting=1,
+        capacitiveLLD=2,
+        **more_options,
+    )
+    ham_int.wait_on_response(aid, raise_first_exception=True, timeout=120)
+
+
+def dispense_seq(ham_int, disp_seq, vols, liq_class, channel=_channel_patt_12, **more_options):
+    channel = normalize_channel_pattern(channel)
+    logging.info("dispense: Dispense volumes " + str(disp_seq) + " " + str(vols))
+
+    did = ham_int.send_command(
+        DISPENSE,
+        dispenseSequence=disp_seq,
+        labwarePositions="",
+        volumes=vols,
+        channelVariable=channel,
+        liquidClass=liq_class,
+        sequenceCounting=0,
+        channelUse=1,
+        **more_options,
+    )
+    ham_int.wait_on_response(did, raise_first_exception=True, timeout=120)
+
+
+def dispense_seq2(ham_int, disp_seq, vols, channel, **more_options):
+    liq_class = more_options.pop("liq_class", "12C_SVT_Water_DispenseJet_Empty_V2_TADM")
+    return dispense_seq(
+        ham_int,
+        disp_seq=disp_seq,
+        vols=vols,
+        liq_class=liq_class,
+        channel=channel,
+        sequenceCounting=1,
+        **more_options,
+    )
+
+
+def dispense_seq_countoff(ham_int, disp_seq, vols, channel, lc, **more_options):
+    return dispense_seq(
+        ham_int,
+        disp_seq=disp_seq,
+        vols=vols,
+        liq_class=lc,
+        channel=channel,
+        sequenceCounting=0,
+        **more_options,
+    )
+
+
+def dispense_seq3(ham_int, disp_seq, vols, lc, mixvol, **more_options):
+    return dispense_seq(
+        ham_int,
+        disp_seq=disp_seq,
+        vols=vols,
+        liq_class=lc,
+        channel="000000000111",
+        sequenceCounting=1,
+        mixCycles=10,
+        mixVolume=mixvol,
+        **more_options,
+    )
+
+
+def dispense(ham_int, pos_tuples, vols, **more_options):
+    assert_parallel_nones(pos_tuples, vols)
+
+    if len(pos_tuples) > max_channels:
+        raise ValueError(f"Can only dispense with {max_channels} channels at a time")
+
+    if "liquidClass" not in more_options:
+        more_options.update({"liquidClass": default_liq_class})
+
+    logging.info(
+        "dispense: Dispense volumes "
+        + str(vols)
+        + " into positions ["
+        + "; ".join((labware_pos_str(*pt) if pt else "(skip)" for pt in pos_tuples))
+        + ("]" if not more_options else "] with extra options " + str(more_options))
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            DISPENSE,
+            channelVariable=channel_var(pos_tuples),
+            labwarePositions=compound_pos_str(pos_tuples),
+            volumes=_volumes_for_present_positions(pos_tuples, vols),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_pick_up_head(ham_int, tip_head, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("pickup", head_size)
+
+    logging.info(
+        f"tip_pick_up_head: Pick up {head_size}-head tips at "
+        + tip_head.layout_name()
+        + ("" if not more_options else " with extra options " + str(more_options))
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            command,
+            labwarePositions=compound_pos_str_head(tip_head, head_size),
+            channelVariable=normalize_head_pattern(head_size),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_eject_head(ham_int, tip_head=None, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("eject", head_size)
+
+    logging.info(
+        f"tip_eject_head: Eject {head_size}-head tips to "
+        + (tip_head.layout_name() if tip_head else "default waste")
+        + ("" if not more_options else " with extra options " + str(more_options))
+    )
+
+    if tip_head is None:
+        labware_poss = ""
+        more_options.update({"tipEjectToKnownPosition": 2})
+    else:
+        labware_poss = compound_pos_str_head(tip_head, head_size)
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            command,
+            labwarePositions=labware_poss,
+            channelVariable=normalize_head_pattern(head_size),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def aspirate_head(ham_int, plate, vol, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("aspirate", head_size)
+
+    if "liquidClass" not in more_options:
+        more_options.update({"liquidClass": default_liq_class})
+
+    logging.info(
+        f"aspirate_head: Aspirate volume {vol} from {plate.layout_name()} using {head_size}-head"
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            command,
+            labwarePositions=compound_pos_str_head(plate, head_size),
+            aspirateVolume=vol,
+            channelVariable=normalize_head_pattern(head_size),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def dispense_head(ham_int, plate, vol, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("dispense", head_size)
+
+    if "liquidClass" not in more_options:
+        more_options.update({"liquidClass": default_liq_class})
+
+    logging.info(
+        f"dispense_head: Dispense volume {vol} into {plate.layout_name()} using {head_size}-head"
+    )
+
+    ham_int.wait_on_response(
+        ham_int.send_command(
+            command,
+            labwarePositions=compound_pos_str_head(plate, head_size),
+            dispenseVolume=vol,
+            channelVariable=normalize_head_pattern(head_size),
+            **more_options,
+        ),
+        raise_first_exception=True,
+    )
+
+
+def tip_pick_up_head_seq(ham_int, tip_seq, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("pickup", head_size)
+
+    tid = ham_int.send_command(
+        command,
+        tipSequence=tip_seq,
+        channelVariable=normalize_head_pattern(head_size),
+        sequenceCounting=1,
+        **more_options,
+    )
+    ham_int.wait_on_response(tid, raise_first_exception=True, timeout=120)
+
+
+def aspirate_head_seq(ham_int, plate, head_asp_seq, vols, liq_class, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("aspirate", head_size)
+
+    aid = ham_int.send_command(
+        command,
+        aspirateSequence=head_asp_seq,
+        labwarePositions="",
+        aspirateVolume=vols,
+        channelVariable=normalize_head_pattern(head_size),
+        liquidClass=liq_class,
+        sequenceCounting=0,
+        capacitiveLLD=2,
+        **more_options,
+    )
+    ham_int.wait_on_response(aid, raise_first_exception=True, timeout=120)
+
+
+def dispense_head_seq(ham_int, plate, head_disp_seq, vols, liq_class, head_size=96, **more_options):
+    head_size = normalize_head_size(head_size)
+    command = command_for_head("dispense", head_size)
+
+    did = ham_int.send_command(
+        command,
+        dispenseSequence=head_disp_seq,
+        labwarePositions="",
+        dispenseVolume=vols,
+        channelVariable=normalize_head_pattern(head_size),
+        liquidClass=liq_class,
+        sequenceCounting=0,
+        **more_options,
+    )
+    ham_int.wait_on_response(did, raise_first_exception=True, timeout=120)
+
+
+def tip_pick_up_96(ham_int, tip96, **more_options):
+    return tip_pick_up_head(ham_int, tip96, head_size=96, **more_options)
+
+
+def tip_eject_96(ham_int, tip96=None, **more_options):
+    return tip_eject_head(ham_int, tip96, head_size=96, **more_options)
+
+
+def aspirate_96(ham_int, plate96, vol, **more_options):
+    return aspirate_head(ham_int, plate96, vol, head_size=96, **more_options)
+
+
+def dispense_96(ham_int, plate96, vol, **more_options):
+    return dispense_head(ham_int, plate96, vol, head_size=96, **more_options)
+
+
+def tip_pick_up_96_seq(ham_int, tip96_seq, **more_options):
+    return tip_pick_up_head_seq(ham_int, tip96_seq, head_size=96, **more_options)
+
+
+def aspirate_96_seq(
+    ham_int,
+    plate96,
+    head_asp_seq,
+    vols,
+    liq_class2=None,
+    liq_class=None,
+    **more_options,
+):
+    return aspirate_head_seq(
+        ham_int,
+        plate96,
+        head_asp_seq,
+        vols,
+        liq_class or liq_class2 or default_liq_class,
+        head_size=96,
+        **more_options,
+    )
+
+
+def dispense_96_seq(
+    ham_int,
+    plate96,
+    head_disp_seq,
+    vols,
+    liq_class2=None,
+    liq_class=None,
+    **more_options,
+):
+    return dispense_head_seq(
+        ham_int,
+        plate96,
+        head_disp_seq,
+        vols,
+        liq_class or liq_class2 or default_liq_class,
+        head_size=96,
+        **more_options,
+    )
+
+
+def dispense_96_seq2(
+    ham_int,
+    plate96,
+    head_disp_seq,
+    vols=80.0,
+    liq_class="96H_SVT_Water_DispenseSurface_Empty_V2",
+    **more_options,
+):
+    return dispense_head_seq(
+        ham_int,
+        plate96,
+        head_disp_seq,
+        vols,
+        liq_class,
+        head_size=96,
+        **more_options,
+    )
+
+
+def tip_pick_up_384_seq(ham_int, tip384_seq, **more_options):
+    return tip_pick_up_head_seq(ham_int, tip384_seq, head_size=384, **more_options)
+
+
+def aspirate_384_seq(
+    ham_int,
+    plate384,
+    head_asp_seq,
+    vols,
+    liq_class2=None,
+    liq_class=None,
+    **more_options,
+):
+    return aspirate_head_seq(
+        ham_int,
+        plate384,
+        head_asp_seq,
+        vols,
+        liq_class or liq_class2 or default_liq_class,
+        head_size=384,
+        **more_options,
+    )
+
+
+def dispense_384_seq(
+    ham_int,
+    plate384,
+    head_disp_seq,
+    vols,
+    liq_class2=None,
+    liq_class=None,
+    **more_options,
+):
+    return dispense_head_seq(
+        ham_int,
+        plate384,
+        head_disp_seq,
+        vols,
+        liq_class or liq_class2 or default_liq_class,
+        head_size=384,
+        **more_options,
+    )
+
+
+def tip_eject_384(ham_int, tip384=None, **more_options):
+    return tip_eject_head(ham_int, tip384, head_size=384, **more_options)
+
+
+def set_aspirate_parameter(ham_int, LiquidClass, Parameter, Value):
+    param_key = liquidclass_params_asp[Parameter]
+    cid = ham_int.send_command(
+        SET_ASP_PARAM,
+        LiquidClass=LiquidClass,
+        Parameter=param_key,
+        Value=Value,
+    )
+    ham_int.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def set_dispense_parameter(ham_int, LiquidClass, Parameter, Value):
+    param_key = liquidclass_params_dsp[Parameter]
+    cid = ham_int.send_command(
+        SET_DISP_PARAM,
+        LiquidClass=LiquidClass,
+        Parameter=param_key,
+        Value=Value,
+    )
+    ham_int.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def move_sequence(ham_int, sequence, xDisplacement, yDisplacement, zDisplacement):
+    cid = ham_int.send_command(
+        MOVE_SEQ,
+        inputSequence=sequence,
+        xDisplacement=xDisplacement,
+        yDisplacement=yDisplacement,
+        zDisplacement=zDisplacement,
+    )
+    ham_int.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def inc_sequence(ham_int, sequence, increment):
+    sid = ham_int.send_command(SEQINCREMENT, sequenceObj=sequence, increment=increment)
+    ham_int.wait_on_response(sid, raise_first_exception=True, timeout=120)
+
+
+def tilt_module_initialize(ham_int, module_name, comport, trace_level, simulate):
+    cid = ham_int.send_command(
+        TILT_INIT,
+        ModuleName=module_name,
+        Comport=comport,
+        TraceLevel=trace_level,
+        Simulate=simulate,
+    )
+    ham_int.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def tilt_module_move(ham_int, module_name, angle):
+    cid = ham_int.send_command(TILT_MOVE, ModuleName=module_name, Angle=angle)
+    ham_int.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def get_plate_gripper_seq(
+    ham,
+    source_plate_seq,
+    gripHeight,
+    gripWidth,
+    openWidth,
+    lid,
+    tool_sequence,
+    **more_options,
+):
+    logging.info("get_plate: Getting plate " + source_plate_seq)
+
+    if lid:
+        cid = ham.send_command(
+            GRIP_GET,
+            plateSequence=source_plate_seq,
+            transportMode=1,
+            gripHeight=gripHeight,
+            gripWidth=gripWidth,
+            widthBefore=openWidth,
+            toolSequence=tool_sequence,
+            **more_options,
+        )
+    else:
+        cid = ham.send_command(
+            GRIP_GET,
+            plateSequence=source_plate_seq,
+            transportMode=0,
+            gripHeight=gripHeight,
+            gripWidth=gripWidth,
+            widthBefore=openWidth,
+            toolSequence=tool_sequence,
+            **more_options,
+        )
+
+    ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def move_plate_gripper_seq(ham, dest_plate_seq, **more_options):
+    logging.info("move_plate: Moving plate " + dest_plate_seq)
+    cid = ham.send_command(GRIP_MOVE, plateSequence=dest_plate_seq, **more_options)
+    ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def place_plate_gripper_seq(ham, dest_plate_seq, tool_sequence, **more_options):
+    logging.info("place_plate: Placing plate " + dest_plate_seq)
+    cid = ham.send_command(
+        GRIP_PLACE,
+        plateSequence=dest_plate_seq,
+        toolSequence=tool_sequence,
+        **more_options,
+    )
+    ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+def move_plate_gripper(ham, dest_poss, **more_options):
+    labware_poss = compound_pos_str(dest_poss)
+    cid = ham.send_command(GRIP_MOVE, plateLabwarePositions=labware_poss, **more_options)
+    ham.wait_on_response(cid, raise_first_exception=True, timeout=120)
+
+
+class StderrLogger:
+    def __init__(self, level):
+        self.level = level
+        self.stderr = sys.stderr
+
+    def write(self, message):
+        self.stderr.write(message)
+        if message.strip():
+            self.level(message.replace("\n", ""))
+
+    def flush(self):
+        try:
+            self.stderr.flush()
+        except Exception:
+            pass
+
+
+def add_stderr_logging(logger_name=None):
+    logger = logging.getLogger(logger_name)
+    sys.stderr = StderrLogger(logger.error)
+
+
+def normal_logging(ham_int, method_local_dir):
+    for handler in logging.root.handlers[:]:
+        print(handler)
+        logging.root.removeHandler(handler)
+
+    logging.getLogger("parse").setLevel(logging.CRITICAL)
+
+    local_log_dir = os.path.join(method_local_dir, "log")
+    if not os.path.exists(local_log_dir):
+        os.mkdir(local_log_dir)
+
+    main_logfile = os.path.join(local_log_dir, "main.log")
+    logging.basicConfig(
+        filename=main_logfile,
+        level=logging.DEBUG,
+        format="[%(asctime)s] %(name)s %(levelname)s %(message)s",
+    )
+
+    logger = logging.getLogger(__name__)
+    add_stderr_logging()
+
+    import __main__
+
+    for banner_line in log_banner("Begin execution of " + getattr(__main__, "__file__", "interactive")):
+        logging.info(banner_line)
+
+    ham_int.set_log_dir(os.path.join(local_log_dir, "hamilton.log"))
+
+
+def run_async(funcs):
+    def go():
+        try:
+            iter(funcs)
+        except TypeError:
+            funcs()
+            return
+
+        for func in funcs:
+            func()
+
+    func_thread = Thread(target=go, daemon=True)
+    func_thread.start()
+    return func_thread
+
+
+def run_async_dict(func):
+    logging.info("running async dictionary function")
+
+    def go():
+        func["function"](func["arguments"])
+        return
+
+    func_thread = Thread(target=go, daemon=True)
+    func_thread.start()
+    return func_thread
+
+
+def yield_in_chunks(sliceable, n):
+    sliceable = list(sliceable)
+    start_pos = 0
+    end_pos = n
+
+    while start_pos < len(sliceable):
+        yield sliceable[start_pos:end_pos]
+        start_pos, end_pos = end_pos, end_pos + n
+
+
+def log_banner(banner_text):
+    l = len(banner_text)
+    margin = 5
+    width = l + 2 * margin + 2
+    return [
+        "#" * width,
+        "#" + " " * (width - 2) + "#",
+        "#" + " " * margin + banner_text + " " * margin + "#",
+        "#" + " " * (width - 2) + "#",
+        "#" * width,
+    ]
