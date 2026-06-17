@@ -1,1 +1,132 @@
+def normalize_liquid_class_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+
+
+def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
+    if not method_path:
+        return []
+
+    method_path = os.path.abspath(method_path)
+    method_dir = os.path.dirname(method_path)
+
+    candidates = []
+
+    if os.path.isfile(method_path):
+        candidates.append(method_path)
+
+    for ext in ("*.hsl", "*.sub", "*.stp", "*.res", "*.lay", "*.med"):
+        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
+
+    candidates = sorted(set(candidates), key=str.lower)
+    found = set()
+
+    quoted_pattern = re.compile(r"[\"']([^\"']{4,180})[\"']")
+    lc_name_pattern = re.compile(
+        r"\b[A-Za-z0-9]+[A-Za-z0-9_ .\-+/()]*"
+        r"(?:_Water_|Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|TADM|HVT|SVT|LVT)"
+        r"[A-Za-z0-9_ .\-+/()]*\b",
+        re.IGNORECASE,
+    )
+
+    def add(value):
+        value = clean_control_chars(value)
+        value = value.strip("\"' ,;:=()[]{}")
+        value = re.sub(r"\s+", " ", value)
+
+        if not value or len(value) < 4 or len(value) > 180:
+            return
+
+        if re.search(
+            r"(water|serum|plasma|buffer|dmso|etoh|media|hvt|svt|lvt|tadm|dispense|aspirate|jet|surface|empty)",
+            value,
+            re.IGNORECASE,
+        ):
+            found.add(value)
+
+    for path in candidates:
+        text = read_text_file_best_effort(path)
+        if not text:
+            continue
+
+        text = text.replace("\x00", " ")
+
+        for match in quoted_pattern.findall(text):
+            add(match)
+
+        for match in lc_name_pattern.findall(text):
+            add(match)
+
+    return sorted(found, key=str.lower)
+
+
+def load_combined_liquid_classes(method_path: str, db_path: str = "") -> List[str]:
+    method_candidates = extract_liquid_classes_from_method_files(method_path)
+
+    try:
+        db_liquid_classes = load_liquid_classes_from_access(db_path)
+    except Exception as exc:
+        messagebox.showwarning(
+            "Liquid Class Warning",
+            (
+                f"Could not read LC.mdb/LC.accdb: {exc}\n\n"
+                "Using only liquid classes detected in the method files."
+            ),
+        )
+        return sorted(set(method_candidates), key=str.lower)
+
+    db_clean = [str(value).strip() for value in db_liquid_classes if str(value).strip()]
+    db_by_norm = {normalize_liquid_class_key(value): value for value in db_clean}
+
+    verified = set()
+
+    for candidate in method_candidates:
+        candidate_norm = normalize_liquid_class_key(candidate)
+
+        if candidate_norm in db_by_norm:
+            verified.add(db_by_norm[candidate_norm])
+            continue
+
+        for db_value in db_clean:
+            db_norm = normalize_liquid_class_key(db_value)
+
+            if db_norm and db_norm in candidate_norm:
+                verified.add(db_value)
+                break
+
+            if candidate_norm and candidate_norm in db_norm:
+                verified.add(db_value)
+                break
+
+    if verified:
+        return sorted(verified, key=str.lower)
+
+    messagebox.showwarning(
+        "Liquid Class Warning",
+        (
+            "No method liquid classes could be verified against LC.mdb/LC.accdb.\n\n"
+            "Using LC.mdb/LC.accdb liquid classes as backup."
+        ),
+    )
+
+    return sorted(set(db_clean), key=str.lower)
+
+
+
+
+
+
+candidates.extend([
+    os.path.join(os.getcwd(), "LC.mdb"),
+    os.path.join(os.getcwd(), "LC.accdb"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "LC.mdb"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "LC.accdb"),
+    "LC.mdb",
+    "LC.accdb",
+])
+
+
+
+
+
+
 
