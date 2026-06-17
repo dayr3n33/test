@@ -1,16 +1,775 @@
+Create a professional, impressive, in-depth training slide deck for my team on how to use DevPal Lite Sequence Analyzer, while positioning it as the current focused rollout of the larger DevPal platform.
 
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python main.py --devpal-lite-ui
-Traceback (most recent call last):
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\main.py", line 13, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\main.py", line 9, in main
-    return run_cli()
-           ^^^^^^^^^
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\interface\cli.py", line 121, in run_cli
-    return _run_devpal_lite_ui()
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\lynchd27\Documents\DevPal\new-project\interface\cli.py", line 203, in _run_devpal_lite_ui
-    from devpal_lite_runner import main as run_devpal_lite_ui
-ModuleNotFoundError: No module named 'devpal_lite_runner'
-(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> 
+Deck title:
+DevPal Lite Sequence Analyzer Training
+Subtitle:
+Sequence Inspection, Transfer Verification, Plate Layout Crossmatching, Trace Analysis, and Validation-Style Reporting for Hamilton VENUS Methods
+
+Audience:
+
+- Hamilton VENUS / Microlab users
+- Lab automation scientists
+- Method developers
+- Validation / QA reviewers
+- Team members who need to inspect, validate, troubleshoot, or review Hamilton method behavior before or after simulation runs
+
+Tone:
+
+- Professional, polished, high-confidence, enterprise software training
+- Thorough but easy to follow
+- Non-obviously impressive: make DevPal sound powerful by clearly showing what it detects, extracts, cross-checks, and reports, without sounding like marketing fluff
+- Use practical visuals, diagrams, UI callouts, checklists, tables, “what this means” explanations, and report-reading examples
+- Include detailed speaker notes for every slide
+- Include placeholders for screenshots/images throughout
+
+Important framing:
+Start by explaining the full DevPal vision:
+
+DevPal is a Python-based deterministic verification, simulation, trace-analysis, and risk-assessment assistant for Hamilton Microlab VENUS methods. Its purpose is to inspect, validate, stress-test, and risk-assess Hamilton methods to help ensure the method’s generated/process behavior, purpose, throughput, sequence usage, transfers, volumes, labware, liquid classes, logic, and documentation alignment are correct.
+
+DevPal helps prevent avoidable run failures, detect logic errors, improve validation readiness, identify issues early, and generate structured validation-style reports.
+
+Add this light inside joke early:
+“Devi may have died, but she will be resurrected.”
+Keep it tasteful and brief as an internal joke, then move directly into the serious training.
+
+Then explain:
+The full DevPal platform is still the larger near-future build, but the current practical rollout is DevPal Lite Sequence Analyzer, focused on sequence-level method inspection, transfer verification, layout crossmatching, trace analysis, and report generation.
+
+Make clear:
+DevPal Lite is not an “emergency workflow.” It is the focused current version of DevPal for sequence analysis and validation support.
+
+Create approximately 35–45 slides.
+
+Use this structure:
+
+1. Title Slide
+
+- DevPal Lite Sequence Analyzer Training
+- Sequence Inspection, Transfer Verification, Plate Layout Crossmatching, Trace Analysis, and Validation-Style Reporting
+- Prepared for: [Team Name]
+- Date: [Date]
+- Placeholder: DevPal logo/software icon
+
+2. Full DevPal Vision
+   Explain:
+
+- DevPal is a deterministic pre-run verification, stress-testing, trace-analysis, and validation-readiness platform for Hamilton VENUS methods
+- It is designed to inspect, simulate, analyze, crosscheck, and report on method behavior without relying on unsupported assumptions
+- It supports Python-based analysis and future Hamilton VENUS collaboration through local simulation / Run Control integration
+
+3. DevPal Capabilities Overview
+   Include a visual capability map:
+
+- Method inspection
+- Sequence analysis
+- Transfer analysis
+- Volume validation
+- Tip validation
+- Liquid class validation
+- Labware/layout analysis
+- Marker parsing and crossmatching
+- Trace parsing
+- UR / MP / SOP crosschecking
+- Stress-test simulation
+- Validation-style reporting
+- Risk assessment
+
+4. Supported Inputs
+   Create a table:
+   File Type | Purpose | DevPal Handling
+   Include:
+
+- .hsl
+- .sub
+- .res
+- .stp
+- .lay
+- .trc
+- .med
+- .csv
+- .xls
+- .xlsx
+- .txt
+- .md
+- .docx
+- .pdf
+- Method Protocol files
+- User Requirement documents
+- SOP documents
+- Plate layout files
+- Extracted step lists
+- Prior parser/analyzer outputs
+- Generated reports
+
+Important note:
+.med files are handled as safe stubs only in Phase 1:
+
+- Record presence
+- Report limitation clearly
+- Do not pretend full .med reconstruction is complete
+
+5. What DevPal Lite Sequence Analyzer Focuses On
+   Explain:
+
+- Sequence extraction and inspection
+- Step role mapping
+- Tip pick up / aspirate / dispense / tip eject analysis
+- Source-to-target transfer mapping
+- Plate layout crossmatch
+- Marker identification
+- Trace parsing
+- Position usage
+- Channel/head usage
+- Variant and sequence set analysis
+- Report generation
+
+6. Why Sequence Analysis Matters
+   Explain:
+
+- VENUS methods rely heavily on sequence order, position usage, channel grouping, and increment logic
+- A method can look correct in the UI but still fail because of sequence count mismatch, skipped positions, wrong increment behavior, or incorrect source/target mapping
+- DevPal Lite helps expose these issues before or after simulation review
+
+7. Core Concepts and Terms
+   Define:
+
+- Method file
+- Sequence
+- Sequence set
+- Variant
+- Source sequence
+- Target/destination sequence
+- Step role
+- Tip pick up
+- Aspirate
+- Dispense
+- Tip eject
+- Transfer chain
+- Marker
+- Plate layout
+- Trace file
+- Liquid class
+- Labware
+- Channel pattern
+- CO-RE head
+- Independent channels
+- Replicate
+- Crossmatch
+- Validation report
+
+8. DevPal Lite Workflow Overview
+   Create a left-to-right workflow diagram:
+   Launch DevPal Lite → Load method/layout files → Review extracted sequences → Select sequence set/variant → Assign step roles → Enter transfer details → Upload plate layout if applicable → Run analysis/simulation/trace review → Crossmatch results → Review report → Resolve findings
+
+9. Launching DevPal Lite
+   Explain:
+
+- User selects the DevPal Lite software icon
+- The icon opens the UI
+- Placeholder: screenshot of software icon
+- Placeholder: screenshot of UI opening screen
+- Include trainer note: replace placeholders with actual team screenshots
+
+10. Main UI Overview
+    Create a labeled UI screenshot placeholder with callouts:
+
+- Method/.lay upload
+- Plate layout upload
+- Sequence list
+- Sequence set controls
+- Variant controls
+- Step role dropdowns
+- Transfer/process type
+- Marker field
+- Replicate field
+- Volume field
+- Liquid class selection
+- Hardware/channel/head display
+- Plate layout checkbox
+- Tracking checkbox
+- Generate / Analyze button
+- Report output path
+
+11. Required User Inputs
+    Create a table:
+    Input | Required? | Why It Matters | Example
+    Include:
+
+- Method/layout file
+- .lay file
+- Plate layout file
+- Sequence selections
+- Step role
+- Transfer/process type
+- Marker
+- Replicate
+- Volume
+- Liquid class
+- Sequence set
+- Variant
+- Hardware mode if not detected
+- Trace file or trace folder
+
+12. Minimum and Maximum Selection Rules
+    Explain:
+
+- Minimum selected sequences depend on workflow
+- Typical transfer workflow requires at least:
+  - Tip pick up sequence
+  - Aspirate/source sequence
+  - Dispense/target sequence
+- Tip eject may be included when available
+- Multiple sequences can be selected when method uses multiple transfer blocks, variants, or repeated processes
+- Users must not leave required step roles undefined
+- If DevPal cannot detect transfer type or required context, it should ask the user rather than assume
+
+13. Step Role Assignment
+    Explain:
+    Step roles include:
+
+- tip_pick_up
+- aspirate
+- dispense
+- tip_eject
+
+Show a table:
+Selected Sequence | Step Role | Source/Target | Expected Evidence
+
+14. Sequence Sets
+    Explain:
+
+- Sequence sets group related sequences into one intended process
+- Example: one sequence set may represent sample transfer from rack to plate
+- Another may represent buffer addition
+- Another may represent QC or standard transfer
+- Sequence sets help DevPal understand which sequences belong together for transfer-chain and layout crossmatch analysis
+
+15. Variant Feature
+    Explain:
+
+- Variants represent alternate expected method paths or configurations
+- Examples:
+  - Single vs duplicate vs triplicate
+  - 8-channel vs 12-channel pattern
+  - 96-well vs 384-well destination
+  - Sample transfer vs buffer transfer
+- Variants help DevPal compare expected behavior against the selected scenario
+
+16. Transfer / Process Type
+    Explain:
+    Supported transfer types:
+
+- Sample
+- Buffer
+- QC
+- Standard
+- Reagent
+- Other user-defined process
+
+Explain:
+
+- DevPal should detect transfer type when possible
+- If not detectable, user must select it
+- Transfer type determines which marker and layout expectation should be used
+
+17. Marker Rules
+    Explain:
+    Markers identify what content belongs in each plate position.
+    Markers may be 1–3 letters.
+    Examples:
+
+- X
+- T
+- S
+- QC
+- STD
+
+Marker numbers may appear as:
+
+- Regular number: X1, QC2, STD3
+- Subscript
+- Superscript
+- Excel values are usually regular numbers
+
+DevPal extracts:
+
+- Marker prefix
+- Marker number
+- Well position
+- Associated layout position
+- Matching transfer evidence
+
+18. Plate Layout Upload
+    Explain:
+    Supported plate layout files:
+
+- CSV
+- XLS
+- XLSX
+- DOCX table
+- PDF when text extraction is possible
+
+Important:
+
+- Layouts should be text/table based
+- Image-only layouts are not preferred
+- DevPal should not rely on OCR assumptions
+- Placeholder: example plate layout screenshot
+
+19. Plate Layout Example
+    Show:
+    Well | Content
+    A1 | X1
+    A2 | X2
+    A3 | X3
+    B1 | QC1
+    B2 | QC2
+    C1 | STD1
+
+Explain:
+
+- DevPal identifies marker prefix and number
+- It maps marker numbers to expected wells
+- It crosschecks actual trace/method dispense targets against those expected wells
+
+20. 96-Well and 384-Well Support
+    Explain:
+
+- 96-well format: A1–H12
+- 384-well format: A1–P24
+- DevPal should recognize well-style positions and sequence position usage
+- Orientation may be detected when available
+- If orientation is not detectable, report limitation clearly
+
+21. .lay Upload and Layout/Deck Analysis
+    Explain:
+
+- .lay files provide deck/labware layout context
+- DevPal extracts labware information where available
+- It can help identify source/destination labware names, positions, and method references
+- It supports crosschecking sequence and trace behavior against known labware
+
+22. Sequence Analysis Features
+    Make this slide impressive but precise.
+    DevPal Lite Sequence Analyzer examines:
+
+- Sequence names
+- Position count
+- Used positions
+- Unused positions
+- Position order
+- Source vs target flow
+- Channel grouping
+- Channel pattern
+- Increment logic
+- Count logic
+- Horizontal/vertical orientation if detectable
+- Labware association
+- Sequence reuse
+- Sequence set membership
+- Variant-specific usage
+
+23. Step and Transfer Analysis Features
+    Explain:
+    DevPal analyzes:
+
+- Full transfer chains:
+  - tip → aspirate → dispense → eject
+- Source sequence to target sequence mapping
+- Transfer type
+- Replicate behavior
+- Step role consistency
+- Missing transfer components
+- Unexpected dispense before aspirate
+- Incomplete or ambiguous transfer chains
+
+24. Volume Analysis Features
+    Explain:
+    DevPal checks:
+
+- Missing volumes
+- Conflicting volumes
+- Aspirate volume less than dispense volume
+- Unresolved volume variables
+- Out-of-range volume warnings
+
+Include fluid verification tip volume default rules:
+
+- 1000 µL tips, channels and head: warn outside 100–1000 µL
+- 300 µL tips, channels: warn outside 10–300 µL
+- 300 µL tips, head: warn outside 20–300 µL
+- 50 µL tips, channels: warn outside 10–50 µL
+- 50 µL tips, head: warn outside 12.5–49 µL
+
+25. Tip and Liquid Class Analysis
+    Explain:
+    DevPal examines:
+
+- Tip type
+- Tip volume capacity
+- Tips used per step
+- Number of tips used at once
+- Tip pick up and eject behavior
+- Liquid class usage
+- Liquid class consistency
+- Tips vs volume vs liquid class compatibility
+- Missing or suspicious liquid class references
+
+26. Hardware Detection
+    Explain:
+    DevPal detects or asks user to confirm:
+
+- Independent channels
+- 8 / 12 / 14 / 16 channel patterns when applicable
+- CO-RE head
+- 96-head / 384 support where applicable
+- Channel variables
+- Channel volume variables
+- Hardware references in method files
+
+27. Labware Analysis
+    Explain:
+    DevPal identifies:
+
+- Labware name/ID
+- Labware type
+- Barcode if available
+- Deck location
+- Source vs destination role
+- Orientation if detectable
+- Sequence association
+- Trace association
+- Unexpected labware usage
+
+28. Variable and Logic Analysis
+    Explain:
+    DevPal checks:
+
+- Variables used before assignment
+- Overwritten variables
+- Duplicate/conflicting variables
+- Loop boundary errors
+- < vs <= style condition issues
+- Skipped sample indices
+- Infinite loop risk
+- Missing conditions
+- Parameters not fully encompassed by method logic
+
+29. Submethod Analysis
+    Explain:
+    DevPal detects:
+
+- Submethod calls
+- Where each submethod is used
+- What role each submethod appears to play
+- Missing/broken submethod references
+- Method and submethod consistency
+- Submethods should be analyzed like method logic whenever supported inputs are available
+
+30. Trace Analysis
+    Explain:
+    DevPal parses .trc logs for:
+
+- Method start
+- Method end
+- Trace completion
+- Errors
+- Recovery events
+- Command failures
+- Execution mismatches
+- Aspirate/dispense evidence
+- Labware/position evidence
+- Crossmatch against plate layout
+- Trace vs expected sequence behavior
+
+31. Documentation Crosscheck
+    Explain:
+    DevPal can compare method evidence against:
+
+- UR documents
+- MP documents
+- SOP documents
+- Plate layouts
+- Extracted step lists
+
+Classifications:
+
+- Matched
+- Partially matched
+- Missing
+- Unverifiable
+
+32. Stress Testing Context
+    Explain the larger DevPal goal:
+
+- DevPal is intended to support bounded local VENUS simulation and stress testing
+- Parameters may include:
+  - Sample count
+  - Plate count
+  - Sequence length
+  - Channel pattern
+  - Volume
+  - Layout markers
+- DevPal reports:
+  - Parameter combinations tested
+  - Coverage limits
+  - Detected failures
+  - Unverified areas
+
+Clarify:
+For current training, focus is DevPal Lite Sequence Analyzer, but the deck should explain how Lite fits into future full DevPal stress testing.
+
+33. Report Generation Overview
+    Explain all generated outputs may include:
+
+- Validation-style results report
+- JSON structured output
+- Trace analysis output
+- Parsed sequence output
+- Plate layout parsing output
+- Findings summary
+- Error/warning logs
+- Optional PDF report
+- Optional DOCX report
+- Autogenerated Python helper scripts or analysis scripts when applicable
+- Any generated report artifacts should be saved in the configured Results / DevPal output folders
+
+Use placeholders for exact folder paths:
+
+- [Insert team DevPal install folder]
+- [Insert Results folder]
+- [Insert Trace folder]
+- [Insert JSON output folder]
+- [Insert PDF/DOCX report folder]
+- [Insert autogenerated script folder]
+
+34. Where to Find Generated Files
+    Create a table:
+    Generated File | Purpose | Typical Location | When Created
+    Include:
+
+- .trc trace file
+- .json report
+- .txt report
+- .pdf report
+- .docx report
+- warnings log
+- error log
+- parsed sequence output
+- parsed layout output
+- autogenerated Python script
+- copied/uploaded input files
+
+35. Autogenerated Python Scripts
+    Explain:
+
+- DevPal may generate Python scripts to represent selected analysis steps, parsed method logic, trace analysis, or structured execution/validation helpers
+- These scripts should be treated as generated artifacts
+- They help preserve reproducibility and make analysis reviewable
+- Users should not manually edit generated scripts unless instructed
+- If a script fails, DevPal should report the failure clearly and not create fake success states
+
+36. Results Report: How It Is Organized
+    Explain report sections:
+
+- Run summary
+- Input files
+- Parsed data overview
+- Method/sequence summary
+- Selected sequence sets
+- Variant settings
+- User-entered parameters
+- Transfer analysis
+- Volume analysis
+- Tip analysis
+- Liquid class analysis
+- Labware analysis
+- Plate layout crossmatch
+- Trace analysis
+- Documentation crosscheck
+- Stress/simulation summary if available
+- Findings
+- Warnings
+- Errors
+- Limitations
+- Recommendations
+
+37. How to Read Findings
+    Every finding should include:
+
+- Title
+- File path
+- Severity/status
+- Evidence
+- Explanation
+- Recommendation
+
+Explain statuses:
+
+- PASS
+- INFO
+- WARNING
+- FAIL
+- SKIPPED
+- UNVERIFIED
+- LIMITATION
+
+38. Example Finding Slide
+    Create a mock finding:
+    Title: Dispense target does not match expected plate layout marker
+    File path: [example path]
+    Evidence: Marker X12 expected at B4, trace dispense detected at B5
+    Explanation: The destination position does not match the uploaded plate layout
+    Recommendation: Review dispense sequence, sequence increment logic, and selected variant
+
+39. Common Issues DevPal Lite Can Detect
+    Include:
+
+- Wrong sequence selected
+- Missing step role
+- Missing liquid class
+- Missing volume
+- Aspirate < dispense
+- Wrong tip/volume range
+- Marker not found
+- Plate layout mismatch
+- Duplicate marker number
+- Trace missing expected sequence
+- Dispense before aspirate
+- Unexpected labware
+- Skipped sample index
+- Replicate count mismatch
+- Stale trace file
+- Unresolved variable
+- Missing submethod reference
+- Incomplete transfer chain
+
+40. UI Error Prompt Placeholders
+    Create a slide with placeholders:
+
+- Missing required sequence role
+- Missing marker
+- Missing plate layout file
+- Invalid volume
+- Trace not found
+- Liquid class not selected
+- Unsupported file type
+- Unverifiable method evidence
+
+41. Best Practices Before Running Analysis
+    Checklist:
+
+- Confirm correct method files
+- Confirm .lay file
+- Confirm plate layout file if crossmatching
+- Confirm marker naming
+- Confirm selected sequence set
+- Confirm variant
+- Confirm transfer/process type
+- Confirm volume
+- Confirm replicate mode
+- Confirm liquid class
+- Confirm hardware/channel/head assumption
+- Confirm trace folder access
+
+42. Best Practices After Analysis
+    Checklist:
+
+- Open the main report
+- Review summary first
+- Review all FAIL and WARNING findings
+- Confirm skipped sections were intentionally skipped
+- Verify limitations
+- Review trace evidence
+- Review plate layout crossmatch
+- Save report artifacts with run documentation
+- Do not treat report as a fake success state
+
+43. Hands-On Training Exercise
+    Scenario:
+
+- Analyze a sample transfer sequence
+- 96-well destination plate
+- Marker: X
+- Replicate: duplicate
+- Volume: 100 µL
+- Transfer type: sample
+- Hardware: independent channels
+- Plate layout uploaded
+- Trace file available
+
+Tasks:
+
+1. Launch DevPal Lite from icon
+
+2. Upload method/.lay files
+
+3. Upload plate layout
+
+4. Select sequence set
+
+5. Choose variant
+
+6. Assign tip_pick_up, aspirate, dispense, tip_eject roles
+
+7. Enter transfer details
+
+8. Run analysis
+
+9. Open report
+
+10. Identify pass/warning/fail findings
+
+11. Knowledge Check
+    Create 10 quiz questions with answers in speaker notes:
+
+- What does the marker do?
+- Why does DevPal need sequence roles?
+- What is a sequence set?
+- What is a variant?
+- What does plate layout crossmatch verify?
+- What does tracking verify?
+- Why is .med handled as a stub in Phase 1?
+- What does UNVERIFIED mean?
+- What should users do if a trace appears stale?
+- Why should DevPal never produce fake success states?
+
+45. Closing Slide
+    Message:
+    DevPal Lite Sequence Analyzer gives the team a structured, deterministic way to inspect sequence behavior, validate transfers, crossmatch plate layouts, analyze traces, and produce reviewable validation-style evidence.
+
+Closing reminder:
+DevPal is a verification and analysis assistant. It improves readiness and helps detect issues, but users must still review scientific intent, method design, and validation requirements.
+
+Include placeholders:
+
+- Support contact
+- GitHub/project location
+- Results folder
+- Version number
+- Training owner
+
+Design requirements:
+
+- Use modern clean visuals
+- Use icons for inputs, sequences, trace, layout, report, warnings, and validation
+- Include screenshot placeholders for:
+  - Software icon
+  - Launch screen
+  - Main UI
+  - Sequence selection area
+  - Sequence set section
+  - Variant section
+  - Plate layout upload
+  - Example error prompts
+  - Example results report
+  - Example output folder
+- Use tables and diagrams wherever possible
+- Include speaker notes with detailed trainer explanations
+- Do not overpromise
+- Do not say DevPal guarantees correctness
+- Emphasize deterministic parsing over AI assumptions
+- Emphasize that unsupported behavior must be reported as a limitation, not guessed
+- Emphasize Windows usability
+- Emphasize that DevPal must never produce fake success states
