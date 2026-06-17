@@ -1,170 +1,66 @@
-def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
-    if not method_path:
-        return []
+def normalize_liquid_class_key(value: str) -> str:
+    return re.sub(r"[\s_\-]+", "", str(value or "").strip().lower())
 
-    method_path = os.path.abspath(method_path)
-    method_dir = os.path.dirname(method_path)
+
+def load_combined_liquid_classes(method_path: str, db_path: str = "") -> List[str]:
+    method_candidates = extract_liquid_classes_from_method_files(method_path)
+
+    try:
+        db_liquid_classes = load_liquid_classes_from_access(db_path)
+    except Exception as exc:
+        print(f"WARNING: Could not verify liquid classes against LC database: {exc}")
+        return sorted(set(method_candidates), key=str.lower)
+
+    db_by_exact = {str(value).strip(): str(value).strip() for value in db_liquid_classes if str(value).strip()}
+    db_by_normalized = {
+        normalize_liquid_class_key(value): str(value).strip()
+        for value in db_liquid_classes
+        if str(value).strip()
+    }
+
+    verified = set()
+
+    for candidate in method_candidates:
+        candidate = str(candidate or "").strip()
+
+        if not candidate:
+            continue
+
+        if candidate in db_by_exact:
+            verified.add(db_by_exact[candidate])
+            continue
+
+        normalized = normalize_liquid_class_key(candidate)
+
+        if normalized in db_by_normalized:
+            verified.add(db_by_normalized[normalized])
+            continue
+
+    return sorted(verified, key=str.lower)
+
+
+
+
+
+
+
+
+
+
+def load_liquid_classes_from_access(db_path: str = "") -> List[str]:
+    if pyodbc is None:
+        raise RuntimeError("pyodbc is not installed.")
 
     candidates = []
 
-    if os.path.isfile(method_path):
-        candidates.append(method_path)
+    if db_path:
+        candidates.append(db_path)
 
-    for ext in ("*.hsl", "*.sub", "*.stp", "*.res", "*.lay", "*.med", "*.txt", "*.xml"):
-        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
-
-    candidates = sorted(set(candidates), key=str.lower)
-    found = set()
-
-    liquid_class_like = re.compile(
-        r"\b[A-Za-z0-9]+[A-Za-z0-9_ .\-+/()]*"
-        r"(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface|TADM|HVT|SVT|LVT)"
-        r"[A-Za-z0-9_ .\-+/()]*\b",
-        re.IGNORECASE,
-    )
-
-    explicit_patterns = [
-        re.compile(r"(?:liq_class|liquid_class|liquidClass|LiquidClass|LiquidClassName|Liquid Class Name)\s*[=:,]\s*[\"']?([^\"'\r\n;]+)", re.IGNORECASE),
-        re.compile(r"(?:SelectLiquidClass|SetLiquidClass|LiquidClass)\s*\(\s*[\"']([^\"']+)[\"']", re.IGNORECASE),
-        re.compile(r"[\"']([^\"']*(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface|TADM|HVT|SVT|LVT)[^\"']*)[\"']", re.IGNORECASE),
-    ]
-
-    bad_values = {
-        "liquidclass", "liquid class", "liquidclassname", "liquid class name",
-        "liq_class", "liquid_class", "water", "buffer", "serum", "plasma",
-        "dispense", "aspirate", "empty", "jet", "surface"
-    }
-
-    def add_candidate(value: Any):
-        value = clean_control_chars(value)
-        value = value.strip("\"' ,;:=()[]{}")
-        value = re.split(r"[\r\n\t;]", value)[0].strip()
-        value = value.strip("\"' ,;:=()[]{}")
-
-        if not value:
-            return
-
-        value = re.sub(r"\s+", " ", value)
-
-        if len(value) < 4 or len(value) > 180:
-            return
-
-        if value.lower() in bad_values:
-            return
-
-        if not re.match(r"^[A-Za-z0-9_][A-Za-z0-9_ .\-+/()]*$", value):
-            return
-
-        if not re.search(
-            r"(water|serum|plasma|buffer|dmso|etoh|media|dispense|aspirate|empty|jet|surface|hvt|svt|lvt|tadm)",
-            value,
-            re.IGNORECASE,
-        ):
-            return
-
-        found.add(value)
-
-    for candidate in candidates:
-        text = read_text_file_best_effort(candidate)
-        if not text:
-            continue
-
-        text = text.replace("\x00", " ")
-
-        for pattern in explicit_patterns:
-            for match in pattern.findall(text):
-                add_candidate(match)
-
-        for match in liquid_class_like.findall(text):
-            add_candidate(match)
-
-    return sorted(found, key=str.lower)
-
-
-
-
-
-
-
-
-def infer_tip_type_from_text(text: str) -> str:
-    raw = str(text or "").upper()
-    compact = re.sub(r"[^A-Z0-9]+", "", raw)
-
-    if any(token in compact for token in (
-        "1000UL", "1000", "HVT", "HTF", "HIGHVOLUME", "HIGHVOL",
-        "COREFILTER1000", "TIP1000", "TIPS1000"
-    )):
-        return "1000ul"
-
-    if any(token in compact for token in (
-        "300UL", "300", "300S", "SLIMTIP300", "SLIM300",
-        "STANDARDVOLUME", "STANDARDVOL", "STD", "SVT",
-        "TIP300", "TIPS300"
-    )):
-        return "300ul"
-
-    if any(token in compact for token in (
-        "50UL", "50", "LVT", "LOWVOLUME", "LOWVOL",
-        "TIP50", "TIPS50"
-    )):
-        return "50ul"
-
-    return ""
-
-
-
-
-
-
-
-def infer_tip_type_for_set(
-    set_order: int,
-    configs: List[SequenceStepConfig],
-    lay_metadata: Dict[str, Dict[str, Any]],
-) -> Tuple[str, str]:
-    tip_configs = [
-        c for c in configs
-        if int(c.set_order) == int(set_order)
-        and c.role == "tip pick up"
-    ]
-
-    searched = []
-
-    for config in tip_configs:
-        meta = get_sequence_labware_metadata(
-            config.sequence,
-            lay_metadata,
-            getattr(config, "sequence_count", 0),
-        )
-
-        priority_values = [
-            meta.get("labware_name", ""),
-            meta.get("labware_format", ""),
-            meta.get("sequence_name", ""),
-            config.sequence,
-            " ".join(meta.get("positions", []) or []),
-        ]
-
-        for value in priority_values:
-            text = str(value or "")
-            if not text:
-                continue
-
-            searched.append(text)
-            tip_type = normalize_tip_type(infer_tip_type_from_text(text))
-
-            if tip_type in {"1000ul", "300ul", "50ul"}:
-                return tip_type, text
-
-    return "", " | ".join(searched) if searched else "no tip pick up sequence selected"
-
-
-
-
-
-
-
-
-
-
+    candidates.extend([
+        os.path.join(os.getcwd(), "LC.mdb"),
+        os.path.join(os.getcwd(), "LC.accdb"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "LC.mdb"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "LC.accdb"),
+        "LC.mdb",
+        "LC.accdb",
+    ])
