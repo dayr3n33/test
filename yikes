@@ -1,57 +1,170 @@
+def extract_liquid_classes_from_method_files(method_path: str) -> List[str]:
+    if not method_path:
+        return []
 
-if not variant_mode:
-    for set_order, controls in sorted(control_by_set.items()):
-        if len(controls) > 1:
-            messagebox.showerror(
-                "Invalid Control Selection",
-                (
-                    f"Set {set_order} has more than one Control sequence checked.\n\n"
-                    "Only one sequence per set can be the controlling loop sequence unless Variant mode is checked."
-                ),
-            )
-            return None
+    method_path = os.path.abspath(method_path)
+    method_dir = os.path.dirname(method_path)
 
+    candidates = []
 
+    if os.path.isfile(method_path):
+        candidates.append(method_path)
 
+    for ext in ("*.hsl", "*.sub", "*.stp", "*.res", "*.lay", "*.med", "*.txt", "*.xml"):
+        candidates.extend(glob.glob(os.path.join(method_dir, ext)))
 
+    candidates = sorted(set(candidates), key=str.lower)
+    found = set()
 
+    liquid_class_like = re.compile(
+        r"\b[A-Za-z0-9]+[A-Za-z0-9_ .\-+/()]*"
+        r"(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface|TADM|HVT|SVT|LVT)"
+        r"[A-Za-z0-9_ .\-+/()]*\b",
+        re.IGNORECASE,
+    )
 
-
-
-def get_required_transfer_iterations(configs: List[SequenceStepConfig]) -> int:
-    control_configs = [
-        config for config in configs
-        if bool(getattr(config, "control", False))
-        and not bool(getattr(config, "manual", False))
-        and config.role in ("tip pick up", "aspirate", "dispense")
+    explicit_patterns = [
+        re.compile(r"(?:liq_class|liquid_class|liquidClass|LiquidClass|LiquidClassName|Liquid Class Name)\s*[=:,]\s*[\"']?([^\"'\r\n;]+)", re.IGNORECASE),
+        re.compile(r"(?:SelectLiquidClass|SetLiquidClass|LiquidClass)\s*\(\s*[\"']([^\"']+)[\"']", re.IGNORECASE),
+        re.compile(r"[\"']([^\"']*(?:Water|Serum|Plasma|Buffer|DMSO|EtOH|Media|Dispense|Aspirate|Empty|Jet|Surface|TADM|HVT|SVT|LVT)[^\"']*)[\"']", re.IGNORECASE),
     ]
 
-    if control_configs:
-        return max(get_sequence_iterations(config) for config in control_configs)
+    bad_values = {
+        "liquidclass", "liquid class", "liquidclassname", "liquid class name",
+        "liq_class", "liquid_class", "water", "buffer", "serum", "plasma",
+        "dispense", "aspirate", "empty", "jet", "surface"
+    }
 
-    aspirate_configs = [config for config in configs if config.role == "aspirate"]
-    dispense_configs = [config for config in configs if config.role == "dispense"]
+    def add_candidate(value: Any):
+        value = clean_control_chars(value)
+        value = value.strip("\"' ,;:=()[]{}")
+        value = re.split(r"[\r\n\t;]", value)[0].strip()
+        value = value.strip("\"' ,;:=()[]{}")
 
-    aspirate_manual = aspirate_configs and all(bool(getattr(config, "manual", False)) for config in aspirate_configs)
-    dispense_manual = dispense_configs and all(bool(getattr(config, "manual", False)) for config in dispense_configs)
+        if not value:
+            return
 
-    if aspirate_manual and dispense_manual:
-        return 1
+        value = re.sub(r"\s+", " ", value)
 
-    nonmanual_dispense_configs = [
-        config for config in dispense_configs
-        if not bool(getattr(config, "manual", False))
+        if len(value) < 4 or len(value) > 180:
+            return
+
+        if value.lower() in bad_values:
+            return
+
+        if not re.match(r"^[A-Za-z0-9_][A-Za-z0-9_ .\-+/()]*$", value):
+            return
+
+        if not re.search(
+            r"(water|serum|plasma|buffer|dmso|etoh|media|dispense|aspirate|empty|jet|surface|hvt|svt|lvt|tadm)",
+            value,
+            re.IGNORECASE,
+        ):
+            return
+
+        found.add(value)
+
+    for candidate in candidates:
+        text = read_text_file_best_effort(candidate)
+        if not text:
+            continue
+
+        text = text.replace("\x00", " ")
+
+        for pattern in explicit_patterns:
+            for match in pattern.findall(text):
+                add_candidate(match)
+
+        for match in liquid_class_like.findall(text):
+            add_candidate(match)
+
+    return sorted(found, key=str.lower)
+
+
+
+
+
+
+
+
+def infer_tip_type_from_text(text: str) -> str:
+    raw = str(text or "").upper()
+    compact = re.sub(r"[^A-Z0-9]+", "", raw)
+
+    if any(token in compact for token in (
+        "1000UL", "1000", "HVT", "HTF", "HIGHVOLUME", "HIGHVOL",
+        "COREFILTER1000", "TIP1000", "TIPS1000"
+    )):
+        return "1000ul"
+
+    if any(token in compact for token in (
+        "300UL", "300", "300S", "SLIMTIP300", "SLIM300",
+        "STANDARDVOLUME", "STANDARDVOL", "STD", "SVT",
+        "TIP300", "TIPS300"
+    )):
+        return "300ul"
+
+    if any(token in compact for token in (
+        "50UL", "50", "LVT", "LOWVOLUME", "LOWVOL",
+        "TIP50", "TIPS50"
+    )):
+        return "50ul"
+
+    return ""
+
+
+
+
+
+
+
+def infer_tip_type_for_set(
+    set_order: int,
+    configs: List[SequenceStepConfig],
+    lay_metadata: Dict[str, Dict[str, Any]],
+) -> Tuple[str, str]:
+    tip_configs = [
+        c for c in configs
+        if int(c.set_order) == int(set_order)
+        and c.role == "tip pick up"
     ]
 
-    if nonmanual_dispense_configs:
-        return max(get_sequence_iterations(config) for config in nonmanual_dispense_configs)
+    searched = []
 
-    nonmanual_aspirate_configs = [
-        config for config in aspirate_configs
-        if not bool(getattr(config, "manual", False))
-    ]
+    for config in tip_configs:
+        meta = get_sequence_labware_metadata(
+            config.sequence,
+            lay_metadata,
+            getattr(config, "sequence_count", 0),
+        )
 
-    if nonmanual_aspirate_configs:
-        return max(get_sequence_iterations(config) for config in nonmanual_aspirate_configs)
+        priority_values = [
+            meta.get("labware_name", ""),
+            meta.get("labware_format", ""),
+            meta.get("sequence_name", ""),
+            config.sequence,
+            " ".join(meta.get("positions", []) or []),
+        ]
 
-    return 1
+        for value in priority_values:
+            text = str(value or "")
+            if not text:
+                continue
+
+            searched.append(text)
+            tip_type = normalize_tip_type(infer_tip_type_from_text(text))
+
+            if tip_type in {"1000ul", "300ul", "50ul"}:
+                return tip_type, text
+
+    return "", " | ".join(searched) if searched else "no tip pick up sequence selected"
+
+
+
+
+
+
+
+
+
+
