@@ -1,1 +1,16 @@
 
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> python main.py --devpal-lite-ui
+Traceback (most recent call last):
+  File "C:\Users\lynchd27\Documents\DevPal\new-project\main.py", line 13, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\lynchd27\Documents\DevPal\new-project\main.py", line 9, in main
+    return run_cli()
+           ^^^^^^^^^
+  File "C:\Users\lynchd27\Documents\DevPal\new-project\interface\cli.py", line 121, in run_cli
+    return _run_devpal_lite_ui()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lynchd27\Documents\DevPal\new-project\interface\cli.py", line 203, in _run_devpal_lite_ui
+    from devpal_lite_runner import main as run_devpal_lite_ui
+ModuleNotFoundError: No module named 'devpal_lite_runner'
+(.venv) PS C:\Users\lynchd27\Documents\DevPal\new-project> 
