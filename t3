@@ -1,1 +1,184 @@
 
+def build_execution_plan(
+    configs: List[SequenceStepConfig],
+    lay_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
+    variant_mode: bool = False,
+) -> List[Dict[str, Any]]:
+    lay_metadata = lay_metadata or {}
+    plan = []
+    order = 1
+
+    grouped = defaultdict(list)
+    for config in configs:
+        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
+
+    def append_plan_step(
+        config: SequenceStepConfig,
+        set_order: int,
+        rep_index: int,
+        transfer_iteration: int,
+        force_increment: bool = False,
+    ):
+        nonlocal order
+
+        batch_size = get_sequence_batch_size(config)
+        action = "tip_pick" if config.role == "tip pick up" else config.role
+        config_iterations = get_sequence_iterations(config)
+
+        should_increment = (
+            transfer_iteration > 1
+            and transfer_iteration <= config_iterations
+            and not bool(getattr(config, "manual", False))
+            and config.role in ("aspirate", "dispense")
+        )
+
+        if force_increment and not bool(getattr(config, "manual", False)) and config.role in ("aspirate", "dispense"):
+            should_increment = True
+
+        seq_meta = get_sequence_labware_metadata(
+            config.sequence,
+            lay_metadata,
+            getattr(config, "sequence_count", 0),
+        )
+
+        plan.append({
+            "order": order,
+            "set_order": set_order,
+            "action": action,
+            "sequence": config.sequence,
+            "hardware_mode": config.hardware_mode,
+            "labware_name": seq_meta.get("labware_name", ""),
+            "labware_format": seq_meta.get("labware_format", ""),
+            "labware_positions": seq_meta.get("positions", []),
+            "replicate_index": rep_index,
+            "transfer_iteration": transfer_iteration,
+            "manual": bool(getattr(config, "manual", False)),
+            "control": bool(getattr(config, "control", False)),
+            "autoincrement": should_increment,
+            "increment": batch_size if should_increment else 0,
+            "channel_pattern": config.channel_pattern,
+            "volume_ul": config.volume_ul if config.role in ("aspirate", "dispense") else "",
+            "liquid_class": config.liquid_class if config.role in ("aspirate", "dispense") else "",
+            "transfer_type": config.transfer_type,
+            "marker": config.marker,
+            "sequence_count": config.sequence_count,
+            "batch_size": batch_size,
+        })
+
+        order += 1
+
+    def append_tip_eject(
+        tip: SequenceStepConfig,
+        set_order: int,
+        rep_index: int,
+        transfer_iteration: int,
+    ):
+        nonlocal order
+
+        plan.append({
+            "order": order,
+            "set_order": set_order,
+            "action": "tip_eject",
+            "sequence": "Waste",
+            "hardware_mode": tip.hardware_mode,
+            "labware_name": "Waste",
+            "labware_format": "waste",
+            "labware_positions": [],
+            "replicate_index": rep_index,
+            "transfer_iteration": transfer_iteration,
+            "manual": False,
+            "control": False,
+            "autoincrement": False,
+            "increment": 0,
+            "channel_pattern": tip.channel_pattern,
+            "volume_ul": "",
+            "liquid_class": "",
+            "transfer_type": tip.transfer_type,
+            "marker": tip.marker,
+            "sequence_count": tip.sequence_count,
+            "batch_size": get_sequence_batch_size(tip),
+        })
+
+        order += 1
+
+    for set_order in sorted(grouped):
+        set_configs = sorted(grouped[set_order], key=lambda c: c.selected_index)
+
+        replicate = set_configs[0].replicate if set_configs else "single"
+        replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
+
+        tip_steps = [c for c in set_configs if c.role == "tip pick up"]
+        asp_steps = [c for c in set_configs if c.role == "aspirate"]
+        dsp_steps = [c for c in set_configs if c.role == "dispense"]
+
+        transfer_iterations = get_required_transfer_iterations(set_configs)
+
+        for rep_index in range(1, replicate_count + 1):
+            for transfer_iteration in range(1, transfer_iterations + 1):
+
+                if variant_mode:
+                    if not tip_steps or not asp_steps or not dsp_steps:
+                        continue
+
+                    tip_cycle_count = max(len(tip_steps), 1)
+                    asp_cycle_count = max(len(asp_steps), 1)
+
+                    for dispense_index, dispense_config in enumerate(dsp_steps):
+                        tip_config = tip_steps[dispense_index % tip_cycle_count]
+                        aspirate_config = asp_steps[dispense_index % asp_cycle_count]
+
+                        append_plan_step(
+                            tip_config,
+                            set_order,
+                            rep_index,
+                            transfer_iteration,
+                        )
+
+                        append_plan_step(
+                            aspirate_config,
+                            set_order,
+                            rep_index,
+                            transfer_iteration,
+                        )
+
+                        append_plan_step(
+                            dispense_config,
+                            set_order,
+                            rep_index,
+                            transfer_iteration,
+                        )
+
+                        append_tip_eject(
+                            tip_config,
+                            set_order,
+                            rep_index,
+                            transfer_iteration,
+                        )
+
+                    continue
+
+                max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
+
+                for idx in range(max_len):
+                    tip_config = tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None
+                    aspirate_config = asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None
+                    dispense_config = dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None
+
+                    for config in (tip_config, aspirate_config, dispense_config):
+                        if config is not None:
+                            append_plan_step(
+                                config,
+                                set_order,
+                                rep_index,
+                                transfer_iteration,
+                            )
+
+                    if tip_config is not None:
+                        append_tip_eject(
+                            tip_config,
+                            set_order,
+                            rep_index,
+                            transfer_iteration,
+                        )
+
+    return plan
