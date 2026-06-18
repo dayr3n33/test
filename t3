@@ -1,1 +1,500 @@
 
+def humanize_key(key: str) -> str:
+    text = str(key or "").replace("_", " ").replace("-", " ").strip()
+    replacements = {
+        "trace layout": "Trace vs Layout Crossmatch",
+        "runtime step execution": "Runtime Step Execution",
+        "tip volume rule": "Tip Type / Volume Rule",
+        "urgent labware mismatch": "Labware Mismatch",
+        "urgent destination outside layout format": "Destination Outside Layout Format",
+        "configuration": "Configuration",
+        "marker": "Plate Layout Marker",
+        "mapping": "Transfer Mapping",
+        "layout": "Plate Layout",
+        "trace": "Trace Analysis",
+        "tracking": "Sample Tracking",
+        "tip usage": "Tip Usage",
+        "runtime": "Runtime",
+    }
+    lower = re.sub(r"\s+", " ", text.lower())
+    return replacements.get(lower, text.title())
+
+
+def is_error_record(value: Any) -> bool:
+    text = str(value).lower()
+    return any(word in text for word in [
+        "urgent", "critical", "error", "fail", "mismatch",
+        "wrong labware", "missing", "unexpected", "not valid",
+    ])
+
+
+def safe_text(value: Any) -> str:
+    if value is None:
+        return "None"
+
+    if isinstance(value, float):
+        if value.is_integer():
+            return str(int(value))
+        return str(value)
+
+    text = str(value)
+    text = text.replace("{", "").replace("}", "")
+    text = text.replace("[", "").replace("]", "")
+    text = text.replace("'", "").replace('"', "")
+    text = text.replace("_", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text if text else "None"
+
+
+def normal_datetime() -> str:
+    return datetime.now().strftime("%B %d, %Y at %I:%M %p")
+
+
+def compact_path(path: str) -> str:
+    return str(path or "Not provided")
+
+
+def join_values(values: List[Any]) -> str:
+    cleaned = [safe_text(value) for value in values if safe_text(value) not in {"", "None"}]
+    return ", ".join(cleaned) if cleaned else "None"
+
+
+def format_evidence(evidence: Any) -> List[str]:
+    if not evidence:
+        return ["Evidence: Not provided by analyzer."]
+
+    lines = []
+
+    if isinstance(evidence, dict):
+        for key, value in evidence.items():
+            if value in (None, "", [], {}):
+                continue
+
+            label = humanize_key(key)
+
+            if isinstance(value, list):
+                lines.append(f"{label}: {join_values(value)}")
+            elif isinstance(value, dict):
+                nested = []
+                for nested_key, nested_value in value.items():
+                    if nested_value not in (None, "", [], {}):
+                        nested.append(f"{humanize_key(nested_key)} = {safe_text(nested_value)}")
+                if nested:
+                    lines.append(f"{label}: {', '.join(nested)}")
+            else:
+                lines.append(f"{label}: {safe_text(value)}")
+
+    elif isinstance(evidence, list):
+        lines.append(f"Evidence: {join_values(evidence)}")
+    else:
+        lines.append(f"Evidence: {safe_text(evidence)}")
+
+    return lines if lines else ["Evidence: Not provided by analyzer."]
+
+
+def summarize_issue_title(issue: Dict[str, Any]) -> str:
+    severity = humanize_key(issue.get("severity", "Issue"))
+    category = humanize_key(issue.get("category", "Validation"))
+    return f"{severity} issue - {category}"
+
+
+def build_report_sections(output: DevPalLiteOutput, report_path: str) -> Dict[str, Any]:
+    major_critical = []
+    informational = []
+
+    for issue in output.issues or []:
+        severity = str(issue.get("severity", "")).lower() if isinstance(issue, dict) else ""
+        if severity in {"critical", "major"} or is_error_record(issue):
+            major_critical.append(issue)
+        else:
+            informational.append(issue)
+
+    selected_sequences = []
+    for config in output.selected_sequences or []:
+        if not isinstance(config, dict):
+            continue
+
+        role = humanize_key(config.get("role", ""))
+        sequence = safe_text(config.get("sequence", ""))
+        set_order = safe_text(config.get("set_order", "1"))
+        hardware = safe_text(config.get("hardware_mode", ""))
+        channel = safe_text(config.get("channel_pattern", ""))
+        volume = config.get("volume_ul", "")
+        liquid_class = safe_text(config.get("liquid_class", ""))
+        count = safe_text(config.get("sequence_count", ""))
+
+        detail = (
+            f"Set {set_order}: {role} sequence '{sequence}' "
+            f"using {hardware} mode"
+        )
+
+        if role.lower() in {"aspirate", "dispense"}:
+            detail += f", volume {safe_text(volume)} uL, liquid class {liquid_class}"
+
+        detail += f", channel pattern {channel}, sequence count {count}"
+        selected_sequences.append(detail)
+
+    transfer_summary = []
+    for pair in output.transfer_pairs or []:
+        if not isinstance(pair, dict):
+            continue
+
+        source = safe_text(pair.get("source_position", ""))
+        dest = safe_text(pair.get("destination_position", ""))
+        marker = safe_text(pair.get("marker_label", ""))
+        volume = safe_text(pair.get("volume_ul", ""))
+        liquid_class = safe_text(pair.get("liquid_class", ""))
+
+        parts = []
+        if marker != "None":
+            parts.append(marker)
+        if source != "None":
+            parts.append(f"source {source}")
+        if dest != "None":
+            parts.append(f"destination {dest}")
+        if volume != "None":
+            parts.append(f"{volume} uL")
+        if liquid_class != "None":
+            parts.append(f"liquid class {liquid_class}")
+
+        if parts:
+            transfer_summary.append(", ".join(parts))
+
+    marker_summary = []
+    for marker, entries in (output.marker_matches or {}).items():
+        if not entries:
+            marker_summary.append(f"{safe_text(marker)}: no plate layout location found")
+            continue
+
+        locations = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+
+            dest = safe_text(entry.get("dest_value", ""))
+            cell = safe_text(entry.get("excel_position", ""))
+            cell_value = safe_text(entry.get("cell_value", ""))
+
+            if dest != "None" and cell != "None":
+                locations.append(f"{dest} from layout cell {cell} containing {cell_value}")
+            elif dest != "None":
+                locations.append(dest)
+
+        marker_summary.append(f"{safe_text(marker)}: {join_values(locations)}")
+
+    trace_summary = []
+    for finding in output.trace_findings or []:
+        if not isinstance(finding, dict):
+            continue
+
+        finding_type = str(finding.get("type", "")).lower()
+
+        if finding_type == "trace_summary":
+            trace_summary.append(
+                "Trace parsed: "
+                f"{safe_text(finding.get('aspirate_step_count'))} aspirate step(s), "
+                f"{safe_text(finding.get('dispense_step_count'))} dispense step(s), "
+                f"crossmatch {safe_text(finding.get('cross_match_status'))}."
+            )
+
+        elif finding_type == "expected_runtime_step_check":
+            trace_summary.append(
+                "Runtime step check: "
+                f"expected {safe_text(finding.get('expected_step_count'))} step(s), "
+                f"trace showed {safe_text(finding.get('actual_step_count'))} step(s), "
+                f"status {safe_text(finding.get('status'))}."
+            )
+
+        elif finding_type == "tracking_source_order":
+            trace_summary.append(
+                f"Tracking {safe_text(finding.get('marker'))}: "
+                f"expected source {safe_text(finding.get('expected_source_number'))}, "
+                f"found source {safe_text(finding.get('actual_source_number'))}, "
+                f"status {safe_text(finding.get('status'))}."
+            )
+
+        elif finding_type == "trace_layout_match":
+            trace_summary.append(
+                f"{safe_text(finding.get('marker'))}: expected destination(s) "
+                f"{join_values(finding.get('expected_destinations', []))}; trace destination(s) "
+                f"{join_values(finding.get('actual_destinations', []))}; status "
+                f"{safe_text(finding.get('status'))}."
+            )
+
+    layout_summary = []
+    for finding in output.layout_findings or []:
+        if not isinstance(finding, dict):
+            continue
+
+        finding_type = str(finding.get("type", "")).lower()
+
+        if finding_type == "layout_summary":
+            layout_summary.append(
+                f"Plate layout marker '{safe_text(finding.get('marker'))}' found "
+                f"{safe_text(finding.get('marker_count'))} marker(s) across "
+                f"{safe_text(finding.get('unique_layout_position_count'))} unique destination well(s)."
+            )
+        elif finding_type == "extra_layout_marker":
+            layout_summary.append(safe_text(finding.get("message")))
+
+    return {
+        "major_critical": major_critical,
+        "informational": informational,
+        "selected_sequences": selected_sequences,
+        "transfer_summary": transfer_summary,
+        "marker_summary": marker_summary,
+        "trace_summary": trace_summary,
+        "layout_summary": layout_summary,
+        "limitations": output.limitations or [],
+        "summary": {
+            "Generated": normal_datetime(),
+            "LAY File": compact_path(output.lay_file),
+            "Plate Layout File": compact_path(output.layout_file),
+            "Trace File": compact_path(output.trace_file),
+            "Generated Review Script": compact_path(output.generated_review_script),
+            "Report Path": compact_path(report_path),
+            "Major/Critical Issue Count": len(major_critical),
+        },
+    }
+
+
+def write_docx_line(doc, text: str, bold: bool = False, red: bool = False) -> None:
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run(safe_text(text))
+    run.bold = bold
+    if RGBColor is not None and (red or is_error_record(text)):
+        run.font.color.rgb = RGBColor(255, 0, 0)
+
+
+def write_docx_bullets(doc, lines: List[str], red: bool = False) -> None:
+    if not lines:
+        doc.add_paragraph("None found.")
+        return
+
+    for line in lines:
+        paragraph = doc.add_paragraph(style=None)
+        paragraph.paragraph_format.left_indent = None
+        run = paragraph.add_run(f"• {safe_text(line)}")
+        if RGBColor is not None and (red or is_error_record(line)):
+            run.font.color.rgb = RGBColor(255, 0, 0)
+
+
+def write_docx_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    if Document is None:
+        return write_text_report(output, output_dir)
+
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.docx",
+    )
+
+    sections = build_report_sections(output, path)
+
+    doc = Document()
+    doc.add_heading("DevPal Lite Validation Report", 0)
+
+    doc.add_heading("Run Summary", level=1)
+    for label, value in sections["summary"].items():
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(f"{label}: ").bold = True
+        paragraph.add_run(safe_text(value))
+
+    doc.add_heading("Major / Critical Issues", level=1)
+    if sections["major_critical"]:
+        for index, issue in enumerate(sections["major_critical"], start=1):
+            title = summarize_issue_title(issue) if isinstance(issue, dict) else "Major/Critical issue"
+            write_docx_line(doc, f"{index}. {title}", bold=True, red=True)
+
+            if isinstance(issue, dict):
+                write_docx_line(doc, f"Message: {issue.get('message', 'No message provided')}", red=True)
+                for evidence_line in format_evidence(issue.get("evidence")):
+                    write_docx_line(doc, evidence_line, red=True)
+            else:
+                write_docx_line(doc, issue, red=True)
+    else:
+        doc.add_paragraph("No major or critical issues found.")
+
+    doc.add_heading("What Was Ran", level=1)
+    write_docx_bullets(doc, sections["selected_sequences"])
+
+    doc.add_heading("Transfer / Position Summary", level=1)
+    write_docx_bullets(doc, sections["transfer_summary"])
+
+    doc.add_heading("Plate Layout Marker Review", level=1)
+    write_docx_bullets(doc, sections["marker_summary"] or ["No marker matches were found in the uploaded plate layout."])
+
+    doc.add_heading("Layout Findings", level=1)
+    write_docx_bullets(doc, sections["layout_summary"])
+
+    doc.add_heading("Trace / Runtime Findings", level=1)
+    write_docx_bullets(doc, sections["trace_summary"])
+
+    doc.add_heading("Limitations", level=1)
+    write_docx_bullets(doc, [safe_text(item) for item in sections["limitations"]] or ["None found."])
+
+    doc.add_heading("Additional Informational Findings", level=1)
+    if sections["informational"]:
+        for issue in sections["informational"]:
+            if isinstance(issue, dict):
+                write_docx_line(doc, f"{humanize_key(issue.get('category', 'Information'))}: {safe_text(issue.get('message'))}")
+                for evidence_line in format_evidence(issue.get("evidence")):
+                    write_docx_line(doc, evidence_line)
+            else:
+                write_docx_line(doc, issue)
+    else:
+        doc.add_paragraph("None found.")
+
+    doc.save(path)
+    return path
+
+
+def write_text_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.txt",
+    )
+
+    sections = build_report_sections(output, path)
+
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("DevPal Lite Validation Report\n")
+        handle.write("=" * 80 + "\n\n")
+
+        handle.write("Run Summary\n")
+        handle.write("-" * 80 + "\n")
+        for label, value in sections["summary"].items():
+            handle.write(f"{label}: {safe_text(value)}\n")
+
+        handle.write("\nMajor / Critical Issues\n")
+        handle.write("-" * 80 + "\n")
+        if sections["major_critical"]:
+            for index, issue in enumerate(sections["major_critical"], start=1):
+                title = summarize_issue_title(issue) if isinstance(issue, dict) else "Major/Critical issue"
+                handle.write(f"\n{index}. {title}\n")
+
+                if isinstance(issue, dict):
+                    handle.write(f"Message: {safe_text(issue.get('message', 'No message provided'))}\n")
+                    for evidence_line in format_evidence(issue.get("evidence")):
+                        handle.write(f"{evidence_line}\n")
+                else:
+                    handle.write(f"{safe_text(issue)}\n")
+        else:
+            handle.write("No major or critical issues found.\n")
+
+        report_blocks = [
+            ("What Was Ran", sections["selected_sequences"]),
+            ("Transfer / Position Summary", sections["transfer_summary"]),
+            ("Plate Layout Marker Review", sections["marker_summary"] or ["No marker matches were found in the uploaded plate layout."]),
+            ("Layout Findings", sections["layout_summary"]),
+            ("Trace / Runtime Findings", sections["trace_summary"]),
+            ("Limitations", [safe_text(item) for item in sections["limitations"]] or ["None found."]),
+        ]
+
+        for title, lines in report_blocks:
+            handle.write(f"\n{title}\n")
+            handle.write("-" * 80 + "\n")
+            if lines:
+                for line in lines:
+                    handle.write(f"- {safe_text(line)}\n")
+            else:
+                handle.write("None found.\n")
+
+        handle.write("\nAdditional Informational Findings\n")
+        handle.write("-" * 80 + "\n")
+        if sections["informational"]:
+            for issue in sections["informational"]:
+                if isinstance(issue, dict):
+                    handle.write(f"- {humanize_key(issue.get('category', 'Information'))}: {safe_text(issue.get('message'))}\n")
+                    for evidence_line in format_evidence(issue.get("evidence")):
+                        handle.write(f"  {evidence_line}\n")
+                else:
+                    handle.write(f"- {safe_text(issue)}\n")
+        else:
+            handle.write("None found.\n")
+
+    return path
+
+
+def write_pdf_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    if SimpleDocTemplate is None:
+        return write_text_report(output, output_dir)
+
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.pdf",
+    )
+
+    sections = build_report_sections(output, path)
+
+    styles = getSampleStyleSheet()
+    story = []
+
+    def add_para(text: Any, style_name: str = "BodyText", red: bool = False):
+        clean = safe_text(text)
+        if red or is_error_record(clean):
+            clean = f'<font color="red">{clean}</font>'
+        story.append(Paragraph(clean, styles[style_name]))
+
+    def add_heading(title: str):
+        story.append(Spacer(1, 10))
+        story.append(Paragraph(safe_text(title), styles["Heading1"]))
+        story.append(Spacer(1, 4))
+
+    story.append(Paragraph("DevPal Lite Validation Report", styles["Title"]))
+    story.append(Spacer(1, 12))
+
+    summary_rows = [[safe_text(k), safe_text(v)] for k, v in sections["summary"].items()]
+    summary_table = Table(summary_rows, colWidths=[150, 360])
+    summary_table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+        ("BACKGROUND", (0, 0), (0, -1), colors.lightgrey),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(summary_table)
+
+    add_heading("Major / Critical Issues")
+    if sections["major_critical"]:
+        for index, issue in enumerate(sections["major_critical"], start=1):
+            title = summarize_issue_title(issue) if isinstance(issue, dict) else "Major/Critical issue"
+            add_para(f"{index}. {title}", "Heading3", red=True)
+
+            if isinstance(issue, dict):
+                add_para(f"Message: {issue.get('message', 'No message provided')}", red=True)
+                for evidence_line in format_evidence(issue.get("evidence")):
+                    add_para(evidence_line, red=True)
+            else:
+                add_para(issue, red=True)
+    else:
+        add_para("No major or critical issues found.")
+
+    report_blocks = [
+        ("What Was Ran", sections["selected_sequences"]),
+        ("Transfer / Position Summary", sections["transfer_summary"]),
+        ("Plate Layout Marker Review", sections["marker_summary"] or ["No marker matches were found in the uploaded plate layout."]),
+        ("Layout Findings", sections["layout_summary"]),
+        ("Trace / Runtime Findings", sections["trace_summary"]),
+        ("Limitations", [safe_text(item) for item in sections["limitations"]] or ["None found."]),
+    ]
+
+    for title, lines in report_blocks:
+        add_heading(title)
+        if lines:
+            for line in lines:
+                add_para(f"• {line}")
+        else:
+            add_para("None found.")
+
+    add_heading("Additional Informational Findings")
+    if sections["informational"]:
+        for issue in sections["informational"]:
+            if isinstance(issue, dict):
+                add_para(f"{humanize_key(issue.get('category', 'Information'))}: {safe_text(issue.get('message'))}")
+                for evidence_line in format_evidence(issue.get("evidence")):
+                    add_para(evidence_line)
+            else:
+                add_para(issue)
+    else:
+        add_para("None found.")
+
+    SimpleDocTemplate(path, pagesize=letter).build(story)
+    return path
