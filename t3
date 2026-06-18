@@ -1,174 +1,25 @@
-
-def validate_step_sets(
-    configs: List[SequenceStepConfig],
-    variant_mode: bool,
-    use_set_order: bool,
-) -> str:
-    if not use_set_order:
-        return ""
-
-    grouped = defaultdict(list)
-    for config in configs:
-        grouped[int(config.set_order)].append(config)
-
-    if variant_mode:
-        for set_order, items in sorted(grouped.items()):
-            roles = [item.role for item in items]
-
-            if "tip pick up" not in roles:
-                return f"Set {set_order} must contain at least one tip pick up sequence."
-
-            if "aspirate" not in roles:
-                return f"Set {set_order} must contain at least one aspirate sequence."
-
-            if "dispense" not in roles:
-                return f"Set {set_order} must contain at least one dispense sequence."
-
-        return ""
-
-    for set_order, items in sorted(grouped.items()):
-        roles = [item.role for item in items]
-
-        for required_role in ROLE_OPTIONS:
-            if roles.count(required_role) != 1:
-                return (
-                    f"Set {set_order} must contain exactly one tip pick up, "
-                    f"one aspirate, and one dispense sequence."
-                )
-
-    return ""
-
-
-
-
-
-
-
-def build_execution_plan(
-    configs: List[SequenceStepConfig],
-    lay_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
-    variant_mode: bool = False,
-) -> List[Dict[str, Any]]:
-    lay_metadata = lay_metadata or {}
-    plan = []
-    order = 1
-
-    grouped = defaultdict(list)
-    for config in configs:
-        grouped[int(getattr(config, "set_order", 1) or 1)].append(config)
-
-    for set_order in sorted(grouped):
-        set_configs = sorted(grouped[set_order], key=lambda c: c.selected_index)
-
-        replicate = set_configs[0].replicate if set_configs else "single"
-        replicate_count = REPLICATE_MAP.get(str(replicate).lower(), 1)
-
-        tip_steps = [c for c in set_configs if c.role == "tip pick up"]
-        asp_steps = [c for c in set_configs if c.role == "aspirate"]
-        dsp_steps = [c for c in set_configs if c.role == "dispense"]
-
-        transfer_iterations = get_required_transfer_iterations(set_configs)
-
-        for rep_index in range(1, replicate_count + 1):
-            for transfer_iteration in range(1, transfer_iterations + 1):
-
-                if variant_mode:
-                    ordered_steps = tip_steps + asp_steps + dsp_steps
-                else:
-                    max_len = max(len(tip_steps), len(asp_steps), len(dsp_steps), 1)
-                    ordered_steps = []
-
-                    for idx in range(max_len):
-                        ordered_steps.extend([
-                            tip_steps[idx] if idx < len(tip_steps) else tip_steps[0] if tip_steps else None,
-                            asp_steps[idx] if idx < len(asp_steps) else asp_steps[0] if asp_steps else None,
-                            dsp_steps[idx] if idx < len(dsp_steps) else dsp_steps[0] if dsp_steps else None,
-                        ])
-
-                    ordered_steps = [step for step in ordered_steps if step is not None]
-
-                for config in ordered_steps:
-                    batch_size = get_sequence_batch_size(config)
-                    action = "tip_pick" if config.role == "tip pick up" else config.role
-                    config_iterations = get_sequence_iterations(config)
-
-                    should_increment = (
-                        transfer_iteration > 1
-                        and transfer_iteration <= config_iterations
-                        and not bool(getattr(config, "manual", False))
-                        and config.role in ("aspirate", "dispense")
-                    )
-
-                    seq_meta = get_sequence_labware_metadata(
-                        config.sequence,
-                        lay_metadata,
-                        getattr(config, "sequence_count", 0),
-                    )
-
-                    plan.append({
-                        "order": order,
-                        "set_order": set_order,
-                        "action": action,
-                        "sequence": config.sequence,
-                        "hardware_mode": config.hardware_mode,
-                        "labware_name": seq_meta.get("labware_name", ""),
-                        "labware_format": seq_meta.get("labware_format", ""),
-                        "labware_positions": seq_meta.get("positions", []),
-                        "replicate_index": rep_index,
-                        "transfer_iteration": transfer_iteration,
-                        "manual": bool(getattr(config, "manual", False)),
-                        "control": bool(getattr(config, "control", False)),
-                        "autoincrement": should_increment,
-                        "increment": batch_size if should_increment else 0,
-                        "channel_pattern": config.channel_pattern,
-                        "volume_ul": config.volume_ul if config.role in ("aspirate", "dispense") else "",
-                        "liquid_class": config.liquid_class if config.role in ("aspirate", "dispense") else "",
-                        "transfer_type": config.transfer_type,
-                        "marker": config.marker,
-                        "sequence_count": config.sequence_count,
-                        "batch_size": batch_size,
-                    })
-                    order += 1
-
-                eject_sources = tip_steps if variant_mode else tip_steps[:1]
-
-                for tip in eject_sources:
-                    plan.append({
-                        "order": order,
-                        "set_order": set_order,
-                        "action": "tip_eject",
-                        "sequence": "Waste",
-                        "hardware_mode": tip.hardware_mode,
-                        "labware_name": "Waste",
-                        "labware_format": "waste",
-                        "labware_positions": [],
-                        "replicate_index": rep_index,
-                        "transfer_iteration": transfer_iteration,
-                        "manual": False,
-                        "control": False,
-                        "autoincrement": False,
-                        "increment": 0,
-                        "channel_pattern": tip.channel_pattern,
-                        "volume_ul": "",
-                        "liquid_class": "",
-                        "transfer_type": tip.transfer_type,
-                        "marker": tip.marker,
-                        "sequence_count": tip.sequence_count,
-                        "batch_size": get_sequence_batch_size(tip),
-                    })
-                    order += 1
-
-    return plan
-
-
-
-
-
-
-
-
-execution_plan = build_execution_plan(
-            configs=configs,
-            lay_metadata=lay_metadata,
-            variant_mode=bool(self.variant_var.get()),
-        )
+InstrumentML_STARLabware.1.Angle0Labware.1.BarcodeCnt0Labware.1.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.1.DefSeqValid1Labware.1.File#ML_STAR\SMP_CAR_32_Nunc_1ml_A00.rckLabware.1.IdSMP_CAR_32_Nunc_1ml_A00_0001Labware.1.Inst Labware.1.IsCovered0Labware.1.SiteId1T-44Labware.1.TForm.1.X1Labware.1.TForm.1.Y0Labware.1.TForm.1.Z0Labware.1.TForm.2.X0Labware.1.TForm.2.Y1Labware.1.TForm.2.Z0Labware.1.TForm.3.X1082.5Labware.1.TForm.3.Y542.5Labware.1.TForm.3.Z1Labware.1.TemplatedefaultLabware.1.ZTrans100Labware.1.ZTransValue1Labware.10.Angle0Labware.10.BarcodeCnt0Labware.10.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.10.DefSeqValid0Labware.10.FileML_STAR\CORE\verification.rck
+Labware.10.Idverification_0002Labware.10.Inst Labware.10.IsCovered0Labware.10.SiteId4Labware.10.TForm.1.X1Labware.10.TForm.1.Y0Labware.10.TForm.1.Z0Labware.10.TForm.2.X0Labware.10.TForm.2.Y1Labware.10.TForm.2.Z0Labware.10.TForm.3.X1330Labware.10.TForm.3.Y158Labware.10.TForm.3.Z1Labware.10.TemplateWasteBlock_0001Labware.10.ZTrans187Labware.10.ZTransValue1Labware.11.Angle0Labware.11.BarcodeCnt0Labware.11.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.11.DefSeqValid1Labware.11.File"ML_STAR\CORE\TeachingNeedle5ml.rck
+Labware.11.IdTeachingNeedle5ml_0001Labware.11.Inst Labware.11.IsCovered0Labware.11.SiteId7Labware.11.TForm.1.X1Labware.11.TForm.1.Y0Labware.11.TForm.1.Z0Labware.11.TForm.2.X0Labware.11.TForm.2.Y1Labware.11.TForm.2.Z0Labware.11.TForm.3.X1333Labware.11.TForm.3.Y185Labware.11.TForm.3.Z1Labware.11.TemplateWasteBlock_0001Labware.11.ZTrans210Labware.11.ZTransValue1Labware.12.Angle0Labware.12.BarcodeCnt0Labware.12.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.12.DefSeqValid0Labware.12.FileIML_STAR\2DBarcodeReader\PLT_CAR_L4_BCD_READ_RACK_MIRROR_LeftExtension.tml
+Labware.12.Id2PLT_CAR_L4_BCD_READ_RACK_MIRROR_LeftExtension_0001Labware.12.Inst Labware.12.SiteId1T-1Labware.12.TForm.1.X1Labware.12.TForm.1.Y0Labware.12.TForm.1.Z0Labware.12.TForm.2.X0Labware.12.TForm.2.Y1Labware.12.TForm.2.Z0Labware.12.TForm.3.X100Labware.12.TForm.3.Y63Labware.12.TForm.3.Z1Labware.12.TemplatedefaultLabware.12.ZTrans100Labware.12.ZTransValue2Labware.13.Angle0Labware.13.BarcodeCnt0Labware.13.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.13.DefSeqValid0Labware.13.File%ML_STAR\96COREHEAD\CORE96NEWWaste.tml
+Labware.13.IdCORE96NEWWaste_0001Labware.13.Inst Labware.13.SiteId96CORESlideWasteLabware.13.TForm.1.X1Labware.13.TForm.1.Y0Labware.13.TForm.1.Z0Labware.13.TForm.2.X0Labware.13.TForm.2.Y1Labware.13.TForm.2.Z0Labware.13.TForm.3.X-385Labware.13.TForm.3.Y-9.45Labware.13.TForm.3.Z1Labware.13.TemplatedefaultLabware.13.ZTrans100Labware.13.ZTransValue2Labware.14.Angle0Labware.14.BarcodeCnt0Labware.14.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.14.DefSeqValid1Labware.14.File'ml_star\96corehead\core96slidewaste.rck
+Labware.14.Idcore96slidewaste_0001Labware.14.Inst Labware.14.IsCovered0Labware.14.SiteId1Labware.14.TForm.1.X1Labware.14.TForm.1.Y0Labware.14.TForm.1.Z0Labware.14.TForm.2.X0Labware.14.TForm.2.Y1Labware.14.TForm.2.Z0Labware.14.TForm.3.X-260Labware.14.TForm.3.Y120.3Labware.14.TForm.3.Z1Labware.14.TemplateCORE96NEWWaste_0001Labware.14.ZTrans227Labware.14.ZTransValue1Labware.15.Angle0Labware.15.BarcodeCnt0Labware.15.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.15.DefSeqValid0Labware.15.FileML_STAR\TIP_CAR_480BC_A00.tml
+Labware.15.IdTIP_CAR_480BC_A00_0001Labware.15.Inst "Labware.15.LwProperties.1.PropertyMlStarCarBCOrientationLabware.15.LwProperties.1.Value1#Labware.15.LwProperties.10.PropertyMlStarCarPosAreRecognizable Labware.15.LwProperties.10.Value0#Labware.15.LwProperties.11.PropertyMlStarCarRasterWidth Labware.15.LwProperties.11.Value960#Labware.15.LwProperties.12.PropertyMlStarCarWidthAsT Labware.15.LwProperties.12.Value6"Labware.15.LwProperties.2.PropertyMlStarCarBCReadWidthLabware.15.LwProperties.2.Value300"Labware.15.LwProperties.3.PropertyMlStarCarCountOfBCPosLabware.15.LwProperties.3.Value5"Labware.15.LwProperties.4.PropertyMlStarCarFirstBCPosLabware.15.LwProperties.4.Value616"Labware.15.LwProperties.5.PropertyMlStarCarIsAutoLoadLabware.15.LwProperties.5.Value1"Labware.15.LwProperties.6.PropertyMlStarCarIsLoadableLabware.15.LwProperties.6.Value1"Labware.15.LwProperties.7.PropertyMlStarCarIsRecognizableLabware.15.LwProperties.7.Value1"Labware.15.LwProperties.8.PropertyMlStarCarLabelNameLabware.15.LwProperties.8.ValueTIP_CAR_480_A00"Labware.15.LwProperties.9.PropertyMlStarCarNoReadBarcodeLabware.15.LwProperties.9.Value0"Labware.15.LwProperties.NumOfProps12Labware.15.SiteId6T-7Labware.15.TForm.1.X1Labware.15.TForm.1.Y0Labware.15.TForm.1.Z0Labware.15.TForm.2.X0Labware.15.TForm.2.Y1Labware.15.TForm.2.Z0Labware.15.TForm.3.X235Labware.15.TForm.3.Y63Labware.15.TForm.3.Z1Labware.15.TemplatedefaultLabware.15.ZTrans100Labware.15.ZTransValue2Labware.16.Angle0Labware.16.BarcodeCnt0Labware.16.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.16.DefSeqValid1Labware.16.FileML_STAR\ST_L.rck
+Labware.16.Id	ST_L_0012Labware.16.Inst Labware.16.IsCovered0"Labware.16.LwProperties.1.PropertyMlStarCore96TipRackLabware.16.LwProperties.1.Value0"Labware.16.LwProperties.2.PropertyMlStarIsCore96WasteRackLabware.16.LwProperties.2.Value1"Labware.16.LwProperties.3.PropertyMlStarIsWasteRackLabware.16.LwProperties.3.Value1"Labware.16.LwProperties.4.Property
+MlStarTipRackLabware.16.LwProperties.4.Value0"Labware.16.LwProperties.5.PropertyhasDefaultSequenceLabware.16.LwProperties.5.Value0"Labware.16.LwProperties.6.PropertymanagedSequenceNameLabware.16.LwProperties.6.ValueMlStarStandardVolumeTips"Labware.16.LwProperties.NumOfProps6Labware.16.SiteId1Labware.16.TForm.1.X1Labware.16.TForm.1.Y0Labware.16.TForm.1.Z0Labware.16.TForm.2.X0Labware.16.TForm.2.Y1Labware.16.TForm.2.Z0Labware.16.TForm.3.X252.9Labware.16.TForm.3.Y529.8Labware.16.TForm.3.Z1Labware.16.TemplateTIP_CAR_480BC_A00_0001Labware.16.ZTrans214.95Labware.16.ZTransValue1Labware.17.Angle0Labware.17.BarcodeCnt0Labware.17.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.17.DefSeqValid1Labware.17.FileML_STAR\ST_L.rck
+Labware.17.Id	ST_L_0013Labware.17.Inst Labware.17.IsCovered0Labware.17.SiteId2Labware.17.TForm.1.X1Labware.17.TForm.1.Y0Labware.17.TForm.1.Z0Labware.17.TForm.2.X0Labware.17.TForm.2.Y1Labware.17.TForm.2.Z0Labware.17.TForm.3.X252.9Labware.17.TForm.3.Y433.8Labware.17.TForm.3.Z1Labware.17.TemplateTIP_CAR_480BC_A00_0001Labware.17.ZTrans214.95Labware.17.ZTransValue1Labware.18.Angle0Labware.18.BarcodeCnt0Labware.18.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.18.DefSeqValid1Labware.18.FileML_STAR\ST_L.rck
+Labware.18.Id	ST_L_0014Labware.18.Inst Labware.18.IsCovered0Labware.18.SiteId3Labware.18.TForm.1.X1Labware.18.TForm.1.Y0Labware.18.TForm.1.Z0Labware.18.TForm.2.X0Labware.18.TForm.2.Y1Labware.18.TForm.2.Z0Labware.18.TForm.3.X252.9Labware.18.TForm.3.Y337.8Labware.18.TForm.3.Z1Labware.18.TemplateTIP_CAR_480BC_A00_0001Labware.18.ZTrans214.95Labware.18.ZTransValue1Labware.19.Angle0Labware.19.BarcodeCnt0Labware.19.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.19.DefSeqValid1Labware.19.FileML_STAR\ST_L.rck
+Labware.19.Id	ST_L_0015Labware.19.Inst Labware.19.IsCovered0Labware.19.SiteId4Labware.19.TForm.1.X1Labware.19.TForm.1.Y0Labware.19.TForm.1.Z0Labware.19.TForm.2.X0Labware.19.TForm.2.Y1Labware.19.TForm.2.Z0Labware.19.TForm.3.X252.9Labware.19.TForm.3.Y241.8Labware.19.TForm.3.Z1Labware.19.TemplateTIP_CAR_480BC_A00_0001Labware.19.ZTrans214.95Labware.19.ZTransValue1Labware.2.Angle0Labware.2.BarcodeCnt0Labware.2.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.2.DefSeqValid1Labware.2.File#ML_STAR\SMP_CAR_32_Nunc_1ml_A00.rckLabware.2.IdSMP_CAR_32_Nunc_1ml_A00_0002Labware.2.Inst Labware.2.IsCovered0Labware.2.SiteId1T-45Labware.2.TForm.1.X1Labware.2.TForm.1.Y0Labware.2.TForm.1.Z0Labware.2.TForm.2.X0Labware.2.TForm.2.Y1Labware.2.TForm.2.Z0Labware.2.TForm.3.X1105Labware.2.TForm.3.Y542.5Labware.2.TForm.3.Z1Labware.2.TemplatedefaultLabware.2.ZTrans100Labware.2.ZTransValue1Labware.20.Angle0Labware.20.BarcodeCnt0Labware.20.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.20.DefSeqValid1Labware.20.FileML_STAR\ST_L.rck
+Labware.20.Id	ST_L_0016Labware.20.Inst Labware.20.IsCovered0Labware.20.SiteId5Labware.20.TForm.1.X1Labware.20.TForm.1.Y0Labware.20.TForm.1.Z0Labware.20.TForm.2.X0Labware.20.TForm.2.Y1Labware.20.TForm.2.Z0Labware.20.TForm.3.X252.9Labware.20.TForm.3.Y145.8Labware.20.TForm.3.Z1Labware.20.TemplateTIP_CAR_480BC_A00_0001Labware.20.ZTrans214.95Labware.20.ZTransValue1Labware.21.Angle0Labware.21.BarcodeCnt0Labware.21.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.21.DefSeqValid0Labware.21.FileML_STAR\TIP_CAR_480BC_A00.tml
+Labware.21.IdTIP_CAR_480BC_A00_0002Labware.21.Inst Labware.21.SiteId6T-13Labware.21.TForm.1.X1Labware.21.TForm.1.Y0Labware.21.TForm.1.Z0Labware.21.TForm.2.X0Labware.21.TForm.2.Y1Labware.21.TForm.2.Z0Labware.21.TForm.3.X370Labware.21.TForm.3.Y63Labware.21.TForm.3.Z1Labware.21.TemplatedefaultLabware.21.ZTrans100Labware.21.ZTransValue2Labware.22.Angle0Labware.22.BarcodeCnt0Labware.22.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.22.DefSeqValid1Labware.22.FileML_STAR\ST_L.rck
+Labware.22.Id	ST_L_0001Labware.22.Inst Labware.22.IsCovered0Labware.22.SiteId1Labware.22.TForm.1.X1Labware.22.TForm.1.Y0Labware.22.TForm.1.Z0Labware.22.TForm.2.X0Labware.22.TForm.2.Y1Labware.22.TForm.2.Z0Labware.22.TForm.3.X387.9Labware.22.TForm.3.Y529.8Labware.22.TForm.3.Z1Labware.22.TemplateTIP_CAR_480BC_A00_0002Labware.22.ZTrans214.95Labware.22.ZTransValue1Labware.23.Angle0Labware.23.BarcodeCnt0Labware.23.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.23.DefSeqValid1Labware.23.FileML_STAR\ST_L.rck
+Labware.23.Id	ST_L_0002Labware.23.Inst Labware.23.IsCovered0"Labware.23.LwProperties.1.PropertyMlStarCore96TipRackLabware.23.LwProperties.1.Value0"Labware.23.LwProperties.2.PropertyMlStarIsCore96WasteRackLabware.23.LwProperties.2.Value1"Labware.23.LwProperties.3.PropertyMlStarIsWasteRackLabware.23.LwProperties.3.Value1"Labware.23.LwProperties.4.Property
+MlStarTipRackLabware.23.LwProperties.4.Value0"Labware.23.LwProperties.5.PropertyhasDefaultSequenceLabware.23.LwProperties.5.Value0"Labware.23.LwProperties.6.PropertymanagedSequenceNameLabware.23.LwProperties.6.ValueMlStarStandardVolumeTips"Labware.23.LwProperties.NumOfProps6Labware.23.SiteId2Labware.23.TForm.1.X1Labware.23.TForm.1.Y0Labware.23.TForm.1.Z0Labware.23.TForm.2.X0Labware.23.TForm.2.Y1Labware.23.TForm.2.Z0Labware.23.TForm.3.X387.9Labware.23.TForm.3.Y433.8Labware.23.TForm.3.Z1Labware.23.TemplateTIP_CAR_480BC_A00_0002Labware.23.Viz1Labware.23.ZTrans214.95Labware.23.ZTransValue1Labware.24.Angle0Labware.24.BarcodeCnt0Labware.24.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.24.DefSeqValid1Labware.24.FileML_STAR\ST_L.rck
+Labware.24.Id	ST_L_0003Labware.24.Inst Labware.24.IsCovered0Labware.24.SiteId3Labware.24.TForm.1.X1Labware.24.TForm.1.Y0Labware.24.TForm.1.Z0Labware.24.TForm.2.X0Labware.24.TForm.2.Y1Labware.24.TForm.2.Z0Labware.24.TForm.3.X387.9Labware.24.TForm.3.Y337.8Labware.24.TForm.3.Z1Labware.24.TemplateTIP_CAR_480BC_A00_0002Labware.24.Viz1Labware.24.ZTrans214.95Labware.24.ZTransValue1Labware.25.Angle0Labware.25.BarcodeCnt0Labware.25.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.25.DefSeqValid1Labware.25.FileML_STAR\ST_L.rck
+Labware.25.Id	ST_L_0004Labware.25.Inst Labware.25.IsCovered0Labware.25.SiteId4Labware.25.TForm.1.X1Labware.25.TForm.1.Y0Labware.25.TForm.1.Z0Labware.25.TForm.2.X0Labware.25.TForm.2.Y1Labware.25.TForm.2.Z0Labware.25.TForm.3.X387.9Labware.25.TForm.3.Y241.8Labware.25.TForm.3.Z1Labware.25.TemplateTIP_CAR_480BC_A00_0002Labware.25.Viz1Labware.25.ZTrans214.95Labware.25.ZTransValue1Labware.26.Angle0Labware.26.BarcodeCnt0Labware.26.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.26.DefSeqValid1Labware.26.FileML_STAR\HT_L.rck
+Labware.26.Id	HT_L_0001Labware.26.Inst Labware.26.IsCovered0Labware.26.SiteId5Labware.26.TForm.1.X1Labware.26.TForm.1.Y0Labware.26.TForm.1.Z0Labware.26.TForm.2.X0Labware.26.TForm.2.Y1Labware.26.TForm.2.Z0Labware.26.TForm.3.X387.9Labware.26.TForm.3.Y145.8Labware.26.TForm.3.Z1Labware.26.TemplateTIP_CAR_480BC_A00_0002Labware.26.ZTrans214.95Labware.26.ZTransValue1Labware.27.Angle0Labware.27.BarcodeCnt0Labware.27.Clsid&{77DF9B91-671E-4974-8380-38AD0B4E0D86}Labware.27.DefSeqValid0Labware.27.FileML_STAR\TIP_CAR_480BC_A00.tml
+Labware.27.IdTIP_CAR_480BC_A00_0003Labware.27.Inst "Labware.27.LwProperties.1.PropertyMlStarCarBCOrientationLabware.27.LwProperties.1.Value1#Labware.27.LwProperties.10.PropertyMlStarCarPosAreRecognizable Labware.27.LwProperties.10.Value0#Labware.27.LwProperties.11.PropertyMlStarCarRasterWidth Labware.27.LwProperties.11.Value960#Labware.27.LwProperties.12.PropertyMlStarCarWidthAsT Labware.27.LwProperties.12.Value6"Labware.27.LwProperties.2.PropertyMlStarCarBCReadWidthLabware.27.LwProperties.2.Value300"Labware.27.LwProperties.3.PropertyMlStarCarCountOfBCPosLabware.27.LwProperties.3.Value5"Labware.27.LwProperties.4.PropertyMlStarCarFirstBCPosLabware.27.LwProperties.4.Value616"Labware.27.LwProperties.5.PropertyMlStarCarIsAutoLoadLabware.27.LwProperties.5.Value1"Labware.27.LwProperties.6.PropertyMlStarCarIsLoadableLabware.27.LwProperties.6.Value1"Labware.27.LwProperties.7.PropertyMlStarCarIsRecognizableLabware.27.LwProperties.7.Value1"Labware.27.LwProperties.8.PropertyMlStarCarLabelNameLabware.27.LwProperties.8.ValueTIP_CAR_480_A00"Labware.27.LwProperties.9.PropertyMlStarCarNoReadBarcodeLabware.27.LwProperties.9.Value0"Labware.27.LwProperties.NumOfProps12Labware.27.SiteId6T-19Labware.27.TForm.1.X1Labware.27.TForm.1.Y0Labware.27.TForm.1.Z0Labware.27.TForm.2.X0Labware.27.TForm.2.Y1Labware.27.TForm.2.Z0Labware.27.TForm.3.X505Labware.27.TForm.3.Y63Labware.27.TForm.3.Z1Labware.27.TemplatedefaultLabware.27.ZTrans100Labware.27.ZTransValue2Labware.28.Angle0Labware.28.BarcodeCnt0Labware.28.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.28.DefSeqValid1Labware.28.File-ML_STAR\96COREHEAD\Core96_TipSupport_HT_L.rck
+Labware.28.IdCore96_TipSupport_HT_L_0001Labware.28.Inst Labware.28.IsCovered0Labware.28.SiteId5Labware.28.TForm.1.X1Labware.28.TForm.1.Y0Labware.28.TForm.1.Z0Labware.28.TForm.2.X0Labware.28.TForm.2.Y1Labware.28.TForm.2.Z0Labware.28.TForm.3.X522.9Labware.28.TForm.3.Y145.8Labware.28.TForm.3.Z1Labware.28.TemplateTIP_CAR_480BC_A00_0003Labware.28.ZTrans214.95Labware.28.ZTransValue1Labware.29.Angle0Labware.29.BarcodeCnt0Labware.29.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.29.DefSeqValid1Labware.29.File-ML_STAR\96COREHEAD\Core96_TipSupport_ST_L.rck
+Labware.29.IdCore96_TipSupport_ST_L_0001Labware.29.Inst Labware.29.IsCovered0"Labware.29.LwProperties.1.PropertyMlStarCore96TipRackLabware.29.LwProperties.1.Value0"Labware.29.LwProperties.2.PropertyMlStarIsCore96WasteRackLabware.29.LwProperties.2.Value1"Labware.29.LwProperties.3.PropertyMlStarIsWasteRackLabware.29.LwProperties.3.Value1"Labware.29.LwProperties.4.Property
+MlStarTipRackLabware.29.LwProperties.4.Value0"Labware.29.LwProperties.NumOfProps4Labware.29.SiteId5Labware.29.TForm.1.X1Labware.29.TForm.1.Y0Labware.29.TForm.1.Z0Labware.29.TForm.2.X0Labware.29.TForm.2.Y1Labware.29.TForm.2.Z0Labware.29.TForm.3.X522.9Labware.29.TForm.3.Y145.8Labware.29.TForm.3.Z1Labware.29.TemplateTIP_CAR_480BC_A00_0003Labware.29.ZTrans214.95Labware.29.ZTransValue1Labware.3.Angle0Labware.3.BarcodeCnt0Labware.3.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.3.DefSeqValid1Labware.3.File#ML_STAR\SMP_CAR_32_Nunc_1ml_A00.rckLabware.3.IdSMP_CAR_32_Nunc_1ml_A00_0003Labware.3.Inst Labware.3.IsCovered0Labware.3.SiteId1T-46Labware.3.TForm.1.X1Labware.3.TForm.1.Y0Labware.3.TForm.1.Z0Labware.3.TForm.2.X0Labware.3.TForm.2.Y1Labware.3.TForm.2.Z0Labware.3.TForm.3.X1127.5Labware.3.TForm.3.Y542.5Labware.3.TForm.3.Z1Labware.3.TemplatedefaultLabware.3.ZTrans100Labware.3.ZTransValue1Labware.30.Angle0Labware.30.BarcodeCnt0Labware.30.Clsid&{8E1D6C02-F939-11D1-8D14-008029ED67EA}Labware.30.DefSeqValid1Labware.30.Fileml_star\st_l.rck
+Labware.30.Id	st_l_0004Labware.30.Inst Labware.30.IsCovered0
