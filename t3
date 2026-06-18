@@ -1,1 +1,18 @@
-
+What Was Run
+• Set 1: Tip Pick Up - TP, using channels, channel pattern 111111111111, sequence count 96
+• Set 1: Aspirate - twelveasp, using channels, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty, channel pattern 111111111111, sequence count 12
+• Set 1: Dispense - P, using channels, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty, channel pattern 111111111111, sequence count 24
+• None
+• Actual trace transfers:
+• X1: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position B1; dispensed to P1 wells A1, A4
+• X2: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position D1; dispensed to P1 wells B1, B4
+• X3: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position F1; dispensed to P1 wells C1, C4
+• X4: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position H1; dispensed to P1 wells D1, D4
+• X5: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position A1; dispensed to P1 wells A2, A5
+• X6: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position C1; dispensed to P1 wells B2, B5
+• X7: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position E1; dispensed to P1 wells C2, C5
+• X8: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position G1; dispensed to P1 wells D2, D5
+• X9: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position B2; dispensed to P1 wells A3, A6
+• X10: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position D2; dispensed to P1 wells B3, B6
+• X11: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position F2; dispensed to P1 wells C3, C6
+• X12: aspirated from Thermo 48 Tube Honeycomb Rack 0001 position H2; dispensed to P1 wells D3, D6
