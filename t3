@@ -1,1 +1,477 @@
 
+def normal_datetime() -> str:
+    return datetime.now().strftime("%B %d, %Y at %I:%M %p")
+
+
+def humanize_key(key: str) -> str:
+    replacements = {
+        "trace_layout": "trace vs layout crossmatch",
+        "URGENT_LABWARE_MISMATCH": "wrong labware mismatch",
+        "URGENT_DESTINATION_OUTSIDE_LAYOUT_FORMAT": "destination outside layout range",
+        "runtime_step_execution": "runtime step execution",
+        "tip_volume_rule": "tip volume rule",
+        "tip_usage": "tip usage",
+        "layout": "plate layout",
+        "marker": "plate layout marker",
+        "mapping": "transfer mapping",
+        "trace": "trace analysis",
+        "configuration": "setup configuration",
+    }
+    text = str(key or "").strip()
+    return replacements.get(text, text.replace("_", " ").replace("-", " ").title())
+
+
+def is_error_record(value: Any) -> bool:
+    text = str(value).lower()
+    return any(word in text for word in [
+        "urgent", "critical", "error", "fail", "mismatch", "wrong labware",
+        "missing", "unexpected", "not valid", "not found"
+    ])
+
+
+def safe_text(value: Any) -> str:
+    if value is None:
+        return "None"
+    if isinstance(value, float):
+        return f"{value:g}"
+    return str(value)
+
+
+def format_list_inline(values: Any) -> str:
+    if not values:
+        return "None"
+    if isinstance(values, (set, tuple)):
+        values = list(values)
+    if isinstance(values, list):
+        cleaned = [safe_text(v) for v in values if safe_text(v).strip()]
+        return ", ".join(cleaned) if cleaned else "None"
+    return safe_text(values)
+
+
+def format_evidence_text(evidence: Any) -> List[str]:
+    lines = []
+
+    if not evidence:
+        return ["Evidence: Not captured in source output."]
+
+    if isinstance(evidence, dict):
+        readable_parts = []
+        for key, value in evidence.items():
+            if value in [None, "", [], {}, "nan"]:
+                continue
+
+            label = humanize_key(key)
+
+            if isinstance(value, dict):
+                nested = []
+                for n_key, n_value in value.items():
+                    if n_value not in [None, "", [], {}, "nan"]:
+                        nested.append(f"{humanize_key(n_key)}: {format_list_inline(n_value)}")
+                if nested:
+                    readable_parts.append(f"{label}: " + "; ".join(nested))
+
+            elif isinstance(value, list):
+                readable_parts.append(f"{label}: {format_list_inline(value)}")
+
+            else:
+                readable_parts.append(f"{label}: {safe_text(value)}")
+
+        if readable_parts:
+            lines.append("Evidence: " + "; ".join(readable_parts) + ".")
+        else:
+            lines.append("Evidence: Source output did not include usable evidence details.")
+
+        return lines
+
+    if isinstance(evidence, list):
+        cleaned = [safe_text(item) for item in evidence if safe_text(item).strip()]
+        return ["Evidence: " + ", ".join(cleaned) + "."] if cleaned else ["Evidence: Not captured in source output."]
+
+    return [f"Evidence: {safe_text(evidence)}."]
+
+
+def report_issue_title(issue: Dict[str, Any]) -> str:
+    severity = humanize_key(issue.get("severity", "issue"))
+    category = humanize_key(issue.get("category", "validation"))
+    return f"{severity} issue - {category}"
+
+
+def consolidate_issues(issues: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    consolidated = []
+    seen = set()
+
+    for issue in issues or []:
+        message = safe_text(issue.get("message", "")).strip()
+        category = humanize_key(issue.get("category", "validation"))
+        severity = humanize_key(issue.get("severity", "issue"))
+        evidence = issue.get("evidence", {})
+
+        key = (severity.lower(), category.lower(), message.lower())
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        consolidated.append({
+            "severity": severity,
+            "category": category,
+            "message": message,
+            "evidence": evidence,
+        })
+
+    return consolidated
+
+
+def summarize_selected_sequences(output: DevPalLiteOutput) -> List[Dict[str, Any]]:
+    rows = []
+
+    for config in output.selected_sequences or []:
+        role = humanize_key(config.get("role", ""))
+        sequence = config.get("sequence", "")
+        mode = humanize_key(config.get("hardware_mode", ""))
+        count = config.get("sequence_count", "")
+        volume = config.get("volume_ul", "")
+        liquid_class = config.get("liquid_class", "")
+        marker = config.get("marker", "")
+        channel_pattern = config.get("channel_pattern", "")
+
+        row = {
+            "sequence": sequence,
+            "step_role": role,
+            "hardware": mode,
+            "sequence_positions": count,
+            "channel_pattern": channel_pattern,
+            "volume": f"{volume:g} uL" if isinstance(volume, (int, float)) and volume else "",
+            "liquid_class": liquid_class,
+            "marker": marker,
+        }
+        rows.append(row)
+
+    return rows
+
+
+def summarize_marker_matches(output: DevPalLiteOutput) -> List[str]:
+    if not output.marker_matches:
+        return ["No marker matches were found in the uploaded plate layout."]
+
+    lines = []
+
+    for marker_label in sorted(output.marker_matches.keys()):
+        entries = output.marker_matches.get(marker_label, [])
+        locations = []
+
+        for entry in entries:
+            dest = normalize_position_text(entry.get("dest_value", ""))
+            cell = entry.get("excel_position", "")
+            cell_value = entry.get("cell_value", "")
+            if dest:
+                if cell:
+                    locations.append(f"{marker_label} found at layout well {dest}, spreadsheet cell {cell}, cell value {cell_value}")
+                else:
+                    locations.append(f"{marker_label} found at layout well {dest}, cell value {cell_value}")
+
+        lines.extend(locations)
+
+    return lines or ["No readable marker match details were captured."]
+
+
+def summarize_trace_findings(output: DevPalLiteOutput) -> List[str]:
+    lines = []
+
+    for finding in output.trace_findings or []:
+        f_type = finding.get("type", "")
+
+        if f_type == "trace_summary":
+            lines.append(
+                "Trace summary: "
+                f"{finding.get('aspirate_step_count', 0)} aspirate step(s), "
+                f"{finding.get('dispense_step_count', 0)} dispense step(s), "
+                f"crossmatch status {finding.get('cross_match_status', 'unknown')}."
+            )
+
+        elif f_type == "expected_runtime_step_check":
+            lines.append(
+                "Runtime step check: "
+                f"planned {finding.get('expected_step_count', 0)} step(s), "
+                f"trace showed {finding.get('actual_step_count', 0)} step(s), "
+                f"status {finding.get('status', 'unknown')}."
+            )
+
+        elif f_type == "trace_layout_match":
+            marker = finding.get("marker", "")
+            status = finding.get("status", "")
+            expected = format_list_inline(finding.get("expected_destinations", []))
+            actual = format_list_inline(finding.get("actual_destinations", []))
+            missing = format_list_inline(finding.get("missing_destinations", []))
+            unexpected = format_list_inline(finding.get("unexpected_destinations", []))
+
+            line = (
+                f"{marker}: trace vs layout status {status}. "
+                f"Expected destination(s): {expected}. "
+                f"Actual destination(s): {actual}."
+            )
+
+            if missing != "None":
+                line += f" Missing: {missing}."
+
+            if unexpected != "None":
+                line += f" Unexpected: {unexpected}."
+
+            lines.append(line)
+
+        elif f_type == "labware_validation_summary":
+            lines.append(finding.get("message", ""))
+
+        elif f_type == "tip_usage_check":
+            lines.append(finding.get("message", ""))
+
+    return [line for line in lines if line] or ["No trace findings were available."]
+
+
+def summarize_layout_findings(output: DevPalLiteOutput) -> List[str]:
+    lines = []
+
+    for finding in output.layout_findings or []:
+        f_type = finding.get("type", "")
+
+        if f_type == "layout_summary":
+            lines.append(
+                "Plate layout summary: "
+                f"marker {finding.get('marker', '')}, "
+                f"{finding.get('marker_count', 0)} marker label(s), "
+                f"{finding.get('layout_position_count', 0)} mapped destination well(s), "
+                f"{finding.get('unique_layout_position_count', 0)} unique destination well(s)."
+            )
+
+        elif f_type == "extra_layout_marker":
+            lines.append(finding.get("message", ""))
+
+    return [line for line in lines if line] or ["No separate plate layout findings were reported."]
+
+
+def docx_add_line(doc, text: str, force_red: bool = False) -> None:
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run(str(text))
+    if RGBColor is not None and (force_red or is_error_record(text)):
+        run.font.color.rgb = RGBColor(255, 0, 0)
+
+
+def docx_add_numbered_lines(doc, lines: List[str], red_errors: bool = True) -> None:
+    if not lines:
+        doc.add_paragraph("None found.")
+        return
+
+    for index, line in enumerate(lines, start=1):
+        docx_add_line(doc, f"{index}. {line}", force_red=red_errors and is_error_record(line))
+
+
+def write_docx_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    if Document is None:
+        return write_text_report(output, output_dir)
+
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.docx",
+    )
+
+    output.report_path = path
+
+    doc = Document()
+    doc.add_heading("DevPal Lite Validation Report", 0)
+
+    doc.add_heading("Run Summary", level=1)
+    summary_rows = [
+        ("Generated", normal_datetime()),
+        ("LAY File", output.lay_file or "Not provided"),
+        ("Plate Layout File", output.layout_file or "Not provided"),
+        ("Trace File", output.trace_file or "Not found"),
+        ("Report Saved To", path),
+        ("Review Script", output.generated_review_script or "Not generated"),
+    ]
+
+    for label, value in summary_rows:
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(f"{label}: ").bold = True
+        paragraph.add_run(str(value))
+
+    issues = consolidate_issues(output.issues)
+    major_critical = [
+        issue for issue in issues
+        if str(issue.get("severity", "")).lower() in {"critical", "major"}
+        or is_error_record(issue)
+    ]
+
+    doc.add_heading("Major / Critical Issues", level=1)
+    if major_critical:
+        for index, issue in enumerate(major_critical, start=1):
+            paragraph = doc.add_paragraph()
+            run = paragraph.add_run(f"{index}. {report_issue_title(issue)}")
+            run.bold = True
+            if RGBColor is not None:
+                run.font.color.rgb = RGBColor(255, 0, 0)
+
+            docx_add_line(doc, f"Message: {issue.get('message', '')}", force_red=True)
+            for evidence_line in format_evidence_text(issue.get("evidence")):
+                docx_add_line(doc, evidence_line, force_red=True)
+    else:
+        doc.add_paragraph("No major or critical issues were found.")
+
+    doc.add_heading("Sequences Ran", level=1)
+    sequence_rows = summarize_selected_sequences(output)
+    if sequence_rows:
+        for index, row in enumerate(sequence_rows, start=1):
+            line = (
+                f"{index}. {row['sequence']} - {row['step_role']}; "
+                f"hardware: {row['hardware']}; "
+                f"positions in sequence: {row['sequence_positions']}; "
+                f"channel pattern: {row['channel_pattern']}"
+            )
+            if row["volume"]:
+                line += f"; volume: {row['volume']}"
+            if row["liquid_class"]:
+                line += f"; liquid class: {row['liquid_class']}"
+            if row["marker"]:
+                line += f"; marker: {row['marker']}"
+            doc.add_paragraph(line)
+    else:
+        doc.add_paragraph("No selected sequence details were captured.")
+
+    doc.add_heading("Source And Destination Positions", level=1)
+    doc.add_paragraph(f"Source positions: {format_list_inline(output.source_positions)}")
+    doc.add_paragraph(f"Destination positions: {format_list_inline(output.destination_positions)}")
+
+    doc.add_heading("Plate Layout Marker Results", level=1)
+    docx_add_numbered_lines(doc, summarize_marker_matches(output), red_errors=False)
+
+    doc.add_heading("Plate Layout Findings", level=1)
+    docx_add_numbered_lines(doc, summarize_layout_findings(output))
+
+    doc.add_heading("Trace And Crossmatch Findings", level=1)
+    docx_add_numbered_lines(doc, summarize_trace_findings(output))
+
+    doc.add_heading("Limitations", level=1)
+    docx_add_numbered_lines(doc, output.limitations or ["No limitations were reported."], red_errors=False)
+
+    doc.save(path)
+    return path
+
+
+def write_text_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    path = os.path.join(
+        output_dir,
+        f"DevPal_Lite_Validation_Report_{datetime.now().strftime('%H%M%S')}.txt",
+    )
+
+    output.report_path = path
+    issues = consolidate_issues(output.issues)
+    major_critical = [
+        issue for issue in issues
+        if str(issue.get("severity", "")).lower() in {"critical", "major"}
+        or is_error_record(issue)
+    ]
+
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("DevPal Lite Validation Report\n")
+        handle.write("=" * 80 + "\n\n")
+
+        handle.write("Run Summary\n")
+        handle.write("-" * 80 + "\n")
+        handle.write(f"Generated: {normal_datetime()}\n")
+        handle.write(f"LAY File: {output.lay_file or 'Not provided'}\n")
+        handle.write(f"Plate Layout File: {output.layout_file or 'Not provided'}\n")
+        handle.write(f"Trace File: {output.trace_file or 'Not found'}\n")
+        handle.write(f"Report Saved To: {path}\n")
+        handle.write(f"Review Script: {output.generated_review_script or 'Not generated'}\n\n")
+
+        handle.write("Major / Critical Issues\n")
+        handle.write("-" * 80 + "\n")
+        if major_critical:
+            for index, issue in enumerate(major_critical, start=1):
+                handle.write(f"{index}. {report_issue_title(issue)}\n")
+                handle.write(f"   Message: {issue.get('message', '')}\n")
+                for evidence_line in format_evidence_text(issue.get("evidence")):
+                    handle.write(f"   {evidence_line}\n")
+                handle.write("\n")
+        else:
+            handle.write("No major or critical issues were found.\n\n")
+
+        handle.write("Sequences Ran\n")
+        handle.write("-" * 80 + "\n")
+        sequence_rows = summarize_selected_sequences(output)
+        if sequence_rows:
+            for index, row in enumerate(sequence_rows, start=1):
+                line = (
+                    f"{index}. {row['sequence']} - {row['step_role']}; "
+                    f"hardware: {row['hardware']}; "
+                    f"positions in sequence: {row['sequence_positions']}; "
+                    f"channel pattern: {row['channel_pattern']}"
+                )
+                if row["volume"]:
+                    line += f"; volume: {row['volume']}"
+                if row["liquid_class"]:
+                    line += f"; liquid class: {row['liquid_class']}"
+                if row["marker"]:
+                    line += f"; marker: {row['marker']}"
+                handle.write(line + "\n")
+        else:
+            handle.write("No selected sequence details were captured.\n")
+
+        handle.write("\nSource And Destination Positions\n")
+        handle.write("-" * 80 + "\n")
+        handle.write(f"Source positions: {format_list_inline(output.source_positions)}\n")
+        handle.write(f"Destination positions: {format_list_inline(output.destination_positions)}\n\n")
+
+        handle.write("Plate Layout Marker Results\n")
+        handle.write("-" * 80 + "\n")
+        for index, line in enumerate(summarize_marker_matches(output), start=1):
+            handle.write(f"{index}. {line}\n")
+
+        handle.write("\nPlate Layout Findings\n")
+        handle.write("-" * 80 + "\n")
+        for index, line in enumerate(summarize_layout_findings(output), start=1):
+            handle.write(f"{index}. {line}\n")
+
+        handle.write("\nTrace And Crossmatch Findings\n")
+        handle.write("-" * 80 + "\n")
+        for index, line in enumerate(summarize_trace_findings(output), start=1):
+            handle.write(f"{index}. {line}\n")
+
+        handle.write("\nLimitations\n")
+        handle.write("-" * 80 + "\n")
+        for index, line in enumerate(output.limitations or ["No limitations were reported."], start=1):
+            handle.write(f"{index}. {line}\n")
+
+    return path
+
+
+def write_pdf_report(output: DevPalLiteOutput, output_dir: str) -> str:
+    return write_text_report(output, output_dir)
+
+
+
+
+
+
+
+
+
+
+report_format = self.report_format_var.get()
+
+        if report_format == "pdf":
+            report_path = write_pdf_report(output, output_dir)
+        elif report_format == "txt":
+            report_path = write_text_report(output, output_dir)
+        else:
+            report_path = write_docx_report(output, output_dir)
+
+        output.report_path = report_path
+
+
+
+
+
+
+
+
+
