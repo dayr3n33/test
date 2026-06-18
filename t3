@@ -1,1 +1,83 @@
+DevPal Lite Validation Report
+Run Summary
+Generated: June 18, 2026 at 03:25 PM
+LAY File: C:/Program Files (x86)/Hamilton/Methods/Example.lay
+Plate Layout File: C:/Users/lynchd27/Documents/DevPal/new-project/sample inputs/layout.csv
+Report Path: C:\Results\Sequence Analysis\18Jun2026\DevPal Lite Validation Report 152507.docx
+Number of Critical Issues: 24
+Major / Critical Issues
+1. Critical issue with Trace Vs Plate Layout
+- X10: expected plate layout wells were not found in the trace.
+- X10: trace dispensed into wells not assigned to this marker in the plate layout.
+- X11: expected plate layout wells were not found in the trace.
+- X11: trace dispensed into wells not assigned to this marker in the plate layout.
+- X12: expected plate layout wells were not found in the trace.
+- X12: trace dispensed into wells not assigned to this marker in the plate layout.
+- X1: expected plate layout wells were not found in the trace.
+- X1: trace dispensed into wells not assigned to this marker in the plate layout.
+- X2: expected plate layout wells were not found in the trace.
+- X2: trace dispensed into wells not assigned to this marker in the plate layout.
+- X3: expected plate layout wells were not found in the trace.
+- X3: trace dispensed into wells not assigned to this marker in the plate layout.
+- X4: expected plate layout wells were not found in the trace.
+- X4: trace dispensed into wells not assigned to this marker in the plate layout.
+- X5: expected plate layout wells were not found in the trace.
+- X5: trace dispensed into wells not assigned to this marker in the plate layout.
+- X6: expected plate layout wells were not found in the trace.
+- X6: trace dispensed into wells not assigned to this marker in the plate layout.
+- X7: expected plate layout wells were not found in the trace.
+- X7: trace dispensed into wells not assigned to this marker in the plate layout.
+- X8: expected plate layout wells were not found in the trace.
+- X8: trace dispensed into wells not assigned to this marker in the plate layout.
+- X9: expected plate layout wells were not found in the trace.
+- X9: trace dispensed into wells not assigned to this marker in the plate layout.
+Expected Wells Not Found: A11, A5, A8, B11, B5, B8, F11, F5, F8, G11, G5, G8
+Plate Layout Expected Wells: A10, A11, A3, A4, A5, A6, A7, A8, A9, B10, B11, B3, B4, B5, B6, B7, B8, B9, F10, F11, F3, F4, F5, F6, F7, F8, F9, G10, G11, G3, G4, G5, G6, G7, G8, G9
+Trace Found Wells: A10, A11, A3, A4, A5, A6, A7, A8, A9, B10, B11, B3, B4, B5, B6, B7, B8, B9, F10, F11, F3, F4, F5, F6, F7, F8, F9, G10, G11, G3, G4, G5, G6, G7, G8, G9
+Wrong Trace Wells: A11, A5, A8, B11, B5, B8, F11, F5, F8, G11, G5, G8
+What Was Run
+• Set 1: Tip Pick Up - POSTIPS, using channels, channel pattern 111111111111, sequence count 288
+• Set 1: Aspirate - P1 1STSAMP ASP, using channels, 100 uL, LC 12C SVT Water DispenseJet Empty V2 TADM, channel pattern 111111111111, sequence count 12
+• Set 1: Dispense - P1 1STSAMP DISP, using channels, 100 uL, LC 12C SVT Water DispenseJet Empty V2 TADM, channel pattern 111111111111, sequence count 12
+• Set 1: Dispense - P1 1STSAMP DISP1, using channels, 100 uL, LC 12C SVT Water DispenseJet Empty V2 TADM, channel pattern 111111111111, sequence count 12
+• Set 1: Dispense - P1 1STSAMP DISP2, using channels, 100 uL, LC 12C SVT Water DispenseJet Empty V2 TADM, channel pattern 111111111111, sequence count 12
+Plate Layout Marker Review
+• X1: A9 contains X1, A10 contains X1, A11 contains X1
+• X2: A6 contains X2, A7 contains X2, A8 contains X2
+• X3: A3 contains X3, A4 contains X3, A5 contains X3
+• X4: B9 contains X4, B10 contains X4, B11 contains X4
+• X5: B6 contains X5, B7 contains X5, B8 contains X5
+• X6: B3 contains X6, B4 contains X6, B5 contains X6
+• X7: F9 contains X7, F10 contains X7, F11 contains X7
+• X8: F6 contains X8, F7 contains X8, F8 contains X8
+• X9: F3 contains X9, F4 contains X9, F5 contains X9
+• X10: G9 contains X10, G10 contains X10, G11 contains X10
+• X11: G6 contains X11, G7 contains X11, G8 contains X11
+• X12: G3 contains X12, G4 contains X12, G5 contains X12
+Layout Summary
+• Plate layout marker X: 12 marker(s), 36 destination well(s).
+Trace / Runtime Summary
+• Trace parsed: 3 aspirate step(s), 3 dispense step(s). Plate layout crossmatch failed.
+• Labware orientation: landscape; 7 row(s), 11 column(s), detected as 96-well.
+• Aspirate step 1: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware SMP CAR 32 Nunc 1ml A00 0001; positions 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+• Aspirate step 2: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware SMP CAR 32 Nunc 1ml A00 0001; positions 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+• Aspirate step 3: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware SMP CAR 32 Nunc 1ml A00 0001; positions 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.
+• Dispense step 1: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware Cos 96 DW 2mL L Wyeth 0001; positions A5, B5, F5, G5, A8, B8, F8, G8, A11, B11, F11, G11.
+• Dispense step 2: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware Cos 96 DW 2mL L Wyeth 0001; positions A10, A7, A4, B10, B7, B4, F10, F7, F4, G10, G7, G4.
+• Dispense step 3: used 12 tip(s) at one time; channels 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12; labware Cos 96 DW 2mL L Wyeth 0001; positions A9, A6, A3, B9, B6, B3, F9, F6, F3, G9, G6, G3.
+• Tip pickup usage: POSTIPS picked up 12 tip(s); trace used up to 12 tip(s) at one time; unused picked tips: 0.
+• Tip pickup usage: POSTIPS picked up 12 tip(s); trace used up to 12 tip(s) at one time; unused picked tips: 0.
+• Tip pickup usage: POSTIPS picked up 12 tip(s); trace used up to 12 tip(s) at one time; unused picked tips: 0.
+• X1: expected plate layout wells A10, A11, A9; trace dispensed to A10, A5, A9.
+• X2: expected plate layout wells A6, A7, A8; trace dispensed to A6, A7, B5.
+• X3: expected plate layout wells A3, A4, A5; trace dispensed to A3, A4, F5.
+• X4: expected plate layout wells B10, B11, B9; trace dispensed to B10, B9, G5.
+• X5: expected plate layout wells B6, B7, B8; trace dispensed to A8, B6, B7.
+• X6: expected plate layout wells B3, B4, B5; trace dispensed to B3, B4, B8.
+• X7: expected plate layout wells F10, F11, F9; trace dispensed to F10, F8, F9.
+• X8: expected plate layout wells F6, F7, F8; trace dispensed to F6, F7, G8.
+• X9: expected plate layout wells F3, F4, F5; trace dispensed to A11, F3, F4.
+• X10: expected plate layout wells G10, G11, G9; trace dispensed to B11, G10, G9.
+• X11: expected plate layout wells G6, G7, G8; trace dispensed to F11, G6, G7.
+• X12: expected plate layout wells G3, G4, G5; trace dispensed to G11, G3, G4.
 
