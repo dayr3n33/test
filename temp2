@@ -954,6 +954,3 @@ def write_text_report(output: DevPalLiteOutput, output_dir: str) -> str:
             write_human_text_section(handle, title, data)
 
     return path
-
-if __name__ == "__main__":
-    main()
