@@ -1,1 +1,194 @@
+DevPal Lite Validation Report
+Run Summary
+Generated: June 18, 2026 at 01:03 PM
+LAY File: C:/Users/lynchd27/Documents/DevPal/new-project/sample inputs/Demo.lay
+Plate Layout File: C:/Users/lynchd27/Documents/DevPal/new-project/sample inputs/layout.csv
+Trace File: C:\Program Files (x86)\HAMILTON\LogFiles\STAR OEM noFan 8b2a7dfd09364a6e872cc12490420bc0 Trace.trc
+Generated Review Script: C:\Results\Sequence Analysis\18Jun2026\devpal lite review required pyhamilton script 130254.py
+Report Path: C:\Results\Sequence Analysis\18Jun2026\DevPal Lite Validation Report 130344.docx
+Major/Critical Issue Count: 5
+Major / Critical Issues
+1. Critical issue with Labware Mismatch
+- URGENT ERROR: Wrong destination labware detected. Dispense sequence P uses labware P1 detected as 24-well, but uploaded layout requires 96-well.
+Type: labware validation summary
+Status: fail
+Step Role: dispense
+Sequence: P
+Trace Or Method Labware: P1
+Detected Labware Format: 24-well
+Position Count: 24
+Expected Layout Format: 96-well
+Message: URGENT ERROR: Wrong destination labware detected. Dispense sequence P uses labware P1 detected as 24-well, but uploaded layout requires 96-well.
+2. Major issue with Replicate Count Mismatch
+- X5: replicate count did not match between the plate layout and the trace.
+- X6: replicate count did not match between the plate layout and the trace.
+Source Labware: Thermo 48 Tube Honeycomb Rack 0001
+Source Position: G5, G6
+Destination Labware: AP1, P1
+Plate Layout Marker Used: X5, X6
+Expected Destination Count From Plate Layout: 3
+Actual Destination Count From Trace: 6
+Expected Destinations: B3, B4, B5, B6, B7, B8
+Actual Trace Destinations: D1, D2, D3, D4, D5, D6, H2, H3, H5, H6
+3. Major issue with Sample Tracking
+- Samples were not aspirated in the expected source order.
+Incorrect Sources: expected source: 1, actual source: 5, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: A5, dispense count: 6, expected source: 10, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: C6, dispense count: 6, expected source: 11, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: E6, dispense count: 6, expected source: 12, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: G6, dispense count: 6, expected source: 2, actual source: 5, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: C5, dispense count: 6, expected source: 3, actual source: 5, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: E5, dispense count: 6, expected source: 4, actual source: 5, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: G5, dispense count: 6, expected source: 5, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: B6, dispense count: 6, expected source: 7, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: F6, dispense count: 6, expected source: 8, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: H6, dispense count: 6, expected source: 9, actual source: 6, source labware: Thermo 48 Tube Honeycomb Rack 0001, source position: A6, dispense count: 6
+Meaning: The source position used by the method did not match the expected sample order.
+4. Major issue with Trace Duplicate Destinations
+- Duplicate destination wells were found in the trace.
+Duplicate Destination Wells: A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, C1, C2, C3, C4, C5, C6, D1, D2, D3, D4, D5, D6
+Meaning: The trace showed more than one dispense into the same destination well.
+5. Critical issue with Trace Vs Plate Layout
+- X5: expected destination wells were not found in the trace.
+- X6: expected destination wells were not found in the trace.
+- X5: trace dispensed into wells that were not expected from the plate layout.
+- X6: trace dispensed into wells that were not expected from the plate layout.
+Missing Expected Wells: B3, B4, B5, B6, B7, B8
+Meaning: These wells appeared in the trace, but they were not the expected destination wells for this sample marker., These wells are present in the uploaded plate layout for this marker pattern, but the trace did not show dispense activity into them.
+Unexpected Trace Wells: A1, A2, A3, A4, A5, A6, B1, B2, B4, B6, C1, C2, C3, C4, C5, C6, D1, D2, D3, D4, D5, D6, E1, E2, E3, E4, E5, E6, F1, F2, F3, F4, F5, F6, G1, G2, G3, G4, G5, G6, H1, H2, H3, H4, H5, H6
+What Was Ran
+• Set 1: Dispense - P, using channels, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty, channel pattern 111111111111, sequence count 24
+• Set 1: Tip Pick Up - TP, using channels, channel pattern 111111111111, sequence count 96
+• Set 1: Aspirate - twelveasp, using channels, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty, channel pattern 111111111111, sequence count 12
+• Set 2: Dispense - A, using channels, 100 uL, LC SlimTipFilter Water DispenseJet Empty, channel pattern 111111111111, sequence count 96
+• Set 2: Tip Pick Up - TA, using channels, channel pattern 111111111111, sequence count 96
+• Set 2: Aspirate - Thermo 48 Tube Honeycomb Rack 0001, using channels, 100 uL, LC SlimTipFilter Water DispenseJet Empty, channel pattern 111111111111, sequence count 48
+Transfer / Position Summary
+• X1: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 1 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X2: source sequence twelveasp, source position 2 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X3: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 3 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X4: source sequence twelveasp, source position 4 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X5: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 5 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X6: source sequence twelveasp, source position 6 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X7: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 7 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X8: source sequence twelveasp, source position 8 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X9: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 9 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X10: source sequence twelveasp, source position 10 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X11: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 11 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X12: source sequence twelveasp, source position 12 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X13: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 13 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X14: source sequence twelveasp, source position 14 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X15: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 15 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X16: source sequence twelveasp, source position 16 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X17: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 17 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X18: source sequence twelveasp, source position 18 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X19: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 19 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X20: source sequence twelveasp, source position 20 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X21: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 21 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X22: source sequence twelveasp, source position 22 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X23: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 23 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X24: source sequence twelveasp, source position 24 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X25: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 25 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X26: source sequence twelveasp, source position 26 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X27: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 27 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X28: source sequence twelveasp, source position 28 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X29: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 29 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X30: source sequence twelveasp, source position 30 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X31: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 31 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X32: source sequence twelveasp, source position 32 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X33: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 33 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X34: source sequence twelveasp, source position 34 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X35: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 35 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X36: source sequence twelveasp, source position 36 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X37: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 37 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X38: source sequence twelveasp, source position 38 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X39: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 39 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X40: source sequence twelveasp, source position 40 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X41: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 41 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X42: source sequence twelveasp, source position 42 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X43: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 43 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X44: source sequence twelveasp, source position 44 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X45: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 45 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X46: source sequence twelveasp, source position 46 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X47: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 47 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X48: source sequence twelveasp, source position 48 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X49: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 49 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X50: source sequence twelveasp, source position 50 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X51: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 51 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X52: source sequence twelveasp, source position 52 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X53: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 53 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X54: source sequence twelveasp, source position 54 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X55: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 55 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X56: source sequence twelveasp, source position 56 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X57: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 57 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X58: source sequence twelveasp, source position 58 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X59: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 59 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X60: source sequence twelveasp, source position 60 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X61: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 61 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X62: source sequence twelveasp, source position 62 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X63: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 63 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X64: source sequence twelveasp, source position 64 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X65: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 65 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X66: source sequence twelveasp, source position 66 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X67: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 67 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X68: source sequence twelveasp, source position 68 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X69: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 69 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X70: source sequence twelveasp, source position 70 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X71: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 71 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X72: source sequence twelveasp, source position 72 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X73: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 73 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X74: source sequence twelveasp, source position 74 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X75: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 75 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X76: source sequence twelveasp, source position 76 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X77: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 77 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X78: source sequence twelveasp, source position 78 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X79: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 79 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X80: source sequence twelveasp, source position 80 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X81: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 81 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X82: source sequence twelveasp, source position 82 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X83: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 83 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X84: source sequence twelveasp, source position 84 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X85: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 85 → destination sequence A, destination well A9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X86: source sequence twelveasp, source position 86 → destination sequence P, destination well A6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X87: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 87 → destination sequence A, destination well A3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X88: source sequence twelveasp, source position 88 → destination sequence P, destination well B9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X89: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 89 → destination sequence A, destination well B6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X90: source sequence twelveasp, source position 90 → destination sequence P, destination well B3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X91: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 91 → destination sequence A, destination well F9, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X92: source sequence twelveasp, source position 92 → destination sequence P, destination well F6, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X93: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 93 → destination sequence A, destination well F3, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X94: source sequence twelveasp, source position 94 → destination sequence P, destination well G9, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+• X95: source sequence Thermo 48 Tube Honeycomb Rack 0001, source position 95 → destination sequence A, destination well G6, 100 uL, LC SlimTipFilter Water DispenseJet Empty
+• X96: source sequence twelveasp, source position 96 → destination sequence P, destination well G3, 100 uL, LC HighVolumeFilter Water DispenseSurface Empty
+Plate Layout Marker Review
+• X1: A9 from layout cell J2 containing X1, A10 from layout cell K2 containing X1, A11 from layout cell L2 containing X1
+• X10: G9 from layout cell J8 containing X10, G10 from layout cell K8 containing X10, G11 from layout cell L8 containing X10
+• X11: G6 from layout cell G8 containing X11, G7 from layout cell H8 containing X11, G8 from layout cell I8 containing X11
+• X12: G3 from layout cell D8 containing X12, G4 from layout cell E8 containing X12, G5 from layout cell F8 containing X12
+• X2: A6 from layout cell G2 containing X2, A7 from layout cell H2 containing X2, A8 from layout cell I2 containing X2
+• X3: A3 from layout cell D2 containing X3, A4 from layout cell E2 containing X3, A5 from layout cell F2 containing X3
+• X4: B9 from layout cell J3 containing X4, B10 from layout cell K3 containing X4, B11 from layout cell L3 containing X4
+• X5: B6 from layout cell G3 containing X5, B7 from layout cell H3 containing X5, B8 from layout cell I3 containing X5
+• X6: B3 from layout cell D3 containing X6, B4 from layout cell E3 containing X6, B5 from layout cell F3 containing X6
+• X7: F9 from layout cell J7 containing X7, F10 from layout cell K7 containing X7, F11 from layout cell L7 containing X7
+• X8: F6 from layout cell G7 containing X8, F7 from layout cell H7 containing X8, F8 from layout cell I7 containing X8
+• X9: F3 from layout cell D7 containing X9, F4 from layout cell E7 containing X9, F5 from layout cell F7 containing X9
+Layout Summary
+• Plate layout marker X: 12 marker(s), 36 unique destination well(s). X1 through X12 will be reused for higher sample numbers.
+Trace / Runtime Summary
+• Runtime step check: expected 24 step(s), trace showed 24 step(s), status pass.
+• Trace parsed: 6 aspirate step(s), 6 dispense step(s), crossmatch pass.
+• X5: source labware Thermo 48 Tube Honeycomb Rack 0001, source position A5; expected B6, B7, B8; trace found A1, A4, A1, E2, A4, E5.
+• X5: source labware Thermo 48 Tube Honeycomb Rack 0001, source position C5; expected B6, B7, B8; trace found B1, B4, B1, F2, B4, F5.
+• X5: source labware Thermo 48 Tube Honeycomb Rack 0001, source position E5; expected B6, B7, B8; trace found C1, C4, C1, G2, C4, G5.
+• X5: source labware Thermo 48 Tube Honeycomb Rack 0001, source position G5; expected B6, B7, B8; trace found D1, D4, D1, H2, D4, H5.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position B6; expected B3, B4, B5; trace found A2, A5, E1, A3, E4, A6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position D6; expected B3, B4, B5; trace found B2, B5, F1, B3, F4, B6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position F6; expected B3, B4, B5; trace found C2, C5, G1, C3, G4, C6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position H6; expected B3, B4, B5; trace found D2, D5, H1, D3, H4, D6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position A6; expected B3, B4, B5; trace found A3, A6, A2, E3, A5, E6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position C6; expected B3, B4, B5; trace found B3, B6, B2, F3, B5, F6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position E6; expected B3, B4, B5; trace found C3, C6, C2, G3, C5, G6.
+• X6: source labware Thermo 48 Tube Honeycomb Rack 0001, source position G6; expected B3, B4, B5; trace found D3, D6, D2, H3, D5, H6.
+• X5: Source Position 🚫 A5 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 1.
+• X5: Source Position 🚫 C5 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 2.
+• X5: Source Position 🚫 E5 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 3.
+• X5: Source Position 🚫 G5 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 4.
+• X6: Source Position 🚫 B6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 5.
+• X6: Source Position 🚫 F6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 7.
+• X6: Source Position 🚫 H6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 8.
+• X6: Source Position 🚫 A6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 9.
+• X6: Source Position 🚫 C6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 10.
+• X6: Source Position 🚫 E6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 11.
+• X6: Source Position 🚫 G6 from Thermo 48 Tube Honeycomb Rack 0001; ✅ Need source 12.
 
