@@ -1,4 +1,3 @@
-
 def build_execution_plan(
     configs: List[SequenceStepConfig],
     lay_metadata: Optional[Dict[str, Dict[str, Any]]] = None,
