@@ -1,4 +1,3 @@
-
 def humanize_key(key: str) -> str:
     text = str(key or "").replace("_", " ").replace("-", " ").strip()
     replacements = {
