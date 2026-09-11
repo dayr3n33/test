@@ -1,3 +1,0 @@
-Pass the exact DevPal Lite Python file you are currently running.
-Example:
-python fix_devpal_lite_multiplate_validation_v5.py devpal_lite_runner_updated_multiplate_fix_v3_plate_helper_v4.py
