@@ -1,230 +1,30 @@
-
-2026-09-14 11:08:38.140 Venus software version: 6.2.2.4006
-2026-09-14 11:08:38.145 SYSTEM : Analyze method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
-2026-09-14 11:08:40.063 Microlab STAR : Communication - progress; Connection to instrument is created.
-2026-09-14 11:08:41.322 SYSTEM : Analyze method - complete; 
-2026-09-14 11:08:42.306 SYSTEM : Start method - start; 
-2026-09-14 11:08:42.306 SYSTEM : Start method - progress; User name: LYNCHD27
-2026-09-14 11:08:42.307 SYSTEM : Start method - progress; Phoenix software version: 6.2.2.50003
-2026-09-14 11:08:42.313 SYSTEM : Start method - progress; Database version: Standard
-2026-09-14 11:08:42.314 SYSTEM : Start method - progress; Sample tracking: On
-2026-09-14 11:08:42.315 SYSTEM : Start method - progress; Vector Database: On
-2026-09-14 11:08:42.316 SYSTEM : Start method - progress; Vector Database connection: Database 'HamiltonVectorDB' on Microsoft SQL Server 'LOCALHOST\HAMILTON' with user 'Hamilton'
-2026-09-14 11:08:42.729 Microlab STAR : Start method command - start;
-2026-09-14 11:08:42.729 Microlab STAR : Start method command - progress; Microlab STAR software version: 6.2.2.50003
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Serial number of Instrument: 0000
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of main module: 0.0X 2002-05-08
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of 1000µl channels: 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08, 0.0X 2002-05-08
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of 5ml channels: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of labware handling channels: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of X drive: 0.0X 2002-05-08
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of auto load: 0.0X 2002-05-08
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of iSWAP: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of washer 1: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of washer 2: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 1: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of temperature-controlled carrier 2: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of CO-RE 96 Head: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of pump station 1: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of pump station 2: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of pump station 3: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of nano dispenser: not installed
-2026-09-14 11:08:42.730 Microlab STAR : Start method command - progress; Firmware version of nano dispenser pressure unit: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of CO-RE 384 Head: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of tube gripper: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of camera channel: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of gel card gripper: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of punch card gripper: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of puncher module: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 1: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 1 module 2: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 1: not installed
-2026-09-14 11:08:42.731 Microlab STAR : Start method command - progress; Firmware version of twister decapper station 2 module 2: not installed
-2026-09-14 11:08:44.555 Microlab STAR : Start method command - complete;
-2026-09-14 11:08:44.601 SYSTEM : Start method - complete; 
-2026-09-14 11:08:44.601 SYSTEM : Execute method - start; Method file C:\Users\lynchd27\Documents\DevPal\new-project\.venv\Lib\site-packages\pyhamilton\star-oem\VENUS_Method\STAR_OEM_noFan.hsl
-2026-09-14 11:08:44.659 HSLHttp : Initialize - progress;  Creating Hamilton HTTP object: Hamilton.HSLHttp
-2026-09-14 11:08:44.693 HSLHttp : Initialize - progress;  Hamilton HTTP object Created.
-2026-09-14 11:08:44.715 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:44.715 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:44.723 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-09-14 11:08:44.723 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:44.723 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Hi, I´m a VENUS method.
-2026-09-14 11:08:44.723 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:44.723 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:44.724 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:44.724 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:44.724 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.169 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:47.170 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:47.170 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:47.171 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:47.172 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:47.172 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:47.172 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.174 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:47.174 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:47.175 USER : Trace - complete; Waiting for server instructions....
-2026-09-14 11:08:47.290 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.294 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-09-14 11:08:47.294 HSLHttp : HttpGET - progress;  Response Content: {"command": "initialize", "id": "0x17198d9edf06", "initializeAlways": 0}
-2026-09-14 11:08:47.295 USER : Trace - complete; JSON received from Server:{"command": "initialize", "id": "0x17198d9edf06", "initializeAlways": 0}
-2026-09-14 11:08:47.295 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:47.295 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-09-14 11:08:47.295 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-09-14 11:08:47.296 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:47.296 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  initialize
-2026-09-14 11:08:47.296 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:47.296 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0x17198d9edf06
-2026-09-14 11:08:47.297 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-09-14 11:08:47.297 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-09-14 11:08:47.301 Microlab STAR : Initialize (Single Step) - start;
-2026-09-14 11:08:47.435 Microlab STAR : Initialize (Single Step) - complete;  > channel 1: waste2_0001,  > channel 2: waste2_0001,  > channel 3: waste2_0001,  > channel 4: waste2_0001,  > channel 5: waste2_0001,  > channel 6: waste2_0001,  > channel 7: waste2_0001,  > channel 8: waste2_0001,  > channel 9: waste2_0001,  > channel 10: waste2_0001,  > channel 11: waste2_0001,  > channel 12: waste2_0001, 
-2026-09-14 11:08:47.453 USER : Trace - complete; Init step return:0[01,00,00,0,,waste2_0001,[02,00,00,0,,waste2_0001,[03,00,00,0,,waste2_0001,[04,00,00,0,,waste2_0001,[05,00,00,0,,waste2_0001,[06,00,00,0,,waste2_0001,[07,00,00,0,,waste2_0001,[08,00,00,0,,waste2_0001,[09,00,00,0,,waste2_0001,[10,00,00,0,,waste2_0001,[11,00,00,0,,waste2_0001,[12,00,00,0,,waste2_0001,
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  initialize
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0[01,00,00,0,,waste2_0001,[02,00,00,0,,waste2_0001,[03,00,00,0,,waste2_0001,[04,00,00,0,,waste2_0001,[05,00,00,0,,waste2_0001,[06,00,00,0,,waste2_0001,[07,00,00,0,,waste2_0001,[08,00,00,0,,waste2_0001,[09,00,00,0,,waste2_0001,[10,00,00,0,,waste2_0001,[11,00,00,0,,waste2_0001,[12,00,00,0,,waste2_0001,
-2026-09-14 11:08:47.454 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0x17198d9edf06
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:47.455 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:47.456 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.458 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:47.458 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:47.458 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:47.458 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:47.459 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:47.459 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.462 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:47.462 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:47.462 USER : Trace - complete; Waiting for server instructions....
-2026-09-14 11:08:47.572 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:47.575 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-09-14 11:08:47.575 HSLHttp : HttpGET - progress;  Response Content: 
-2026-09-14 11:08:48.590 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:48.593 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-09-14 11:08:48.594 HSLHttp : HttpGET - progress;  Response Content: {"command": "channelTipPickUp", "id": "0x17198e407870", "tipSequence": "", "labwarePositions": "SLIM1, 1;SLIM1, 2;SLIM1, 3;SLIM1, 4;SLIM1, 5;SLIM1, 6;SLIM1, 7;SLIM1, 8;SLIM1, 9;SLIM1, 10;SLIM1, 11;SLIM1, 12", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1}
-2026-09-14 11:08:48.594 USER : Trace - complete; JSON received from Server:{"command": "channelTipPickUp", "id": "0x17198e407870", "tipSequence": "", "labwarePositions": "SLIM1, 1;SLIM1, 2;SLIM1, 3;SLIM1, 4;SLIM1, 5;SLIM1, 6;SLIM1, 7;SLIM1, 8;SLIM1, 9;SLIM1, 10;SLIM1, 11;SLIM1, 12", "channelVariable": "111111111111", "sequenceCounting": 0, "channelUse": 1}
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  channelTipPickUp
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0x17198e407870
-2026-09-14 11:08:48.595 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  111111111111
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  0
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - start;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetIntegerProperty - complete;  1
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:48.596 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  SLIM1, 1;SLIM1, 2;SLIM1, 3;SLIM1, 4;SLIM1, 5;SLIM1, 6;SLIM1, 7;SLIM1, 8;SLIM1, 9;SLIM1, 10;SLIM1, 11;SLIM1, 12
-2026-09-14 11:08:48.616 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - start;
-2026-09-14 11:08:48.622 Microlab STAR : Main - error; An error occurred while running Vector.  The error description is: One or more arguments are invalid.  (Labware specific property or corresponding value missing.   (Property 'MlStarTipRack', labware 'tipSequence')) (0x28 - 0x1 - 0x3) 
-2026-09-14 11:08:48.625 Microlab STAR : 1000ul Channel Tip Pick Up (Single Step) - complete with error; An error occurred while running Vector.  The error description is: One or more arguments are invalid.  (Labware specific property or corresponding value missing.   (Property 'MlStarTipRack', labware 'tipSequence')) (0x28 - 0x1 - 0x3) 
-2026-09-14 11:08:48.626 USER : Trace - complete; Tip pick up step return:2
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  STAR-return
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  channelTipPickUp
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.626 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  2
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  0x17198e407870
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:48.627 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:48.628 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:48.630 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:48.630 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:48.630 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:48.630 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Waiting for server instructions...
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:48.631 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:48.632 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:48.633 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:48.633 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:48.633 USER : Trace - complete; Waiting for server instructions....
-2026-09-14 11:08:48.745 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:48.747 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-09-14 11:08:48.748 HSLHttp : HttpGET - progress;  Response Content: 
-2026-09-14 11:08:49.763 HSLHttp : HttpGET - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:49.766 HSLHttp : HttpGET - progress;  Response Status Code: 200
-2026-09-14 11:08:49.766 HSLHttp : HttpGET - progress;  Response Content: {"command": "end", "id": "0x0"}
-2026-09-14 11:08:49.766 USER : Trace - complete; JSON received from Server:{"command": "end", "id": "0x0"}
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::ParseJson - start;  
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::ParseJson - complete;  
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  end
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - start;  
-2026-09-14 11:08:49.767 HSLJSONLib : _Method::HSLJsonLib::GetStringProperty - complete;  0x0
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::Create - complete;  Created JSON Object.
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  message
-2026-09-14 11:08:49.768 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - start;  
-2026-09-14 11:08:49.769 HSLJSONLib : _Method::HSLJsonLib::SetStringProperty - complete;  Good Bye!
-2026-09-14 11:08:49.769 HSLJSONLib : _Method::HSLJsonLib::GetJson - start;  
-2026-09-14 11:08:49.769 HSLJSONLib : _Method::HSLJsonLib::GetJson - complete;  
-2026-09-14 11:08:49.769 HSLJSONLib : _Method::HSLJsonLib::Release - start;  
-2026-09-14 11:08:49.769 HSLJSONLib : _Method::HSLJsonLib::Release - complete;  
-2026-09-14 11:08:49.769 HSLHttp : HttpPOST - progress;  Request Uri: http://localhost:3221
-2026-09-14 11:08:49.771 HSLHttp : HttpPOST - progress;  Response Status Code: 200
-2026-09-14 11:08:49.771 HSLHttp : HttpPOST - progress;  Response Content: <html><body><h1>POST!</h1></body></html>
-2026-09-14 11:08:49.771 HSLHttp : Release - progress;  Releasing Hamilton HTTP object.
-2026-09-14 11:08:49.771 HSLHttp : Release - progress;  Hamilton HTTP object Released.
-2026-09-14 11:08:49.778 SYSTEM : Execute method - complete; 
-2026-09-14 11:08:49.780 SYSTEM : End method - start; 
-2026-09-14 11:08:49.852 Microlab STAR : End method command - start;
-2026-09-14 11:08:50.000 Microlab STAR : Clean up instrument - progress; Move up 1000µl channels
-2026-09-14 11:08:50.025 Microlab STAR : Clean up instrument - progress; Move down auto load Y drive
-2026-09-14 11:08:50.058 Microlab STAR : Clean up instrument - progress; Spreading channels
-2026-09-14 11:08:50.088 Microlab STAR : Clean up instrument - progress; Switch off loading lights
-2026-09-14 11:08:50.496 Microlab STAR : End method command - complete;
-2026-09-14 11:08:50.511 SYSTEM : End method - complete; 
-2026-09-14 11:08:50.880 SYSTEM : File checksum - written; $$author=LYNCHD27$$valid=0$$time=2026-09-14 11:08$$checksum=16083f62$$length=140$$
+DevPal Sequence Analyzer Report
+Run Summary
+Generated: September 14, 2026 at 11:17 AM
+LAY File: C:/Program Files (x86)/Hamilton/Methods/Demo/Demo.lay
+Plate Layout File: C:/Users/lynchd27/Documents/DevPal/new-project/sample inputs/layout single 24DWP.csv
+Report Path: C:\Results\Sequence Analysis\14Sep2026\DevPal Lite Validation Report 111730.docx
+Number of Critical Issues: 2
+Major / Critical Issues
+1. Critical issue with Runtime
+- PyHamilton simulation failed: HamiltonStepError: Hamilton step did not execute correctly; no error code given. ( response: command:STAR-return,step-name:channelTipPickUp,step-return1:2,step-return2:,step-return3:,step-return4:,id:0x1719ad33e530 )
+2. Critical issue with Runtime Step Execution
+- Runtime validation failed. Planned 4 actions, trace showed 0; action order match=False; reason: An error occurred while running Vector. The error description is: No more positions available in sequence tipSequence. (0x28 - 0x2 - 0x80d)
+What Was Run
+• Set 1: tip pick up - TA; hardware channels; channel pattern 111111111111; sequence count 96
+• Set 1: aspirate - Thermo 48 Tube Honeycomb Rack 0001; hardware channels; channel pattern 111111111111; sequence count 48; 100.0 uL; LC SlimTipFilter Water DispenseJet Empty
+• Set 1: dispense - SingleSamps; hardware channels; channel pattern 111111111111; sequence count 12; 100.0 uL; LC SlimTipFilter Water DispenseJet Empty
+Plate Layout Marker Review
+• S1: A1
+• S2: A3
+• S3: A5
+• S4: C1
+• S5: C3
+• S6: C5
+Layout Summary
+• Marker S: 6 sample(s)/plate; single (1 destination(s)/sample); status pass.
+Trace / Runtime Summary
+• Trace parsed: 0 aspirate step(s), 0 dispense step(s). Plate layout crossmatch failed.
+• Labware orientation: landscape; 3 row(s), 5 column(s), detected as 24-well.
+• Tip pickup usage: TA picked up 12 tip(s); trace used up to 12 tip(s) at one time; unused picked tips: 0.
+• Runtime action check failed: planned 4 step(s); trace showed 0; action order match False.
