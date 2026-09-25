@@ -1,9 +1,1 @@
-PingID supports application-specific authentication policies and multiple paired devices. My actual
 
-authentication screens show this
-
-difference: GlobalProtect is prompting SM-F776U (my current phone), while IAM Roles Anywhere is prompting SM-F711U (my old phone). So even
-
-though it's the same Pfizer identity/ PingID service, the IAM Roles Anywhere authentication request is resolving to the old paired device. Can you check the PingID user/device record and the policy/application configuration used by IAM Roles Anywhere, and either remove SM-F711U, make SM-F776U the permitted/primary device for that flow, or reset the IAM Roles Anywhere
-
-pairing?
